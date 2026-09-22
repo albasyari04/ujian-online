@@ -29,9 +29,9 @@ export default async function ProfilPage() {
   return (
     <div className="flex flex-col gap-6">
       <header>
-        <p className="text-[12.5px] font-medium text-[#b45309]">Portal Peserta</p>
-        <h1 className="mt-1 text-[26px] font-semibold text-[#16233f]">Profil Saya</h1>
-        <p className="mt-1 text-[13px] text-[#5b6a86]">
+        <p className="text-[12.5px] font-medium text-[#b45309] dark:text-[#e8a33d]">Portal Peserta</p>
+        <h1 className="mt-1 text-[26px] font-semibold text-[#16233f] dark:text-white">Profil Saya</h1>
+        <p className="mt-1 text-[13px] text-[#5b6a86] dark:text-white/60">
           Kelola informasi akun dan keamanan Anda di sini.
         </p>
       </header>

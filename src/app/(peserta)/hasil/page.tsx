@@ -102,14 +102,14 @@ export default async function HasilNilaiPage({
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-[12.5px] font-medium text-[#b45309]">Rekap penilaian</p>
-          <h1 className="mt-1 text-[26px] font-semibold text-[#16233f]">Hasil &amp; Nilai</h1>
-          <p className="mt-1 text-[13px] text-[#5b6a86]">
+          <p className="text-[12.5px] font-medium text-[#b45309] dark:text-[#e8a33d]">Rekap penilaian</p>
+          <h1 className="mt-1 text-[26px] font-semibold text-[#16233f] dark:text-white">Hasil &amp; Nilai</h1>
+          <p className="mt-1 text-[13px] text-[#5b6a86] dark:text-white/60">
             Ringkasan skor dari setiap ujian yang telah Anda selesaikan.
           </p>
         </div>
 
-        <div className="flex items-center gap-1.5 self-start rounded-[12px] border border-[#e7e4dc] bg-white p-1">
+        <div className="flex items-center gap-1.5 self-start rounded-[12px] border border-[#e7e4dc] bg-white p-1 dark:border-white/10 dark:bg-[#141c30]">
           <UrutanTab label="Nilai tertinggi" aktif={urutan === "nilai"} href="/hasil?urut=nilai" />
           <UrutanTab label="Terbaru" aktif={urutan === "terbaru"} href="/hasil?urut=terbaru" />
         </div>
@@ -141,12 +141,12 @@ export default async function HasilNilaiPage({
 
       {daftar.length === 0 ? (
         <Card className="flex flex-col items-center gap-3 px-6 py-14 text-center">
-          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#f4f5f7] text-[#5b657d]">
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#f4f5f7] text-[#5b657d] dark:bg-white/10 dark:text-white/50">
             <IconHasil className="h-6 w-6" />
           </span>
           <div>
-            <p className="text-[14.5px] font-semibold text-[#16233f]">Belum ada nilai untuk ditampilkan</p>
-            <p className="mt-1 max-w-sm text-[13px] text-[#8b93a6]">
+            <p className="text-[14.5px] font-semibold text-[#16233f] dark:text-white">Belum ada nilai untuk ditampilkan</p>
+            <p className="mt-1 max-w-sm text-[13px] text-[#8b93a6] dark:text-white/50">
               Nilai akan muncul di sini setelah Anda menyelesaikan sebuah ujian.
             </p>
           </div>
@@ -171,7 +171,9 @@ function UrutanTab({ label, aktif, href }: { label: string; aktif: boolean; href
     <Link
       href={href}
       className={`rounded-[9px] px-3 py-1.5 text-[12.5px] font-medium transition-colors ${
-        aktif ? "bg-[#16233f] text-white" : "text-[#5b657d] hover:bg-[#f0f2f1]"
+        aktif
+          ? "bg-[#16233f] text-white"
+          : "text-[#5b657d] hover:bg-[#f0f2f1] dark:text-white/60 dark:hover:bg-white/10"
       }`}
     >
       {label}

@@ -267,7 +267,7 @@ export default async function DashboardPage() {
 
           <p className="relative z-10 text-[11.5px] font-medium text-[#62818b]">Selamat datang kembali,</p>
           <h1 className="relative z-10 mt-1 text-[22px] font-semibold text-[#12354a] sm:text-[25px]">
-            Panel Admin — Ujian Online
+            Ujian Online
           </h1>
           <p className="relative z-10 mt-1.5 max-w-[360px] text-[11.5px] leading-relaxed text-[#62818b]">
             Pantau aktivitas ujian, peserta, dan pelanggaran dari satu tempat.

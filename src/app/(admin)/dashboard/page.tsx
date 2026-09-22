@@ -262,19 +262,15 @@ export default async function DashboardPage() {
       {/* ===================== KOLOM UTAMA ===================== */}
       <div className="flex min-w-0 flex-1 flex-col gap-6">
         {/* ===== BANNER ===== */}
-        <div className="relative min-h-[148px] overflow-hidden rounded-[16px] bg-gradient-to-r from-[#e4f3fb] via-[#f2f9fc] to-[#d8effb] px-5 py-6 text-[#003868] shadow-[0_8px_22px_rgba(0,56,104,0.1)] sm:px-7">
-          <Image src="/image/banneradmin.png" alt="" width={680} height={320} priority className="pointer-events-none absolute bottom-0 right-0 h-[145px] w-auto object-contain sm:h-[165px]" />
-
-          <p className="relative z-10 text-[11.5px] font-medium text-[#62818b]">Selamat datang kembali,</p>
-          <h1 className="relative z-10 mt-1 text-[22px] font-semibold text-[#12354a] sm:text-[25px]">
-            Ujian Online
-          </h1>
-          <p className="relative z-10 mt-1.5 max-w-[360px] text-[11.5px] leading-relaxed text-[#62818b]">
-            Pantau aktivitas ujian, peserta, dan pelanggaran dari satu tempat.
-          </p>
-          <Link href="/ujian/create" className="relative z-10 mt-3 inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#007fc4] to-[#00a7ff] px-3.5 py-2 text-[11px] font-semibold text-white shadow-[0_5px_12px_rgba(0,126,196,0.28)] hover:brightness-105">
-            Kelola Sekarang <IconArrowRight className="h-3 w-3" />
-          </Link>
+        <div className="relative overflow-hidden rounded-[16px] shadow-[0_8px_22px_rgba(0,56,104,0.1)]">
+          <Image
+            src="/image/banner/sistem-ujian-online.png"
+            alt="Sistem Ujian Online — Mudah, Aman, dan Terpercaya untuk Masa Depan yang Lebih Baik"
+            width={2172}
+            height={724}
+            priority
+            className="h-auto w-full object-cover"
+          />
         </div>
 
         {/* ===== STAT CARDS ===== */}

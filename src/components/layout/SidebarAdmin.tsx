@@ -114,13 +114,13 @@ function IconKartuUjian({ className }: { className?: string }) {
    NAV ITEMS
 ========================================================= */
 
-type NavItem = {
+export type NavItem = {
   href: string
   label: string
   icon: (props: { className?: string }) => ReactElement
 }
 
-const navItems: NavItem[] = [
+export const navItems: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: IconDashboard },
   { href: "/ujian", label: "Kelola Ujian", icon: IconUjian },
   { href: "/peserta", label: "Kelola Peserta", icon: IconPeserta },

@@ -3,6 +3,7 @@
 import { useState } from "react"
 import type { ReactNode } from "react"
 
+import { BottomNavMobile } from "./BottomNavMobile"
 import { Footer } from "./Footer"
 import { Navbar } from "./Navbar"
 import { SidebarAdmin } from "./SidebarAdmin"
@@ -29,11 +30,12 @@ export function AdminShell({
       <div className="flex h-full min-w-0 flex-1 flex-col">
         <Navbar user={user} onMenuClick={() => setSidebarOpen(true)} />
 
-        <main className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-5 sm:px-6 lg:px-7">
+        <main className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-28 pt-5 sm:px-6 lg:px-7 lg:pb-5">
           {children}
         </main>
 
         <Footer />
+        <BottomNavMobile />
       </div>
     </div>
   )

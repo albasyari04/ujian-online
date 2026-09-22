@@ -3,6 +3,7 @@
 import { useState } from "react"
 import type { ReactNode } from "react"
 
+import { BottomNavPeserta } from "./BottomNavPeserta"
 import { Footer } from "./Footer"
 import { NavbarPeserta } from "./NavbarPeserta"
 import { SidebarPeserta } from "./SidebarPeserta"
@@ -34,11 +35,16 @@ export function PesertaShell({
           jumlahNotifikasiBelumDibaca={jumlahNotifikasiBelumDibaca}
         />
 
-        <main className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+        {/* 
+          Ditambahkan pb-28 (padding bottom) untuk memberikan ruang 
+          agar konten tidak tertutup oleh BottomNavPeserta di layar mobile.
+        */}
+        <main className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-28 pt-6 sm:px-6 sm:py-8 lg:px-8 lg:pb-8">
           {children}
         </main>
 
         <Footer label="Portal Peserta" />
+        <BottomNavPeserta />
       </div>
     </div>
   )

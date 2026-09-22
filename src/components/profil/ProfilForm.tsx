@@ -94,6 +94,8 @@ function IconAlert({ className }: { className?: string }) {
 
 /* =========================================================
    HERO: RINGKASAN PROFIL
+   Kartu ini gradasi navy gelap secara permanen (bukan mengikuti
+   tema terang/gelap), jadi tidak perlu varian dark: di sini.
 ========================================================= */
 
 function ProfilHero({ user }: { user: ProfilUser }) {
@@ -187,10 +189,10 @@ function CardInformasiAkun({ user }: { user: ProfilUser }) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="group relative overflow-hidden rounded-[20px] border border-[#e7e4dc] bg-gradient-to-br from-white via-[#fcfbf8] to-[#f6f5f1] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_5px_0_#eef0f4,0_16px_28px_-16px_rgba(22,35,63,0.32)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_7px_0_#e3e7ee,0_22px_34px_-16px_rgba(22,35,63,0.4)] sm:p-6"
+      className="group relative overflow-hidden rounded-[20px] border border-[#e7e4dc] bg-gradient-to-br from-white via-[#fcfbf8] to-[#f6f5f1] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_5px_0_#eef0f4,0_16px_28px_-16px_rgba(22,35,63,0.32)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_7px_0_#e3e7ee,0_22px_34px_-16px_rgba(22,35,63,0.4)] dark:border-white/10 dark:from-[#182137] dark:via-[#141c30] dark:to-[#111a2c] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_5px_0_#0d1424,0_16px_28px_-16px_rgba(0,0,0,0.55)] dark:hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_7px_0_#0d1424,0_22px_34px_-16px_rgba(0,0,0,0.65)] sm:p-6"
     >
-      <span className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/75 to-transparent" aria-hidden="true" />
-      <span className="pointer-events-none absolute -right-10 -top-12 h-28 w-28 rounded-full bg-[#16233f]/[0.04] blur-2xl" aria-hidden="true" />
+      <span className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/75 to-transparent dark:from-white/[0.05]" aria-hidden="true" />
+      <span className="pointer-events-none absolute -right-10 -top-12 h-28 w-28 rounded-full bg-[#16233f]/[0.04] blur-2xl dark:bg-white/[0.04]" aria-hidden="true" />
 
       <div className="relative flex items-center gap-3">
         <Image
@@ -201,8 +203,8 @@ function CardInformasiAkun({ user }: { user: ProfilUser }) {
           className="h-11 w-11 shrink-0 object-contain drop-shadow-[0_4px_6px_rgba(22,35,63,0.25)] transition-transform duration-300 group-hover:-translate-y-0.5"
         />
         <div>
-          <h2 className="text-[15px] font-semibold text-[#16233f]">Informasi Akun</h2>
-          <p className="mt-0.5 text-[12px] text-[#8b93a6]">
+          <h2 className="text-[15px] font-semibold text-[#16233f] dark:text-white">Informasi Akun</h2>
+          <p className="mt-0.5 text-[12px] text-[#8b93a6] dark:text-white/50">
             Bergabung sejak {formatTanggal(user.bergabungSejak)}
           </p>
         </div>
@@ -210,11 +212,11 @@ function CardInformasiAkun({ user }: { user: ProfilUser }) {
 
       <div className="mt-5 flex flex-col gap-4">
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="nama" className="text-[12.5px] font-medium text-[#34435f]">
+          <label htmlFor="nama" className="text-[12.5px] font-medium text-[#34435f] dark:text-white/70">
             Nama Lengkap
           </label>
           <div className="relative">
-            <IconUser className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#a7ade0]" />
+            <IconUser className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#a7ade0] dark:text-white/30" />
             <input
               id="nama"
               value={nama}
@@ -225,17 +227,17 @@ function CardInformasiAkun({ user }: { user: ProfilUser }) {
               type="text"
               required
               minLength={3}
-              className="w-full rounded-[10px] border border-[#e7e4dc] bg-[#fbfaf7] py-2.5 pl-10 pr-3.5 text-[13.5px] text-[#16233f] outline-none transition-colors focus:border-[#e8a33d] focus:bg-white"
+              className="w-full rounded-[10px] border border-[#e7e4dc] bg-[#fbfaf7] py-2.5 pl-10 pr-3.5 text-[13.5px] text-[#16233f] outline-none transition-colors focus:border-[#e8a33d] focus:bg-white dark:border-white/10 dark:bg-white/5 dark:text-white dark:focus:bg-white/10"
             />
           </div>
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="email" className="text-[12.5px] font-medium text-[#34435f]">
+          <label htmlFor="email" className="text-[12.5px] font-medium text-[#34435f] dark:text-white/70">
             Email
           </label>
           <div className="relative">
-            <IconMail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#a7ade0]" />
+            <IconMail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#a7ade0] dark:text-white/30" />
             <input
               id="email"
               value={email}
@@ -245,16 +247,16 @@ function CardInformasiAkun({ user }: { user: ProfilUser }) {
               }}
               type="email"
               required
-              className="w-full rounded-[10px] border border-[#e7e4dc] bg-[#fbfaf7] py-2.5 pl-10 pr-3.5 text-[13.5px] text-[#16233f] outline-none transition-colors focus:border-[#e8a33d] focus:bg-white"
+              className="w-full rounded-[10px] border border-[#e7e4dc] bg-[#fbfaf7] py-2.5 pl-10 pr-3.5 text-[13.5px] text-[#16233f] outline-none transition-colors focus:border-[#e8a33d] focus:bg-white dark:border-white/10 dark:bg-white/5 dark:text-white dark:focus:bg-white/10"
             />
           </div>
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label className="text-[12.5px] font-medium text-[#34435f]">Peran</label>
-          <div className="flex items-center gap-2.5 rounded-[10px] border border-[#e7e4dc] bg-[#f7f9f8] px-3.5 py-2.5">
-            <IconShield className="h-4 w-4 shrink-0 text-[#8b93a6]" />
-            <p className="text-[13.5px] text-[#8b93a6]">
+          <label className="text-[12.5px] font-medium text-[#34435f] dark:text-white/70">Peran</label>
+          <div className="flex items-center gap-2.5 rounded-[10px] border border-[#e7e4dc] bg-[#f7f9f8] px-3.5 py-2.5 dark:border-white/10 dark:bg-white/5">
+            <IconShield className="h-4 w-4 shrink-0 text-[#8b93a6] dark:text-white/40" />
+            <p className="text-[13.5px] text-[#8b93a6] dark:text-white/50">
               {user.role === "PESERTA" ? "Peserta Ujian" : user.role}
             </p>
           </div>
@@ -262,14 +264,14 @@ function CardInformasiAkun({ user }: { user: ProfilUser }) {
       </div>
 
       {error && (
-        <p className="mt-4 flex items-center gap-2 rounded-[10px] bg-[#fdf1f1] px-3.5 py-2.5 text-[12.5px] text-[#d23b3b]">
+        <p className="mt-4 flex items-center gap-2 rounded-[10px] bg-[#fdf1f1] px-3.5 py-2.5 text-[12.5px] text-[#d23b3b] dark:bg-red-400/10 dark:text-red-300">
           <IconAlert className="h-4 w-4 shrink-0" />
           {error}
         </p>
       )}
 
       {sukses && !error && (
-        <p className="mt-4 flex items-center gap-2 rounded-[10px] bg-[#ecfdf5] px-3.5 py-2.5 text-[12.5px] text-[#059669]">
+        <p className="mt-4 flex items-center gap-2 rounded-[10px] bg-[#ecfdf5] px-3.5 py-2.5 text-[12.5px] text-[#059669] dark:bg-emerald-400/10 dark:text-emerald-300">
           <IconCheckCircle className="h-4 w-4 shrink-0" />
           Informasi akun berhasil diperbarui.
         </p>
@@ -343,10 +345,10 @@ function CardUbahPassword() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="group relative overflow-hidden rounded-[20px] border border-[#e7e4dc] bg-gradient-to-br from-white via-[#fcfbf8] to-[#f6f5f1] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_5px_0_#eef0f4,0_16px_28px_-16px_rgba(22,35,63,0.32)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_7px_0_#e3e7ee,0_22px_34px_-16px_rgba(22,35,63,0.4)] sm:p-6"
+      className="group relative overflow-hidden rounded-[20px] border border-[#e7e4dc] bg-gradient-to-br from-white via-[#fcfbf8] to-[#f6f5f1] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_5px_0_#eef0f4,0_16px_28px_-16px_rgba(22,35,63,0.32)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_7px_0_#e3e7ee,0_22px_34px_-16px_rgba(22,35,63,0.4)] dark:border-white/10 dark:from-[#182137] dark:via-[#141c30] dark:to-[#111a2c] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_5px_0_#0d1424,0_16px_28px_-16px_rgba(0,0,0,0.55)] dark:hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_7px_0_#0d1424,0_22px_34px_-16px_rgba(0,0,0,0.65)] sm:p-6"
     >
-      <span className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/75 to-transparent" aria-hidden="true" />
-      <span className="pointer-events-none absolute -right-10 -top-12 h-28 w-28 rounded-full bg-[#b45309]/[0.05] blur-2xl" aria-hidden="true" />
+      <span className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/75 to-transparent dark:from-white/[0.05]" aria-hidden="true" />
+      <span className="pointer-events-none absolute -right-10 -top-12 h-28 w-28 rounded-full bg-[#b45309]/[0.05] blur-2xl dark:bg-[#e8a33d]/[0.06]" aria-hidden="true" />
 
       <div className="relative flex items-center gap-3">
         <Image
@@ -357,8 +359,8 @@ function CardUbahPassword() {
           className="h-11 w-11 shrink-0 object-contain drop-shadow-[0_4px_6px_rgba(180,83,9,0.3)] transition-transform duration-300 group-hover:-translate-y-0.5"
         />
         <div>
-          <h2 className="text-[15px] font-semibold text-[#16233f]">Ubah Kata Sandi</h2>
-          <p className="mt-0.5 text-[12px] text-[#8b93a6]">
+          <h2 className="text-[15px] font-semibold text-[#16233f] dark:text-white">Ubah Kata Sandi</h2>
+          <p className="mt-0.5 text-[12px] text-[#8b93a6] dark:text-white/50">
             Gunakan kata sandi yang kuat dan belum pernah dipakai sebelumnya.
           </p>
         </div>
@@ -366,11 +368,11 @@ function CardUbahPassword() {
 
       <div className="mt-5 flex flex-col gap-4">
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="passwordSaatIni" className="text-[12.5px] font-medium text-[#34435f]">
+          <label htmlFor="passwordSaatIni" className="text-[12.5px] font-medium text-[#34435f] dark:text-white/70">
             Kata Sandi Saat Ini
           </label>
           <div className="relative">
-            <IconLock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#e0bd8d]" />
+            <IconLock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#e0bd8d] dark:text-[#e8a33d]/50" />
             <input
               id="passwordSaatIni"
               value={passwordSaatIni}
@@ -381,17 +383,17 @@ function CardUbahPassword() {
               type="password"
               required
               autoComplete="current-password"
-              className="w-full rounded-[10px] border border-[#e7e4dc] bg-[#fbfaf7] py-2.5 pl-10 pr-3.5 text-[13.5px] text-[#16233f] outline-none transition-colors focus:border-[#e8a33d] focus:bg-white"
+              className="w-full rounded-[10px] border border-[#e7e4dc] bg-[#fbfaf7] py-2.5 pl-10 pr-3.5 text-[13.5px] text-[#16233f] outline-none transition-colors focus:border-[#e8a33d] focus:bg-white dark:border-white/10 dark:bg-white/5 dark:text-white dark:focus:bg-white/10"
             />
           </div>
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="passwordBaru" className="text-[12.5px] font-medium text-[#34435f]">
+          <label htmlFor="passwordBaru" className="text-[12.5px] font-medium text-[#34435f] dark:text-white/70">
             Kata Sandi Baru
           </label>
           <div className="relative">
-            <IconLock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#e0bd8d]" />
+            <IconLock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#e0bd8d] dark:text-[#e8a33d]/50" />
             <input
               id="passwordBaru"
               value={passwordBaru}
@@ -403,18 +405,18 @@ function CardUbahPassword() {
               required
               minLength={8}
               autoComplete="new-password"
-              className="w-full rounded-[10px] border border-[#e7e4dc] bg-[#fbfaf7] py-2.5 pl-10 pr-3.5 text-[13.5px] text-[#16233f] outline-none transition-colors focus:border-[#e8a33d] focus:bg-white"
+              className="w-full rounded-[10px] border border-[#e7e4dc] bg-[#fbfaf7] py-2.5 pl-10 pr-3.5 text-[13.5px] text-[#16233f] outline-none transition-colors focus:border-[#e8a33d] focus:bg-white dark:border-white/10 dark:bg-white/5 dark:text-white dark:focus:bg-white/10"
             />
           </div>
-          <p className="text-[11.5px] text-[#8b93a6]">Minimal 8 karakter.</p>
+          <p className="text-[11.5px] text-[#8b93a6] dark:text-white/50">Minimal 8 karakter.</p>
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="konfirmasi" className="text-[12.5px] font-medium text-[#34435f]">
+          <label htmlFor="konfirmasi" className="text-[12.5px] font-medium text-[#34435f] dark:text-white/70">
             Konfirmasi Kata Sandi Baru
           </label>
           <div className="relative">
-            <IconLock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#e0bd8d]" />
+            <IconLock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#e0bd8d] dark:text-[#e8a33d]/50" />
             <input
               id="konfirmasi"
               value={konfirmasi}
@@ -425,11 +427,11 @@ function CardUbahPassword() {
               type="password"
               required
               autoComplete="new-password"
-              className="w-full rounded-[10px] border border-[#e7e4dc] bg-[#fbfaf7] py-2.5 pl-10 pr-3.5 text-[13.5px] text-[#16233f] outline-none transition-colors focus:border-[#e8a33d] focus:bg-white"
+              className="w-full rounded-[10px] border border-[#e7e4dc] bg-[#fbfaf7] py-2.5 pl-10 pr-3.5 text-[13.5px] text-[#16233f] outline-none transition-colors focus:border-[#e8a33d] focus:bg-white dark:border-white/10 dark:bg-white/5 dark:text-white dark:focus:bg-white/10"
             />
           </div>
           {konfirmasi.length > 0 && konfirmasi !== passwordBaru && (
-            <p className="flex items-center gap-1.5 text-[11.5px] text-[#d23b3b]">
+            <p className="flex items-center gap-1.5 text-[11.5px] text-[#d23b3b] dark:text-red-300">
               <IconAlert className="h-3.5 w-3.5 shrink-0" />
               Kata sandi tidak cocok.
             </p>
@@ -438,14 +440,14 @@ function CardUbahPassword() {
       </div>
 
       {error && (
-        <p className="mt-4 flex items-center gap-2 rounded-[10px] bg-[#fdf1f1] px-3.5 py-2.5 text-[12.5px] text-[#d23b3b]">
+        <p className="mt-4 flex items-center gap-2 rounded-[10px] bg-[#fdf1f1] px-3.5 py-2.5 text-[12.5px] text-[#d23b3b] dark:bg-red-400/10 dark:text-red-300">
           <IconAlert className="h-4 w-4 shrink-0" />
           {error}
         </p>
       )}
 
       {sukses && !error && (
-        <p className="mt-4 flex items-center gap-2 rounded-[10px] bg-[#ecfdf5] px-3.5 py-2.5 text-[12.5px] text-[#059669]">
+        <p className="mt-4 flex items-center gap-2 rounded-[10px] bg-[#ecfdf5] px-3.5 py-2.5 text-[12.5px] text-[#059669] dark:bg-emerald-400/10 dark:text-emerald-300">
           <IconCheckCircle className="h-4 w-4 shrink-0" />
           Kata sandi berhasil diubah.
         </p>

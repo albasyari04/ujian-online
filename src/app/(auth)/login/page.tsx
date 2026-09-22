@@ -64,7 +64,7 @@ export default async function LoginPage({
 
   return (
     <main
-      className={`${fraunces.variable} ${plusJakarta.variable} relative min-h-[100dvh] w-full overflow-y-auto bg-gradient-to-br from-[#eef3fb] via-[#f6f8fc] to-white font-sans antialiased lg:h-[100dvh] lg:overflow-hidden`}
+      className={`${fraunces.variable} ${plusJakarta.variable} relative min-h-[100dvh] w-full overflow-x-hidden overflow-y-auto bg-gradient-to-br from-[#eef3fb] via-[#f6f8fc] to-white font-sans antialiased lg:h-[100dvh] lg:overflow-hidden`}
     >
       {/* ===================================================
           DEKORASI LATAR — diperkecil & didorong ke sudut supaya

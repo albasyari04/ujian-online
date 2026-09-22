@@ -1,0 +1,198 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================
+// ENUMS
+// ============================
+
+enum Role {
+  ADMIN
+  PESERTA
+}
+
+enum TipeSoal {
+  PILIHAN_GANDA
+  ESSAY
+}
+
+enum StatusUjian {
+  SEDANG_DIKERJAKAN
+  SELESAI
+}
+
+enum TipePelanggaran {
+  PINDAH_TAB
+  KELUAR_FULLSCREEN
+  KEHILANGAN_FOKUS
+  COPY_PASTE
+  KLIK_KANAN
+  DEVTOOLS
+}
+
+enum TipeNotifikasi {
+  UJIAN_TERSEDIA
+  UJIAN_SEGERA_TUTUP
+  HASIL_TERSEDIA
+  PELANGGARAN
+  SISTEM
+}
+
+// ============================
+// MODELS
+// ============================
+
+model User {
+  id        String   @id @default(cuid())
+  nama      String
+  email     String   @unique
+  password  String
+  nisn      String?  @unique
+  noUrut    Int?     @unique     
+  fotoUrl   String?
+  role      Role     @default(PESERTA)
+  createdAt DateTime @default(now())
+
+  hasilUjian  HasilUjian[]
+  ujianDibuat Ujian[]      @relation("PembuatUjian")
+  notifikasi  Notifikasi[]
+
+  @@map("users")
+}
+
+model Ujian {
+  id               String   @id @default(cuid())
+  judul            String
+  deskripsi        String?  @db.Text
+  durasiMenit      Int
+  acakSoal         Boolean  @default(false)
+  batasPelanggaran Int      @default(3)
+  mulai            DateTime
+  selesai          DateTime
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  pembuat   User   @relation("PembuatUjian", fields: [pembuatId], references: [id])
+  pembuatId String
+
+  soal       Soal[]
+  hasilUjian HasilUjian[]
+
+  @@map("ujian")
+}
+
+model Soal {
+  id         String   @id @default(cuid())
+  pertanyaan String   @db.Text
+  tipe       TipeSoal @default(PILIHAN_GANDA)
+  poin       Int      @default(1)
+  urutan     Int
+  createdAt  DateTime @default(now())
+
+  ujian   Ujian  @relation(fields: [ujianId], references: [id], onDelete: Cascade)
+  ujianId String
+
+  opsi    Opsi[]
+  jawaban Jawaban[]
+
+  @@index([ujianId])
+  @@map("soal")
+}
+
+model Opsi {
+  id     String  @id @default(cuid())
+  teks   String  @db.Text
+  benar  Boolean @default(false)
+  urutan Int     @default(0)
+
+  soal   Soal   @relation(fields: [soalId], references: [id], onDelete: Cascade)
+  soalId String
+
+  @@index([soalId])
+  @@map("opsi")
+}
+
+model HasilUjian {
+  id                String      @id @default(cuid())
+  skor              Float?
+  waktuMulai        DateTime    @default(now())
+  waktuSelesai      DateTime?
+  status            StatusUjian @default(SEDANG_DIKERJAKAN)
+  jumlahPelanggaran Int         @default(0)
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+
+  ujian   Ujian  @relation(fields: [ujianId], references: [id])
+  ujianId String
+
+  jawaban        Jawaban[]
+  logPelanggaran LogPelanggaran[]
+
+  @@unique([userId, ujianId])
+  @@index([ujianId])
+  @@map("hasil_ujian")
+}
+
+model Jawaban {
+  id          String   @id @default(cuid())
+  jawabanTeks String?  @db.Text
+  opsiPilihan String?
+  benar       Boolean?
+  updatedAt   DateTime @updatedAt
+
+  soal   Soal   @relation(fields: [soalId], references: [id])
+  soalId String
+
+  hasilUjian   HasilUjian @relation(fields: [hasilUjianId], references: [id], onDelete: Cascade)
+  hasilUjianId String
+
+  @@unique([soalId, hasilUjianId])
+  @@map("jawaban")
+}
+
+model LogPelanggaran {
+  id    String          @id @default(cuid())
+  tipe  TipePelanggaran
+  waktu DateTime        @default(now())
+
+  hasilUjian   HasilUjian @relation(fields: [hasilUjianId], references: [id], onDelete: Cascade)
+  hasilUjianId String
+
+  @@index([hasilUjianId])
+  @@map("log_pelanggaran")
+}
+
+model Notifikasi {
+  id        String         @id @default(cuid())
+  judul     String
+  pesan     String         @db.Text
+  tipe      TipeNotifikasi @default(SISTEM)
+  dibaca    Boolean        @default(false)
+  createdAt DateTime       @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  @@index([userId, dibaca])
+  @@index([userId, createdAt])
+  @@map("notifikasi")
+}
+
+model PengaturanPelanggaran {
+  id                  String   @id @default("global")
+  cekPindahTab        Boolean  @default(true)
+  cekKeluarFullscreen Boolean  @default(true)
+  cekKehilanganFokus  Boolean  @default(true)
+  cekCopyPaste        Boolean  @default(true)
+  cekKlikKanan        Boolean  @default(true)
+  cekDevtools         Boolean  @default(true)
+  updatedAt           DateTime @updatedAt
+
+  @@map("pengaturan_pelanggaran")
+}

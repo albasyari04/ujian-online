@@ -1,0 +1,1 @@
+export { HapusButton } from "@/components/ujian/HapusButton"

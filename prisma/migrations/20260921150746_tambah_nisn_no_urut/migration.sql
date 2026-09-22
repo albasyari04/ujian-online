@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE `users` ADD COLUMN `nisn` VARCHAR(191) NULL,
+    ADD COLUMN `noUrut` INTEGER NULL;

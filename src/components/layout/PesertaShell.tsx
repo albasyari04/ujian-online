@@ -25,7 +25,7 @@ export function PesertaShell({
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-[#fbfaf7] dark:bg-[#0b1120]">
+    <div className="flex h-[100dvh] w-full overflow-hidden bg-[#fbfaf7] dark:bg-[#0b1120]">
       <SidebarPeserta open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       <div className="flex h-full min-w-0 flex-1 flex-col">
@@ -36,10 +36,12 @@ export function PesertaShell({
         />
 
         {/* 
-          Ditambahkan pb-28 (padding bottom) untuk memberikan ruang 
-          agar konten tidak tertutup oleh BottomNavPeserta di layar mobile.
+          pb dibuat dinamis: 8rem dasar + env(safe-area-inset-bottom) supaya 
+          konten paling bawah tidak ketutup BottomNavPeserta di layar mobile, 
+          termasuk tombol "Ujian" yang mengambang naik di atas garis nav dan 
+          HP dengan home-indicator (notch bawah).
         */}
-        <main className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-28 pt-6 sm:px-6 sm:py-8 lg:px-8 lg:pb-8">
+        <main className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pt-6 pb-[calc(8rem+env(safe-area-inset-bottom,0px))] sm:px-6 sm:py-8 lg:px-8 lg:pb-8">
           {children}
         </main>
 

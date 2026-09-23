@@ -1,8 +1,13 @@
 import Link from "next/link"
+import Image from "next/image"
 import { notFound } from "next/navigation"
 
 import { prisma } from "@/lib/prisma"
-import { TabelHasil } from "@/components/admin/TabelHasil"
+import { TabelHasil } from "@/components/ujian/TabelHasil"
+import { getSubjectIconSrc } from "@/lib/subject-icons"
+
+export const dynamic = "force-dynamic"
+export const revalidate = 0
 
 export default async function HasilUjianPage({
   params,
@@ -10,6 +15,7 @@ export default async function HasilUjianPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
+
   const ujian = await prisma.ujian.findUnique({
     where: { id },
     select: {
@@ -36,17 +42,36 @@ export default async function HasilUjianPage({
   })
 
   const selesaiCount = daftarHasil.filter((h) => h.status === "SELESAI").length
+  const iconMapel = getSubjectIconSrc(ujian.judul)
 
   return (
-    <div className="space-y-5">
-      <div>
-        <Link href="/ujian" className="text-[12.5px] font-medium text-[#8b87a8] hover:text-[#4338ca]">
+    <div className="space-y-6">
+      {/* ===== Header ===== */}
+      <div className="border-b border-[#ecebf7] pb-5">
+        <Link
+          href="/ujian"
+          className="inline-flex items-center gap-1 text-[12.5px] font-medium text-[#8b87a8] transition-colors hover:text-[#4338ca]"
+        >
           ← Kembali ke daftar ujian
         </Link>
-        <h1 className="mt-1 text-[20px] font-semibold text-[#241f4d]">Hasil — {ujian.judul}</h1>
-        <p className="text-[13px] text-[#8b87a8]">
-          {daftarHasil.length} peserta mengerjakan · {selesaiCount} sudah selesai
-        </p>
+
+        <div className="mt-2.5 flex items-center gap-3">
+          <Image
+            src={iconMapel}
+            alt={ujian.judul}
+            width={38}
+            height={38}
+            className="shrink-0 object-contain"
+          />
+          <div className="min-w-0">
+            <h1 className="truncate text-[21px] font-semibold leading-tight text-[#241f4d]">
+              Hasil — {ujian.judul}
+            </h1>
+            <p className="mt-0.5 text-[13px] text-[#8b87a8]">
+              {daftarHasil.length} peserta mengerjakan · {selesaiCount} sudah selesai
+            </p>
+          </div>
+        </div>
       </div>
 
       <TabelHasil data={daftarHasil} totalPoin={totalPoin} batasPelanggaran={ujian.batasPelanggaran} />

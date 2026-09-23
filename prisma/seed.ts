@@ -16,6 +16,12 @@ const ACCOUNTS = [
     role: Role.ADMIN,
   },
   {
+    nama: "yaipu muttaklim",
+    email: "yaipu@ujian.sch.id",
+    password: "yaipu123",
+    role: Role.ADMIN,
+  },
+  {
     nama: "Siswa Contoh",
     email: "siswa@ujian.sch.id",
     password: "siswa123",

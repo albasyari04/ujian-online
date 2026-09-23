@@ -7,9 +7,10 @@ const nisnSchema = z
   .optional()
   .or(z.literal(""))
 
-const noUrutSchema = z
-  .union([z.coerce.number().int().positive("No. urut harus angka positif"), z.literal("")])
-  .optional()
+const noUrutSchema = z.preprocess(
+  (val) => (val === "" ? undefined : val),
+  z.coerce.number().int().positive("No. urut harus angka positif").optional()
+)
 
 export const pesertaCreateSchema = z.object({
   nama: z

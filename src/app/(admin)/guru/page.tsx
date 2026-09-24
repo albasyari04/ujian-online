@@ -333,7 +333,7 @@ export default function GuruPage() {
         title="Hapus Guru"
         description={`Anda yakin ingin menghapus "${guruToDelete?.nama ?? ""}"? Tindakan ini tidak dapat dibatalkan.`}
         confirmLabel="Hapus"
-        isLoading={isDeleting}
+        loading={isDeleting}
         errorMessage={deleteError}
       />
     </div>

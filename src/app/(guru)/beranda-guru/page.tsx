@@ -36,22 +36,22 @@ export default async function BerandaGuruPage() {
 
   const [ujianSaya, hasilSelesai, pelanggaranTerbaru, pesertaMengerjakan] = await Promise.all([
     prisma.ujian.findMany({
-      where: { pembuatId: guru.id },
+      where: { pembuatId: guru.user.id },
       orderBy: { mulai: "desc" },
       include: { _count: { select: { soal: true, hasilUjian: true } } },
     }),
     prisma.hasilUjian.findMany({
-      where: { ujian: { pembuatId: guru.id }, status: "SELESAI", skor: { not: null } },
+      where: { ujian: { pembuatId: guru.user.id }, status: "SELESAI", skor: { not: null } },
       select: { skor: true },
     }),
     prisma.logPelanggaran.findMany({
-      where: { hasilUjian: { ujian: { pembuatId: guru.id } } },
+      where: { hasilUjian: { ujian: { pembuatId: guru.user.id } } },
       orderBy: { waktu: "desc" },
       take: 5,
       include: { hasilUjian: { include: { user: true, ujian: true } } },
     }),
     prisma.hasilUjian.count({
-      where: { ujian: { pembuatId: guru.id }, status: "SEDANG_DIKERJAKAN" },
+      where: { ujian: { pembuatId: guru.user.id }, status: "SEDANG_DIKERJAKAN" },
     }),
   ])
 
@@ -61,7 +61,7 @@ export default async function BerandaGuruPage() {
     : null
 
   const ujianTerbaru = ujianSaya.slice(0, 5)
-  const namaDepan = guru.name.trim().split(" ")[0] || "Guru"
+  const namaDepan = (guru.user.name as string).trim().split(" ")[0] || "Guru"
 
   return (
     <div className="space-y-6">

@@ -14,11 +14,12 @@ function formatTanggal(date: Date | null) {
   )
 }
 
-export default async function HasilDetailGuruPage({ params }: { params: { id: string } }) {
+export default async function HasilDetailGuruPage({ params }: { params: Promise<{ id: string }> }) {
   const guru = await requireGuruSession()
+  const { id } = await params
 
   const ujian = await prisma.ujian.findFirst({
-    where: { id: params.id, pembuatId: guru.id },
+    where: { id: id, pembuatId: guru.user.id },
     include: {
       hasilUjian: {
         orderBy: { skor: "desc" },

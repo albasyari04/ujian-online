@@ -6,7 +6,7 @@ export default async function NotifikasiGuruPage() {
   const guru = await requireGuruSession()
 
   const notifikasi = await prisma.notifikasi.findMany({
-    where: { userId: guru.id },
+    where: { userId: guru.user.id },
     orderBy: { createdAt: "desc" },
     take: 50,
   })

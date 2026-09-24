@@ -8,7 +8,7 @@ export default async function HasilGuruPage() {
   const guru = await requireGuruSession()
 
   const ujian = await prisma.ujian.findMany({
-    where: { pembuatId: guru.id },
+    where: { pembuatId: guru.user.id },
     orderBy: { mulai: "desc" },
     include: { hasilUjian: { select: { skor: true, status: true } } },
   })

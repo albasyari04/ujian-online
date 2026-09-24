@@ -11,7 +11,7 @@ export default async function ProfilGuruPage() {
         <p className="mt-0.5 text-[13px] text-[#5b657d] dark:text-white/50">Kelola informasi akun Anda.</p>
       </div>
 
-      <ProfilForm user={{ nama: guru.name, email: guru.email, fotoUrl: guru.fotoUrl }} />
+      <ProfilForm user={{ nama: guru.user.name as string, email: guru.user.email as string, fotoUrl: guru.user.fotoUrl as string }} />
     </div>
   )
 }

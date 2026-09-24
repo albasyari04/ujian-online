@@ -6,7 +6,7 @@ export default async function BankSoalGuruPage() {
   const guru = await requireGuruSession()
 
   const ujian = await prisma.ujian.findMany({
-    where: { pembuatId: guru.id },
+    where: { pembuatId: guru.user.id },
     orderBy: { judul: "asc" },
     include: {
       soal: { orderBy: { urutan: "asc" }, select: { id: true, pertanyaan: true, tipe: true, poin: true } },

@@ -18,11 +18,12 @@ function formatTanggal(date: Date) {
   }).format(date)
 }
 
-export default async function DetailUjianGuruPage({ params }: { params: { id: string } }) {
+export default async function DetailUjianGuruPage({ params }: { params: Promise<{ id: string }> }) {
   const guru = await requireGuruSession()
+  const { id } = await params
 
   const ujian = await prisma.ujian.findFirst({
-    where: { id: params.id, pembuatId: guru.id },
+    where: { id, pembuatId: guru.user.id },
     include: {
       soal: { orderBy: { urutan: "asc" }, include: { opsi: { orderBy: { urutan: "asc" } } } },
       _count: { select: { hasilUjian: true } },

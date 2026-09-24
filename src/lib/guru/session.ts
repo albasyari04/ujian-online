@@ -2,26 +2,30 @@ import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { redirect } from "next/navigation"
 
-type UserSession = {
-  user?: {
+// Buat interface khusus untuk session guru
+interface GuruSession {
+  user: {
     id: string
-    role?: string
-    email?: string
-    name?: string
+    name: string
+    email: string
+    fotoUrl: string
+    role: string
   }
 }
 
-export async function requireGuruSession() {
-  const session = await getServerSession(authOptions) as UserSession
+export async function requireGuruSession(): Promise<GuruSession> {
+  const session = await getServerSession(authOptions)
   
   if (!session?.user) {
     redirect("/login")
   }
   
-  const user = session.user
+  // Cek role guru
+  const user = session.user as Record<string, unknown>
   if (user.role !== "GURU") {
     redirect("/")
   }
   
-  return session
+  // Kembalikan session dengan tipe yang benar
+  return session as GuruSession
 }

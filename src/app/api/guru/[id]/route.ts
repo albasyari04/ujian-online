@@ -49,7 +49,6 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
 // PUT /api/guru/:id
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { id } = params;
   const session = await requireAdmin()
   if (!session) {
     return NextResponse.json({ message: "Tidak diizinkan" }, { status: 401 })
@@ -96,8 +95,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 }
 
 // DELETE /api/guru/:id
-export async function DELETE(_request: NextRequest, { params }: { params: { id: string } }) {
-  const { id } = params;
+export async function DELETE(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const session = await requireAdmin()
   if (!session) {
     return NextResponse.json({ message: "Tidak diizinkan" }, { status: 401 })

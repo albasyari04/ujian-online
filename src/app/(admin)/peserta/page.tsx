@@ -434,11 +434,6 @@ export default function PesertaPage() {
           setSelectedPeserta(null)
         }}
         title={modalMode === "edit" ? "Ubah Peserta" : "Tambah Peserta"}
-        description={
-          modalMode === "edit"
-            ? "Perbarui informasi akun peserta."
-            : "Buat akun peserta baru untuk mengikuti ujian."
-        }
       >
         <FormPeserta
           peserta={selectedPeserta ?? undefined}
@@ -457,7 +452,7 @@ export default function PesertaPage() {
         title="Hapus Peserta"
         description={`Anda yakin ingin menghapus "${pesertaToDelete?.nama ?? ""}"? Tindakan ini tidak dapat dibatalkan.`}
         confirmLabel="Hapus"
-        isLoading={isDeleting}
+        loading={isDeleting}
         errorMessage={deleteError}
       />
     </div>

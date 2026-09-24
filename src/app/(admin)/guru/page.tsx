@@ -314,9 +314,6 @@ export default function GuruPage() {
           setSelectedGuru(null)
         }}
         title={modalMode === "edit" ? "Ubah Guru" : "Tambah Guru"}
-        description={
-          modalMode === "edit" ? "Perbarui informasi akun guru." : "Buat akun guru baru untuk mengelola ujian."
-        }
       >
         <FormGuru
           guru={selectedGuru ?? undefined}
@@ -335,7 +332,7 @@ export default function GuruPage() {
         title="Hapus Guru"
         description={`Anda yakin ingin menghapus "${guruToDelete?.nama ?? ""}"? Tindakan ini tidak dapat dibatalkan.`}
         confirmLabel="Hapus"
-        isLoading={isDeleting}
+        loading={isDeleting}
         errorMessage={deleteError}
       />
     </div>

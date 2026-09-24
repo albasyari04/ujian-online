@@ -410,7 +410,6 @@ export default function PesertaDetailPage() {
         open={isEditOpen}
         onClose={() => setIsEditOpen(false)}
         title="Ubah Peserta"
-        description="Perbarui informasi akun peserta."
       >
         <FormPeserta
           peserta={peserta}
@@ -430,7 +429,7 @@ export default function PesertaDetailPage() {
         title="Hapus Peserta"
         description={`Anda yakin ingin menghapus "${peserta.nama}"? Tindakan ini tidak dapat dibatalkan.`}
         confirmLabel="Hapus"
-        isLoading={isDeleting}
+        loading={isDeleting}
         errorMessage={deleteError}
       />
     </div>

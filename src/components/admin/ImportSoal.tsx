@@ -198,7 +198,7 @@ export function ImportSoal({ ujianId, onSuccess }: { ujianId: string; onSuccess?
 
   return <>
     <Button type="button" variant="outline" onClick={() => setOpen(true)}>Import soal</Button>
-    <Modal open={open} onClose={close} title="Import Soal" description="Upload Word, Excel, CSV, PDF, atau TXT untuk menambahkan soal secara massal." maxWidth="720px">
+    <Modal open={open} onClose={close} title="Import Soal" maxWidth="720px">
       <div className="flex flex-col gap-4">
         <div className="rounded-[12px] border border-dashed border-[#b8c8c0] bg-[#f7f9f8] p-5 text-center">
           <p className="text-[13px] font-medium text-[#16233f]">Pilih file soal</p>

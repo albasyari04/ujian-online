@@ -14,10 +14,19 @@ export const dynamic = "force-dynamic"
 ========================================================= */
 
 const formatTanggalSingkat = (value: Date) =>
-  new Intl.DateTimeFormat("id-ID", { day: "numeric", month: "short", year: "numeric" }).format(value)
+  new Intl.DateTimeFormat("id-ID", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    timeZone: "Asia/Jakarta",
+  }).format(value)
 
 const formatJam = (value: Date) =>
-  `${new Intl.DateTimeFormat("id-ID", { hour: "2-digit", minute: "2-digit" }).format(value)} WIB`
+  `${new Intl.DateTimeFormat("id-ID", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Asia/Jakarta",
+  }).format(value)} WIB`
 
 function formatDurasi(menit: number) {
   if (menit < 60) return `${menit} menit`

@@ -5,15 +5,16 @@ import { UjianGuruClient } from "./UjianGuruClient"
 export default async function UjianGuruPage({
   searchParams,
 }: {
-  searchParams: { cari?: string }
+  searchParams: Promise<{ cari?: string }>
 }) {
+  const { cari } = await searchParams
   const guru = await requireGuruSession()
 
   const ujian = await prisma.ujian.findMany({
-    where: { pembuatId: guru.id },
+    where: { pembuatId: guru.user.id },
     orderBy: { mulai: "desc" },
     include: { _count: { select: { soal: true, hasilUjian: true } } },
   })
 
-  return <UjianGuruClient ujianAwal={ujian} cariAwal={searchParams.cari ?? ""} />
+  return <UjianGuruClient ujianAwal={ujian} cariAwal={cari ?? ""} />
 }

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
 import { prisma } from "@/lib/prisma"
-import { requireAdmin } from "@/lib/api-auth"
+import { requireAdmin, requireGuru } from "@/lib/api-auth"
 
 /* =========================================================
    GET /api/ujian
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
    Body: { judul, deskripsi?, durasiMenit, acakSoal?, batasPelanggaran?, mulai, selesai }
 ========================================================= */
 export async function POST(request: NextRequest) {
-  const guard = await requireAdmin()
+  const guard = await requireGuru()
   if (guard.error) return guard.error
 
   const body = await request.json().catch(() => null)

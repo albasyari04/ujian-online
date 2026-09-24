@@ -26,19 +26,11 @@ export const metadata: Metadata = {
   description: "Masuk ke akun untuk mengikuti atau mengelola ujian online.",
 }
 
-/* =========================================================
-   FEATURES — icon diambil dari asset PNG, bukan SVG inline
-========================================================= */
-
 const features = [
   { icon: "/image/icon/aman-terpercaya.png", title: "Aman", text: "Sistem terjamin" },
   { icon: "/image/icon/sedang-mengerjakan-icon.png", title: "Mudah", text: "Akses kapan saja" },
   { icon: "/image/icon/hasil-belajar.png", title: "Profesional", text: "Hasil transparan" },
 ] as const
-
-/* =========================================================
-   LOGIN PAGE
-========================================================= */
 
 export default async function LoginPage({
   searchParams,
@@ -47,7 +39,11 @@ export default async function LoginPage({
 }) {
   const session = await getServerSession(authOptions)
 
-  if (session?.user?.role === "ADMIN" || session?.user?.role === "PESERTA") {
+  if (
+    session?.user?.role === "ADMIN" ||
+    session?.user?.role === "GURU" ||
+    session?.user?.role === "PESERTA"
+  ) {
     const resolvedSearchParams = await searchParams
     const callbackUrl = Array.isArray(resolvedSearchParams.callbackUrl)
       ? resolvedSearchParams.callbackUrl[0]
@@ -57,7 +53,9 @@ export default async function LoginPage({
       ? callbackUrl
       : session.user.role === "ADMIN"
         ? "/dashboard"
-        : "/beranda-peserta"
+        : session.user.role === "GURU"
+          ? "/beranda-guru"
+          : "/beranda-peserta"
 
     redirect(target)
   }
@@ -66,10 +64,6 @@ export default async function LoginPage({
     <main
       className={`${fraunces.variable} ${plusJakarta.variable} relative min-h-[100dvh] w-full overflow-x-hidden overflow-y-auto bg-gradient-to-br from-[#eef3fb] via-[#f6f8fc] to-white font-sans antialiased lg:h-[100dvh] lg:overflow-hidden`}
     >
-      {/* ===================================================
-          DEKORASI LATAR — diperkecil & didorong ke sudut supaya
-          tidak pernah menabrak blok teks di atasnya
-      =================================================== */}
       <div
         className="pointer-events-none absolute -right-24 -top-24 h-[300px] w-[300px] rounded-full bg-[#dbe6fb] opacity-70 blur-3xl"
         aria-hidden="true"
@@ -88,11 +82,7 @@ export default async function LoginPage({
       />
 
       <div className="relative z-10 mx-auto flex w-full max-w-[1360px] flex-col items-center gap-6 px-5 py-6 lg:h-full lg:flex-row lg:items-center lg:justify-between lg:gap-8 lg:px-10 lg:py-4 xl:px-16">
-        {/* ===================================================
-            LEFT — brand, ilustrasi, ajakan, fitur
-        =================================================== */}
         <section className="hidden h-full w-full max-w-[620px] flex-col lg:flex">
-          {/* Brand — tinggi tetap, selalu tampil penuh */}
           <div className="flex shrink-0 items-center gap-3">
             <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[14px] bg-[#eaf1ff]">
               <Image src="/image/topiku.png" alt="" width={28} height={28} className="h-7 w-7 object-contain" />
@@ -103,9 +93,6 @@ export default async function LoginPage({
             </div>
           </div>
 
-          {/* Ilustrasi — mengisi SISA ruang di antara brand & blok teks,
-              menyusut/membesar otomatis sesuai tinggi layar (min-h-0 +
-              flex-1 mencegahnya pernah mendorong konten lain keluar layar) */}
           <div className="relative flex min-h-0 flex-1 items-center justify-center py-2">
             <Image
               src="/image/login-gambar.png"
@@ -117,8 +104,6 @@ export default async function LoginPage({
             />
           </div>
 
-          {/* Blok teks — tinggi tetap, selalu tampil penuh, tidak pernah
-              ikut menyusut atau terpotong */}
           <div className="shrink-0">
             <h1
               className="relative z-10 text-[clamp(24px,2.4vw,34px)] font-semibold leading-[1.15] text-[#16233f]"
@@ -133,7 +118,6 @@ export default async function LoginPage({
               Kerjakan ujian dengan tenang, jujur, dan penuh integritas. Raih masa depan yang lebih baik bersama kami.
             </p>
 
-            {/* Fitur */}
             <div className="relative z-10 mt-4 flex flex-wrap items-center gap-x-7 gap-y-3">
               {features.map(({ icon, title, text }) => (
                 <div key={title} className="flex items-center gap-3">
@@ -150,10 +134,6 @@ export default async function LoginPage({
           </div>
         </section>
 
-        {/* ===================================================
-            MOBILE ONLY — atas: ilustrasi polos (tanpa panel/frame)
-            + heading singkat
-        =================================================== */}
         <div className="flex w-full flex-col items-center gap-4 pt-2 lg:hidden">
           <Image
             src="/image/login-gambar.png"
@@ -177,16 +157,10 @@ export default async function LoginPage({
           </div>
         </div>
 
-        {/* ===================================================
-            RIGHT — kartu login mengambang
-        =================================================== */}
         <section className="flex w-full max-w-[440px] shrink-0 items-center justify-center py-2 lg:h-full">
           <LoginForm />
         </section>
 
-        {/* ===================================================
-            MOBILE ONLY — bawah: fitur ditaruh setelah card login
-        =================================================== */}
         <div className="grid w-full max-w-[380px] grid-cols-3 gap-2.5 pb-4 lg:hidden">
           {features.map(({ icon, title, text }) => (
             <div

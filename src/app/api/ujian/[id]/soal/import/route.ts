@@ -1,11 +1,12 @@
+import { getServerSession } from "next-auth"
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
+import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { requireAdmin } from "@/lib/api-auth"
 
 export const runtime = "nodejs"
 
-type Params = { params: Promise<{ id: string }> }
+
 type ImportedOption = { teks: string; benar: boolean }
 type ImportedQuestion = { pertanyaan: string; tipe: "PILIHAN_GANDA" | "ESSAY"; poin: number; opsi?: ImportedOption[] }
 
@@ -30,14 +31,27 @@ function validateQuestion(value: unknown, index: number): ImportedQuestion {
   return { pertanyaan, tipe, poin, opsi }
 }
 
-export async function POST(request: NextRequest, { params }: Params) {
+export async function POST(request: NextRequest) {
   try {
-    const { id } = await params
-    const guard = await requireAdmin()
-    if (guard.error) return guard.error
+    const id = request.nextUrl.pathname.split("/")[3]
+    const session = await getServerSession(authOptions)
+    if (!session?.user) {
+      return NextResponse.json({ message: "Anda harus login terlebih dahulu." }, { status: 401 })
+    }
 
-    const ujian = await prisma.ujian.findUnique({ where: { id }, select: { id: true } })
+    const ujian = await prisma.ujian.findUnique({
+      where: { id },
+      select: { id: true, pembuatId: true },
+    })
     if (!ujian) return NextResponse.json({ message: "Ujian tidak ditemukan." }, { status: 404 })
+
+    const user = session.user as { id: string; role?: string }
+    const isAdmin = user.role === "ADMIN"
+    const isPembuat = ujian.pembuatId === user.id
+
+    if (!isAdmin && !isPembuat) {
+      return NextResponse.json({ message: "Anda tidak memiliki akses ke resource ini." }, { status: 403 })
+    }
 
     const body = await request.json().catch(() => null)
     const rawQuestions = body && typeof body === "object" && "soal" in body ? (body as { soal?: unknown }).soal : null

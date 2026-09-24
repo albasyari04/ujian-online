@@ -8,7 +8,7 @@ type TipeSoal = "PILIHAN_GANDA" | "ESSAY"
 
 type OpsiAwal = { id?: string; teks: string; benar: boolean }
 
-type SoalAwal = {
+export type SoalAwal = {
   id: string
   pertanyaan: string
   tipe: TipeSoal

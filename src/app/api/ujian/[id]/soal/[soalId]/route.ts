@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server"
 import { Prisma } from "@prisma/client"
 
 import { prisma } from "@/lib/prisma"
-import { requireAdmin } from "@/lib/api-auth"
+import { requireAdmin, requireGuru } from "@/lib/api-auth"
 
 type Params = { params: Promise<{ id: string; soalId: string }> }
 
@@ -17,8 +17,12 @@ type OpsiInput = { teks: string; benar: boolean }
 ========================================================= */
 export async function PUT(request: NextRequest, { params }: Params) {
   const { soalId } = await params
-  const guard = await requireAdmin()
-  if (guard.error) return guard.error
+  // Coba autentikasi sebagai guru dulu, jika gagal coba admin
+  let guard = await requireGuru()
+  if (guard.error) {
+    guard = await requireAdmin()
+    if (guard.error) return guard.error
+  }
 
   const body = await request.json().catch(() => null)
   if (!body || typeof body !== "object") {
@@ -99,8 +103,12 @@ export async function PUT(request: NextRequest, { params }: Params) {
 ========================================================= */
 export async function DELETE(_request: NextRequest, { params }: Params) {
   const { soalId } = await params
-  const guard = await requireAdmin()
-  if (guard.error) return guard.error
+  // Coba autentikasi sebagai guru dulu, jika gagal coba admin
+  let guard = await requireGuru()
+  if (guard.error) {
+    guard = await requireAdmin()
+    if (guard.error) return guard.error
+  }
 
   try {
     await prisma.soal.delete({ where: { id: soalId } })

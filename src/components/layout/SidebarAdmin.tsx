@@ -40,6 +40,18 @@ function IconPeserta({ className }: { className?: string }) {
   )
 }
 
+/* Ikon baru untuk menu "Kelola Guru" — kepala + toga sederhana (silinder + garis buku). */
+function IconGuru({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" aria-hidden="true">
+      <circle cx="12" cy="8" r="3.4" stroke="currentColor" strokeWidth="1.7" />
+      <path d="M5.5 20C6.4 15.7 8.9 13.5 12 13.5C15.1 13.5 17.6 15.7 18.5 20" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+      <path d="M9 8H15" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+      <path d="M12 4.5V8" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+    </svg>
+  )
+}
+
 function IconPengaturan({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" className={className} fill="none" aria-hidden="true">
@@ -124,6 +136,7 @@ export const navItems: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: IconDashboard },
   { href: "/ujian", label: "Kelola Ujian", icon: IconUjian },
   { href: "/peserta", label: "Kelola Peserta", icon: IconPeserta },
+  { href: "/guru", label: "Kelola Guru", icon: IconGuru },
   { href: "/soal", label: "Bank Soal", icon: IconBankSoal },
   { href: "/pengawasan", label: "Pengawasan", icon: IconPengawasan },
   { href: "/nilai", label: "Nilai", icon: IconNilai },

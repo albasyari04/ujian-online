@@ -195,7 +195,9 @@ export function LoginForm() {
         ? callbackUrl
         : session?.user.role === "ADMIN"
           ? "/dashboard"
-          : "/beranda-peserta"
+          : session?.user.role === "GURU"
+            ? "/beranda-guru"
+            : "/beranda-peserta"
 
       router.replace(target)
       router.refresh()
@@ -207,10 +209,6 @@ export function LoginForm() {
 
   return (
     <div className="relative w-full max-w-[440px] rounded-[24px] border border-white bg-white p-6 shadow-[0_30px_70px_-25px_rgba(15,30,70,0.28)] sm:p-7">
-      {/* =================================================
-          HEADER — logo & merek
-      ================================================= */}
-
       <div className="flex items-center gap-3">
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] bg-[#eaf1ff]">
           <Image src="/image/topiku.png" alt="" width={24} height={24} className="h-[22px] w-[22px] object-contain" />
@@ -221,10 +219,6 @@ export function LoginForm() {
         </div>
       </div>
 
-      {/* =================================================
-          TITLE
-      ================================================= */}
-
       <h1
         className="mt-4 text-[20px] leading-tight text-[#16233f] sm:text-[22px]"
         style={{ fontFamily: "var(--font-display)", fontWeight: 600 }}
@@ -234,20 +228,12 @@ export function LoginForm() {
 
       <p className="mt-1 text-[12px] text-[#71809b]">Silakan login untuk melanjutkan ke dashboard ujian.</p>
 
-      {/* =================================================
-          FORM
-      ================================================= */}
-
       <form noValidate onSubmit={handleSubmit} className="mt-4">
         {formError ? (
           <div role="alert" className="mb-3 rounded-xl border border-[#E7B9AC] bg-[#FBEEEA] px-3.5 py-2 text-xs text-[#8A3A26]">
             {formError}
           </div>
         ) : null}
-
-        {/* =================================================
-            EMAIL
-        ================================================= */}
 
         <div>
           <label htmlFor="email" className="sr-only">
@@ -279,10 +265,6 @@ export function LoginForm() {
             </p>
           ) : null}
         </div>
-
-        {/* =================================================
-            PASSWORD
-        ================================================= */}
 
         <div className="mt-2.5">
           <label htmlFor="password" className="sr-only">
@@ -324,10 +306,6 @@ export function LoginForm() {
           ) : null}
         </div>
 
-        {/* =================================================
-            OPTIONS
-        ================================================= */}
-
         <div className="mt-3 flex items-center justify-between text-[12px] text-[#5b6a86]">
           <label className="flex cursor-pointer items-center gap-2">
             <input type="checkbox" className="h-4 w-4 rounded accent-[#2f5fd8]" />
@@ -338,10 +316,6 @@ export function LoginForm() {
             Lupa password?
           </Link>
         </div>
-
-        {/* =================================================
-            LOGIN BUTTON
-        ================================================= */}
 
         <button
           type="submit"
@@ -362,19 +336,11 @@ export function LoginForm() {
         </button>
       </form>
 
-      {/* =================================================
-          DIVIDER
-      ================================================= */}
-
       <div className="mt-4 flex w-full items-center gap-3 text-[11px] text-[#98a1b0]">
         <span className="h-px flex-1 bg-[#e7eaf0]" />
         <span>atau</span>
         <span className="h-px flex-1 bg-[#e7eaf0]" />
       </div>
-
-      {/* =================================================
-          DAFTAR PESERTA
-      ================================================= */}
 
       <Link
         href="/register"
@@ -383,10 +349,6 @@ export function LoginForm() {
         <UserIcon />
         Daftar Peserta
       </Link>
-
-      {/* =================================================
-          FOOTER
-      ================================================= */}
 
       <div className="mt-5 flex items-center justify-center gap-2">
         <span className="text-[#8b93a6]">

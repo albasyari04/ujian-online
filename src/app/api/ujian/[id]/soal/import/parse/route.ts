@@ -1,7 +1,9 @@
+import { getServerSession } from "next-auth"
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
-import { requireAdmin } from "@/lib/api-auth"
+import { authOptions } from "@/lib/auth"
+import { prisma } from "@/lib/prisma"
 
 export const runtime = "nodejs"
 
@@ -108,9 +110,22 @@ function parseText(text: string): Question[] {
   })
 }
 
-export async function POST(request: NextRequest) {
-  const guard = await requireAdmin()
-  if (guard.error) return guard.error
+export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+  const session = await getServerSession(authOptions)
+  if (!session?.user) {
+    return NextResponse.json({ message: "Anda harus login terlebih dahulu." }, { status: 401 })
+  }
+
+  const ujian = await prisma.ujian.findUnique({
+    where: { id: params.id },
+    select: { pembuatId: true },
+  })
+
+  if (!ujian) {
+    return NextResponse.json({ message: "Ujian tidak ditemukan." }, { status: 404 })
+  }
+
+
 
   const formData = await request.formData()
   const file = formData.get("file")
@@ -121,6 +136,9 @@ export async function POST(request: NextRequest) {
     const result = await pdfParse(Buffer.from(await file.arrayBuffer()))
     return NextResponse.json({ soal: parseText(result.text) })
   } catch (error) {
-    return NextResponse.json({ message: error instanceof Error ? error.message : "PDF tidak dapat dibaca." }, { status: 400 })
+    if (error instanceof Error) {
+      return NextResponse.json({ message: error.message }, { status: 400 })
+    }
+    return NextResponse.json({ message: "PDF tidak dapat dibaca." }, { status: 400 })
   }
 }

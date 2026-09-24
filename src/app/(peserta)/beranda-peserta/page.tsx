@@ -29,19 +29,20 @@ export const dynamic = "force-dynamic"
    FORMATTER
 ========================================================= */
 
-const formatTanggal = (value: Date) =>
+const formatTanggalSingkat = (value: Date) =>
   new Intl.DateTimeFormat("id-ID", {
-    weekday: "long",
     day: "numeric",
-    month: "long",
+    month: "short",
     year: "numeric",
+    timeZone: "Asia/Jakarta",
   }).format(value)
 
-const formatTanggalSingkat = (value: Date) =>
-  new Intl.DateTimeFormat("id-ID", { day: "numeric", month: "short", year: "numeric" }).format(value)
-
 const formatJam = (value: Date) =>
-  `${new Intl.DateTimeFormat("id-ID", { hour: "2-digit", minute: "2-digit" }).format(value)} WIB`
+  `${new Intl.DateTimeFormat("id-ID", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Asia/Jakarta",
+  }).format(value)} WIB`
 
 function formatDurasi(menit: number) {
   if (menit < 60) return `${menit} menit`
@@ -108,7 +109,7 @@ export default async function BerandaPesertaPage({
 
   // Bulan yang sedang ditampilkan di kalender (bisa digeser lewat ?bulan=-1 / ?bulan=1)
   const acuanKalender = new Date(sekarang.getFullYear(), sekarang.getMonth() + offsetBulan, 1)
-  const namaBulan = new Intl.DateTimeFormat("id-ID", { month: "long", year: "numeric" }).format(acuanKalender)
+  const namaBulan = new Intl.DateTimeFormat("id-ID", { month: "long", year: "numeric", timeZone: "Asia/Jakarta" }).format(acuanKalender)
 
   const tandaiTanggal = new Set<string>()
   ujianAktif.forEach((ujian) => {

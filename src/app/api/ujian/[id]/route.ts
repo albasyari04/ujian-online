@@ -11,9 +11,9 @@ import { authOptions } from "@/lib/auth"
    GET /api/ujian/:id
    Detail ujian lengkap dengan soal & opsi (untuk halaman edit/soal).
 ========================================================= */
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params
+    const { id } = await params
     const session = await getServerSession(authOptions)
     if (!session?.user) {
       return NextResponse.json({ message: "Anda harus login terlebih dahulu." }, { status: 401 })
@@ -53,9 +53,9 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
    PATCH /api/ujian/:id
    Memperbarui data ujian (tidak termasuk soal).
 ========================================================= */
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params
+    const { id } = await params
     const session = await getServerSession(authOptions)
     if (!session?.user) {
       return NextResponse.json({ message: "Anda harus login terlebih dahulu." }, { status: 401 })
@@ -83,10 +83,8 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       return NextResponse.json({ message: "Data yang dikirim tidak valid." }, { status: 400 })
     }
 
-    const { judul, deskripsi, durasiMenit, acakSoal, batasPelanggaran, mulai, selesai } = body as Record<
-      string,
-      unknown
-    >
+    const { judul, deskripsi, durasiMenit, acakSoal, batasPelanggaran, mulai, selesai } =
+      body as Record<string, unknown>
 
     if (typeof judul !== "string" || judul.trim().length === 0) {
       return NextResponse.json({ message: "Judul ujian wajib diisi." }, { status: 400 })

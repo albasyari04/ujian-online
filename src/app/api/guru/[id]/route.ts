@@ -20,14 +20,15 @@ async function requireAdmin() {
 }
 
 // GET /api/guru/:id
-export async function GET(_request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const session = await requireAdmin()
   if (!session) {
     return NextResponse.json({ message: "Tidak diizinkan" }, { status: 401 })
   }
 
   const guru = await prisma.user.findFirst({
-    where: { id: params.id, role: Role.GURU },
+    where: { id, role: Role.GURU },
     select: {
       id: true,
       nama: true,
@@ -46,13 +47,14 @@ export async function GET(_request: NextRequest, { params }: { params: { id: str
 }
 
 // PUT /api/guru/:id
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const session = await requireAdmin()
   if (!session) {
     return NextResponse.json({ message: "Tidak diizinkan" }, { status: 401 })
   }
 
-  const guru = await prisma.user.findFirst({ where: { id: params.id, role: Role.GURU } })
+  const guru = await prisma.user.findFirst({ where: { id, role: Role.GURU } })
   if (!guru) {
     return NextResponse.json({ message: "Guru tidak ditemukan" }, { status: 404 })
   }
@@ -80,7 +82,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 
   const updated = await prisma.user.update({
-    where: { id: params.id },
+    where: { id },
     data: {
       nama,
       email,
@@ -93,14 +95,15 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 }
 
 // DELETE /api/guru/:id
-export async function DELETE(_request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const session = await requireAdmin()
   if (!session) {
     return NextResponse.json({ message: "Tidak diizinkan" }, { status: 401 })
   }
 
   const guru = await prisma.user.findFirst({
-    where: { id: params.id, role: Role.GURU },
+    where: { id, role: Role.GURU },
     include: { _count: { select: { ujianDibuat: true } } },
   })
 
@@ -118,7 +121,7 @@ export async function DELETE(_request: NextRequest, { params }: { params: { id: 
     )
   }
 
-  await prisma.user.delete({ where: { id: params.id } })
+  await prisma.user.delete({ where: { id } })
 
   return NextResponse.json({ message: "Guru berhasil dihapus" })
 }

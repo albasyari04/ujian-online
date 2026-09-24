@@ -452,7 +452,7 @@ export default function PesertaPage() {
         title="Hapus Peserta"
         description={`Anda yakin ingin menghapus "${pesertaToDelete?.nama ?? ""}"? Tindakan ini tidak dapat dibatalkan.`}
         confirmLabel="Hapus"
-        loading={isDeleting}
+        isLoading={isDeleting}
         errorMessage={deleteError}
       />
     </div>

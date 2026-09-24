@@ -13,7 +13,7 @@ import { authOptions } from "@/lib/auth"
 ========================================================= */
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = await params
+    const { id } = await params;
     const session = await getServerSession(authOptions)
     if (!session?.user) {
       return NextResponse.json({ message: "Anda harus login terlebih dahulu." }, { status: 401 })
@@ -53,7 +53,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
    PATCH /api/ujian/:id
    Memperbarui data ujian (tidak termasuk soal).
 ========================================================= */
-export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
     const session = await getServerSession(authOptions)
@@ -137,7 +137,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 /* =========================================================
    DELETE /api/ujian/:id
 ========================================================= */
-export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
     const session = await getServerSession(authOptions)

@@ -111,7 +111,7 @@ function parseText(text: string): Question[] {
 }
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params
+  const { id } = await params;
   const session = await getServerSession(authOptions)
   if (!session?.user) {
     return NextResponse.json({ message: "Anda harus login terlebih dahulu." }, { status: 401 })

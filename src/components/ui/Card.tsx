@@ -126,7 +126,7 @@ export function StatCard({
    RINGKASAN CARD
 ========================================================= */
 
-type RingkasanTone = "navy" | "blue" | "violet" | "emerald" | "amber" | "red" | "slate"
+type RingkasanTone = "navy" | "blue" | "violet" | "emerald" | "amber" | "red" | "slate" | "indigo"
 
 const RINGKASAN_TONE_STYLES: Record<RingkasanTone, string> = {
   navy: "bg-gradient-to-br from-[#334876] to-[#16233f] text-white shadow-[0_8px_16px_-6px_rgba(22,35,63,0.5)]",
@@ -136,6 +136,7 @@ const RINGKASAN_TONE_STYLES: Record<RingkasanTone, string> = {
   amber: "bg-gradient-to-br from-[#fcd34d] to-[#b8863b] text-white shadow-[0_8px_16px_-6px_rgba(184,134,59,0.5)]",
   red: "bg-gradient-to-br from-[#fca5a5] to-[#b52f2f] text-white shadow-[0_8px_16px_-6px_rgba(181,47,47,0.5)]",
   slate: "bg-gradient-to-br from-[#cbd5e1] to-[#475569] text-white shadow-[0_8px_16px_-6px_rgba(71,85,105,0.4)]",
+  indigo: "bg-gradient-to-br from-[#818cf8] to-[#4338ca] text-white shadow-[0_8px_16px_-6px_rgba(67,56,202,0.5)]",
 }
 
 export function RingkasanCard({

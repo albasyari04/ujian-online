@@ -410,6 +410,7 @@ export default function PesertaDetailPage() {
         open={isEditOpen}
         onClose={() => setIsEditOpen(false)}
         title="Ubah Peserta"
+        maxWidth="500px"
       >
         <FormPeserta
           peserta={peserta}
@@ -429,7 +430,7 @@ export default function PesertaDetailPage() {
         title="Hapus Peserta"
         description={`Anda yakin ingin menghapus "${peserta.nama}"? Tindakan ini tidak dapat dibatalkan.`}
         confirmLabel="Hapus"
-        loading={isDeleting}
+        isLoading={isDeleting}
         errorMessage={deleteError}
       />
     </div>

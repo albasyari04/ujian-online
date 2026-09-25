@@ -25,11 +25,14 @@ export default async function ProfilPage() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-[720px] flex-col gap-6">
-      <div>
-        <h1 className="text-[20px] font-semibold text-[#16233f]">Profil Saya</h1>
-        <p className="mt-1 text-[12.5px] text-[#8b93a6]">
-          Kelola informasi akun dan kata sandi Anda di sini.
+    <div className="mx-auto flex w-full max-w-[800px] flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8">
+      {/* Header Page */}
+      <div className="flex flex-col gap-2">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+          Profil Saya
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          Kelola informasi akun, foto profil, dan kata sandi Anda di sini.
         </p>
       </div>
 

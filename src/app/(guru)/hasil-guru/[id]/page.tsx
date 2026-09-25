@@ -6,7 +6,7 @@ import { requireGuruSession } from "@/lib/guru/session"
 import { prisma } from "@/lib/prisma"
 import { Card, StatCard } from "@/components/ui/Card"
 import { Badge } from "@/components/ui/Badge"
-import { IconArrowLeft, IconUsers, IconCheckCircle, IconTrendingUp } from "@/components/ui/Icons"
+import { IconArrowLeft } from "@/components/ui/Icons"
 import { getSubjectIconSrc } from "@/lib/subject-icons"
 
 type SkorTone = "emerald" | "amber" | "red" | "slate"
@@ -32,20 +32,6 @@ function inisial(nama: string) {
     .slice(0, 2)
     .map((kata) => kata[0]?.toUpperCase() ?? "")
     .join("")
-}
-
-/** Ikon bintang lokal — dipakai khusus untuk stat "Nilai Tertinggi" di halaman ini. */
-function IconStar({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} fill="none" aria-hidden="true">
-      <path
-        d="M12 3.5L14.6 9.2L20.8 9.9L16.2 14.1L17.5 20.3L12 17.1L6.5 20.3L7.8 14.1L3.2 9.9L9.4 9.2L12 3.5Z"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
 }
 
 export default async function HasilDetailGuruPage({ params }: { params: Promise<{ id: string }> }) {
@@ -100,10 +86,30 @@ export default async function HasilDetailGuruPage({ params }: { params: Promise<
         </div>
 
         <div className="relative mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <StatCard icon={<IconUsers className="h-5 w-5" />} label="Peserta" value={ujian.hasilUjian.length} tone="blue" />
-          <StatCard icon={<IconCheckCircle className="h-5 w-5" />} label="Selesai" value={selesai.length} tone="emerald" />
-          <StatCard icon={<IconTrendingUp className="h-5 w-5" />} label="Rata-rata" value={rataRata ?? "—"} tone="violet" />
-          <StatCard icon={<IconStar className="h-5 w-5" />} label="Nilai Tertinggi" value={skorTertinggi ?? "—"} tone="amber" />
+          <StatCard
+            iconImageSrc="/image/icon/total-peserta-icon.png"
+            label="Peserta"
+            value={ujian.hasilUjian.length}
+            tone="blue"
+          />
+          <StatCard
+            iconImageSrc="/image/icon/selesai-icon.png"
+            label="Selesai"
+            value={selesai.length}
+            tone="emerald"
+          />
+          <StatCard
+            iconImageSrc="/image/icon/rata-rata-score.png"
+            label="Rata-rata"
+            value={rataRata ?? "—"}
+            tone="violet"
+          />
+          <StatCard
+            iconImageSrc="/image/icon/nilai-tertinggi-icon.png"
+            label="Nilai Tertinggi"
+            value={skorTertinggi ?? "—"}
+            tone="amber"
+          />
         </div>
       </Card>
 

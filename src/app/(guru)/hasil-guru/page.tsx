@@ -46,38 +46,40 @@ export default async function HasilGuruPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-start gap-3">
-        <span className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] bg-gradient-to-br from-[#818cf8] to-[#4338ca] text-white shadow-[0_8px_16px_-6px_rgba(67,56,202,0.55)]">
-          <IconTrendingUp className="h-5 w-5" />
-        </span>
-        <div>
-          <h1 className="text-[20px] font-semibold text-[#16233f] dark:text-white">Hasil & Nilai</h1>
-          <p className="mt-0.5 text-[13px] text-[#5b657d] dark:text-white/50">
-            Pilih ujian untuk melihat rincian nilai peserta.
-          </p>
-        </div>
-      </div>
-
-      {/* Ringkasan keseluruhan — 3D stat cards */}
+      {/* Ringkasan keseluruhan — ikon 3D asli, tanpa lingkaran gradient di belakangnya */}
       <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-4">
-        <StatCard icon={<IconBook className="h-5 w-5" />} label="Total Ujian" value={ujian.length} tone="indigo" />
-        <StatCard icon={<IconUsers className="h-5 w-5" />} label="Total Peserta" value={totalPeserta} tone="blue" />
         <StatCard
-          icon={<IconCheckCircle className="h-5 w-5" />}
+          iconImageSrc="/image/icon/total-ujian-icon.png"
+          label="Total Ujian"
+          value={ujian.length}
+          tone="indigo"
+        />
+        <StatCard
+          iconImageSrc="/image/icon/total-peserta-icon.png"
+          label="Total Peserta"
+          value={totalPeserta}
+          tone="blue"
+        />
+        <StatCard
+          iconImageSrc="/image/icon/selesai-icon.png"
           label="Selesai Dikerjakan"
           value={totalSelesai}
           tone="emerald"
         />
         <StatCard
-          icon={<IconTrendingUp className="h-5 w-5" />}
+          iconImageSrc="/image/icon/rata-rata-score.png"
           label="Rata-rata Keseluruhan"
           value={rataRataKeseluruhan ?? "—"}
           tone="violet"
         />
       </div>
 
-      {/* Daftar ujian */}
+      {/* Label seksi daftar ujian */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-[14.5px] font-semibold text-[#16233f] dark:text-white">Daftar Ujian</h2>
+        {ujian.length > 0 && <Badge tone="slate">{ujian.length} ujian</Badge>}
+      </div>
+
       {ujian.length === 0 ? (
         <Card className="flex flex-col items-center gap-2 px-6 py-14 text-center">
           <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#f4f5f7] text-[#8b93a6] dark:bg-white/5 dark:text-white/40">

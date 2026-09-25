@@ -34,7 +34,10 @@ export function StatCard({
   hint,
   tone = "indigo",
 }: {
+  /** Icon berupa komponen React (svg), mis. IconUsers. Dipakai kalau `iconImageSrc` tidak diisi. */
   icon?: (props: { className?: string }) => ReactElement
+  /** Alternatif: path gambar icon 3D siap-pakai (mis. "/image/icon/ujian-saya-icon.png").
+   *  Kalau diisi, background bulat gradient TIDAK dirender — icon tampil polos dengan drop-shadow. */
   iconImageSrc?: string
   label: string
   value: string | number
@@ -67,13 +70,13 @@ export function StatCard({
         {iconImageSrc ? (
           <span
             className="
-              relative -mr-1 -mt-1 flex h-20 w-20 shrink-0 items-center justify-center
-              drop-shadow-[0_14px_20px_rgba(49,46,129,0.28)]
+              relative -mr-1 -mt-1 flex h-14 w-14 shrink-0 items-center justify-center
+              drop-shadow-[0_12px_16px_rgba(49,46,129,0.22)]
               transition-transform duration-200 ease-out
               group-hover:-rotate-3 group-hover:scale-105
             "
           >
-            <Image src={iconImageSrc} alt="" width={80} height={80} className="h-20 w-20 object-contain" />
+            <Image src={iconImageSrc} alt="" width={56} height={56} className="h-14 w-14 object-contain" />
           </span>
         ) : Icon ? (
           <span

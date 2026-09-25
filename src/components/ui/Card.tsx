@@ -42,6 +42,9 @@ export function Card({
    TIDAK ada card/lingkaran/box background di belakangnya,
    hanya drop-shadow (sama seperti icon mata pelajaran).
    Card/box gradient (t.icon) hanya dipakai untuk `icon` (SVG).
+
+   `className` opsional untuk menambah class tambahan pada card
+   luar (mis. "col-span-2 sm:col-span-1" untuk layout grid khusus).
 ========================================================= */
 
 type StatTone = "indigo" | "blue" | "violet" | "emerald" | "amber" | "red" | "slate"
@@ -86,6 +89,7 @@ export function StatCard({
   hint,
   tone = "indigo",
   href,
+  className = "",
 }: {
   icon?: ReactNode
   iconImageSrc?: string | null
@@ -95,13 +99,14 @@ export function StatCard({
   hint?: string
   tone?: StatTone
   href?: string
+  className?: string
 }) {
   const t = STAT_TONE_STYLES[tone]
   const caption = description ?? hint
 
   const body = (
     <div
-      className="
+      className={`
         group relative overflow-hidden rounded-[18px] p-4
         bg-gradient-to-br from-white via-[#fcfbf8] to-[#f6f5f1]
         shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_4px_0_#eef0f4,0_14px_26px_-16px_rgba(22,35,63,0.3)]
@@ -111,7 +116,8 @@ export function StatCard({
         dark:from-[#182137] dark:via-[#141c30] dark:to-[#111a2c]
         dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_0_#0d1424,0_16px_28px_-16px_rgba(0,0,0,0.6)]
         dark:hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_6px_0_#0d1424,0_22px_34px_-16px_rgba(0,0,0,0.68)]
-      "
+        ${className}
+      `}
     >
       {/* glare atas — dekorasi permukaan 3D, BUKAN card di belakang icon */}
       <span

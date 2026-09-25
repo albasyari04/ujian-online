@@ -178,8 +178,8 @@ export default function PesertaDetailPage() {
   if (isLoading) {
     return (
       <Card className="flex flex-col items-center justify-center gap-3 py-24 text-center">
-        <IconSpinner className="h-6 w-6 animate-spin text-[#059669]" />
-        <p className="text-[13px] text-[#8b93a6]">Memuat data peserta...</p>
+        <IconSpinner className="h-6 w-6 animate-spin text-[#059669] dark:text-[#6ee7b7]" />
+        <p className="text-[13px] text-[#8b93a6] dark:text-white/40">Memuat data peserta...</p>
       </Card>
     )
   }
@@ -187,8 +187,8 @@ export default function PesertaDetailPage() {
   if (errorMessage || !peserta) {
     return (
       <Card className="flex flex-col items-center justify-center gap-3 py-24 text-center">
-        <IconAlertTriangle className="h-8 w-8 text-[#d23b3b]" />
-        <p className="text-[13px] text-[#5b657d]">{errorMessage || "Peserta tidak ditemukan."}</p>
+        <IconAlertTriangle className="h-8 w-8 text-[#d23b3b] dark:text-[#f87171]" />
+        <p className="text-[13px] text-[#5b657d] dark:text-white/50">{errorMessage || "Peserta tidak ditemukan."}</p>
         <Link href="/peserta">
           <Button variant="outline" size="sm">
             Kembali ke daftar peserta
@@ -213,16 +213,16 @@ export default function PesertaDetailPage() {
       {/* Tautan kembali */}
       <Link
         href="/peserta"
-        className="inline-flex w-fit items-center gap-1.5 text-[12.5px] font-medium text-[#5b657d] transition-colors hover:text-[#059669]"
+        className="inline-flex w-fit items-center gap-1.5 text-[12.5px] font-medium text-[#5b657d] transition-colors hover:text-[#059669] dark:text-white/50 dark:hover:text-[#6ee7b7]"
       >
         <IconArrowLeft className="h-4 w-4" />
         Kembali ke Kelola Peserta
       </Link>
 
       {/* Kartu profil peserta */}
-      <Card className="relative overflow-hidden border-[#dff3ea] p-6 shadow-[0_10px_24px_-18px_rgba(5,150,105,0.45),0_4px_0_#eefaf4]">
-        <span className="pointer-events-none absolute right-0 top-0 h-32 w-32 rounded-bl-[80px] bg-gradient-to-bl from-[#d7f7e8] to-transparent opacity-80" />
-        <span className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/60 to-transparent" />
+      <Card className="relative overflow-hidden border-[#dff3ea] p-6 shadow-[0_10px_24px_-18px_rgba(5,150,105,0.45),0_4px_0_#eefaf4] dark:border-white/10 dark:shadow-[0_10px_24px_-18px_rgba(0,0,0,0.5)]">
+        <span className="pointer-events-none absolute right-0 top-0 h-32 w-32 rounded-bl-[80px] bg-gradient-to-bl from-[#d7f7e8] to-transparent opacity-80 dark:from-white/[0.05]" />
+        <span className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/60 to-transparent dark:from-white/[0.04]" />
 
         <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
@@ -236,26 +236,30 @@ export default function PesertaDetailPage() {
               />
             </span>
             <div className="min-w-0">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#007fc4]">Profil Peserta</p>
-              <h1 className="mt-1 truncate text-[22px] font-semibold text-[#16233f]">{peserta.nama}</h1>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#007fc4] dark:text-[#5ec8ff]">
+                Profil Peserta
+              </p>
+              <h1 className="mt-1 truncate text-[22px] font-semibold text-[#16233f] dark:text-white">
+                {peserta.nama}
+              </h1>
               <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1">
-                <p className="flex items-center gap-1.5 text-[12.5px] text-[#5b657d]">
+                <p className="flex items-center gap-1.5 text-[12.5px] text-[#5b657d] dark:text-white/50">
                   <IconMail className="h-3.5 w-3.5" />
                   {peserta.email}
                 </p>
                 {peserta.nisn && (
-                  <p className="flex items-center gap-1.5 text-[12.5px] text-[#5b657d]">
-                    <span className="font-semibold text-[#8b93a6]">NISN:</span>
+                  <p className="flex items-center gap-1.5 text-[12.5px] text-[#5b657d] dark:text-white/50">
+                    <span className="font-semibold text-[#8b93a6] dark:text-white/40">NISN:</span>
                     <span className="font-mono">{peserta.nisn}</span>
                   </p>
                 )}
                 {peserta.noUrut !== null && (
-                  <p className="flex items-center gap-1.5 text-[12.5px] text-[#5b657d]">
-                    <span className="font-semibold text-[#8b93a6]">No. Urut:</span>
+                  <p className="flex items-center gap-1.5 text-[12.5px] text-[#5b657d] dark:text-white/50">
+                    <span className="font-semibold text-[#8b93a6] dark:text-white/40">No. Urut:</span>
                     <span>{peserta.noUrut}</span>
                   </p>
                 )}
-                <p className="flex items-center gap-1.5 text-[12px] text-[#8b93a6]">
+                <p className="flex items-center gap-1.5 text-[12px] text-[#8b93a6] dark:text-white/40">
                   <IconCalendar className="h-3.5 w-3.5" />
                   Terdaftar {formatterTanggal.format(new Date(peserta.createdAt))}
                 </p>
@@ -276,8 +280,8 @@ export default function PesertaDetailPage() {
         </div>
       </Card>
 
-      {/* Ringkasan statistik */}
-      <div className="grid grid-cols-3 gap-2.5 sm:gap-4">
+      {/* Ringkasan statistik — grid 2 kolom di mobile supaya icon & angka tidak berdempetan */}
+      <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-4">
         <StatCard
           label="Ujian Diikuti"
           value={peserta.hasilUjian.length}
@@ -295,50 +299,55 @@ export default function PesertaDetailPage() {
           value={totalPelanggaran}
           iconImageSrc="/image/icon/total-pelanggaran.png"
           tone="amber"
+          className="col-span-2 sm:col-span-1"
         />
       </div>
 
       {/* Riwayat ujian */}
-      <Card className="overflow-hidden border-[#e9ecf2] shadow-[0_10px_24px_-18px_rgba(22,35,63,0.28),0_4px_0_#f3f5f8]">
-        <div className="flex items-center justify-between gap-3 border-b border-[#edf0ef] px-5 py-4">
+      <Card className="overflow-hidden border-[#e9ecf2] shadow-[0_10px_24px_-18px_rgba(22,35,63,0.28),0_4px_0_#f3f5f8] dark:border-white/10 dark:shadow-[0_10px_24px_-18px_rgba(0,0,0,0.5)]">
+        <div className="flex items-center justify-between gap-3 border-b border-[#edf0ef] px-5 py-4 dark:border-white/10">
           <div className="min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#059669]">Aktivitas</p>
-            <h2 className="mt-1 text-[15px] font-semibold text-[#16233f]">Riwayat Ujian</h2>
-            <p className="mt-0.5 text-[12px] text-[#8b93a6]">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#059669] dark:text-[#6ee7b7]">
+              Aktivitas
+            </p>
+            <h2 className="mt-1 text-[15px] font-semibold text-[#16233f] dark:text-white">Riwayat Ujian</h2>
+            <p className="mt-0.5 text-[12px] text-[#8b93a6] dark:text-white/40">
               Daftar ujian yang pernah diikuti peserta ini.
             </p>
           </div>
-          <span className="shrink-0 rounded-full border border-[#bfe8d3] bg-[#eafaf2] px-2.5 py-1 text-[11px] font-semibold text-[#059669]">
+          <span className="shrink-0 rounded-full border border-[#bfe8d3] bg-[#eafaf2] px-2.5 py-1 text-[11px] font-semibold text-[#059669] dark:border-emerald-400/20 dark:bg-emerald-400/10 dark:text-emerald-300">
             {peserta.hasilUjian.length} ujian
           </span>
         </div>
 
         {peserta.hasilUjian.length === 0 ? (
           <div className="flex flex-col items-center gap-3 px-6 py-14 text-center">
-            <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#ecfdf5] text-[#059669]">
+            <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#ecfdf5] text-[#059669] dark:bg-emerald-400/10 dark:text-emerald-300">
               <IconClock className="h-5 w-5" />
             </span>
-            <p className="text-[13px] text-[#5b657d]">Peserta ini belum mengikuti ujian apa pun.</p>
+            <p className="text-[13px] text-[#5b657d] dark:text-white/50">
+              Peserta ini belum mengikuti ujian apa pun.
+            </p>
           </div>
         ) : (
           <>
             <div ref={tableScrollRef} onScroll={updateScrollThumb} className="overflow-x-auto">
               <table className="w-full min-w-[640px] border-collapse text-left">
                 <thead>
-                  <tr className="border-b border-[#edf0ef] bg-[#f7f9f8]">
-                    <th className="px-5 py-3 text-[11.5px] font-semibold uppercase tracking-wide text-[#8b93a6]">
+                  <tr className="border-b border-[#edf0ef] bg-[#f7f9f8] dark:border-white/10 dark:bg-white/[0.04]">
+                    <th className="px-5 py-3 text-[11.5px] font-semibold uppercase tracking-wide text-[#8b93a6] dark:text-white/40">
                       Ujian
                     </th>
-                    <th className="px-5 py-3 text-[11.5px] font-semibold uppercase tracking-wide text-[#8b93a6]">
+                    <th className="px-5 py-3 text-[11.5px] font-semibold uppercase tracking-wide text-[#8b93a6] dark:text-white/40">
                       Status
                     </th>
-                    <th className="px-5 py-3 text-[11.5px] font-semibold uppercase tracking-wide text-[#8b93a6]">
+                    <th className="px-5 py-3 text-[11.5px] font-semibold uppercase tracking-wide text-[#8b93a6] dark:text-white/40">
                       Skor
                     </th>
-                    <th className="px-5 py-3 text-[11.5px] font-semibold uppercase tracking-wide text-[#8b93a6]">
+                    <th className="px-5 py-3 text-[11.5px] font-semibold uppercase tracking-wide text-[#8b93a6] dark:text-white/40">
                       Waktu Mulai
                     </th>
-                    <th className="px-5 py-3 text-[11.5px] font-semibold uppercase tracking-wide text-[#8b93a6]">
+                    <th className="px-5 py-3 text-[11.5px] font-semibold uppercase tracking-wide text-[#8b93a6] dark:text-white/40">
                       Pelanggaran
                     </th>
                   </tr>
@@ -347,9 +356,9 @@ export default function PesertaDetailPage() {
                   {peserta.hasilUjian.map((hasil) => (
                     <tr
                       key={hasil.id}
-                      className="border-b border-[#f0f2f1] last:border-0 transition-colors hover:bg-[#f7f9f8]"
+                      className="border-b border-[#f0f2f1] last:border-0 transition-colors hover:bg-[#f7f9f8] dark:border-white/5 dark:hover:bg-white/[0.03]"
                     >
-                      <td className="px-5 py-3.5 text-[13px] font-medium text-[#16233f]">
+                      <td className="px-5 py-3.5 text-[13px] font-medium text-[#16233f] dark:text-white">
                         {hasil.ujian.judul}
                       </td>
                       <td className="px-5 py-3.5">
@@ -359,17 +368,17 @@ export default function PesertaDetailPage() {
                           <Badge tone="amber">Sedang dikerjakan</Badge>
                         )}
                       </td>
-                      <td className="px-5 py-3.5 text-[12.5px] font-medium text-[#5b657d]">
+                      <td className="px-5 py-3.5 text-[12.5px] font-medium text-[#5b657d] dark:text-white/50">
                         {hasil.skor !== null ? hasil.skor.toFixed(1) : "–"}
                       </td>
-                      <td className="px-5 py-3.5 text-[12.5px] text-[#5b657d]">
+                      <td className="px-5 py-3.5 text-[12.5px] text-[#5b657d] dark:text-white/50">
                         {formatterWaktu.format(new Date(hasil.waktuMulai))}
                       </td>
                       <td className="px-5 py-3.5">
                         {hasil.jumlahPelanggaran > 0 ? (
                           <Badge tone="red">{hasil.jumlahPelanggaran}x</Badge>
                         ) : (
-                          <span className="text-[12.5px] text-[#8b93a6]">–</span>
+                          <span className="text-[12.5px] text-[#8b93a6] dark:text-white/40">–</span>
                         )}
                       </td>
                     </tr>
@@ -384,7 +393,7 @@ export default function PesertaDetailPage() {
             {scrollThumb.visible && (
               <div className="px-5 pb-4">
                 <div
-                  className="relative h-1.5 w-full rounded-full bg-[#eef0ef]"
+                  className="relative h-1.5 w-full rounded-full bg-[#eef0ef] dark:bg-white/10"
                   onClick={(event) => {
                     const scrollEl = tableScrollRef.current
                     if (!scrollEl) return
@@ -395,7 +404,7 @@ export default function PesertaDetailPage() {
                 >
                   <div
                     onPointerDown={handleThumbPointerDown}
-                    className="absolute top-0 h-1.5 cursor-grab touch-none rounded-full bg-[#c7cdd8] transition-colors hover:bg-[#a7afbe] active:cursor-grabbing"
+                    className="absolute top-0 h-1.5 cursor-grab touch-none rounded-full bg-[#c7cdd8] transition-colors hover:bg-[#a7afbe] active:cursor-grabbing dark:bg-white/20 dark:hover:bg-white/30"
                     style={{ width: `${scrollThumb.widthPct}%`, left: `${scrollThumb.leftPct}%` }}
                   />
                 </div>

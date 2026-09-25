@@ -191,11 +191,13 @@ export default function PesertaPage() {
     <div className="flex flex-col gap-6">
       <div className="flex items-end justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#007fc4] sm:text-[12px]">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#007fc4] dark:text-[#5ec8ff] sm:text-[12px]">
             Ujian Online
           </p>
-          <h1 className="mt-1 truncate text-[21px] font-semibold text-[#16233f] sm:text-[26px]">Kelola Peserta</h1>
-          <p className="mt-1 text-[12px] text-[#5b657d] sm:text-[13px]">
+          <h1 className="mt-1 truncate text-[21px] font-semibold text-[#16233f] dark:text-white sm:text-[26px]">
+            Kelola Peserta
+          </h1>
+          <p className="mt-1 text-[12px] text-[#5b657d] dark:text-white/50 sm:text-[13px]">
             Kelola akun peserta ujian: tambah, ubah, hapus, dan lihat riwayat ujian.
           </p>
         </div>
@@ -212,7 +214,8 @@ export default function PesertaPage() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-3 gap-2.5 sm:gap-4">
+      {/* Grid diubah jadi 2 kolom di mobile supaya icon & angka tidak berdempetan */}
+      <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-4">
         <StatCard
           label="Total Peserta"
           value={stats ? stats.totalPeserta : "–"}
@@ -230,19 +233,20 @@ export default function PesertaPage() {
           value={stats && stats.rataRataSkor !== null ? stats.rataRataSkor.toFixed(1) : "–"}
           iconImageSrc="/image/icon/rata-rata-score.png"
           tone="amber"
+          className="col-span-2 sm:col-span-1"
         />
       </div>
 
       <Card className="p-4">
         <div className="relative max-w-sm">
-          <IconSearch className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#94a3b8]" />
+          <IconSearch className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#94a3b8] dark:text-white/30" />
           <input
             value={searchInput}
             onChange={(event) => setSearchInput(event.target.value)}
             type="search"
             placeholder="Cari nama, email, atau NISN..."
             aria-label="Cari peserta"
-            className="h-10 w-full rounded-[10px] border border-[#e7e4dc] bg-[#f7f9f8] pl-10 pr-3.5 text-[13px] text-[#34435f] placeholder:text-[#94a3b8] transition-colors focus:border-[#6ee7b7] focus:bg-white focus:outline-none"
+            className="h-10 w-full rounded-[10px] border border-[#e7e4dc] bg-[#f7f9f8] pl-10 pr-3.5 text-[13px] text-[#34435f] placeholder:text-[#94a3b8] transition-colors focus:border-[#6ee7b7] focus:bg-white focus:outline-none dark:border-white/10 dark:bg-white/5 dark:text-white/80 dark:placeholder:text-white/30 dark:focus:border-[#6ee7b7] dark:focus:bg-white/10"
           />
         </div>
       </Card>
@@ -250,26 +254,26 @@ export default function PesertaPage() {
       <Card className="overflow-hidden">
         {errorMessage ? (
           <div className="flex flex-col items-center gap-3 px-6 py-16 text-center">
-            <IconAlertTriangle className="h-8 w-8 text-[#d23b3b]" />
-            <p className="text-[13px] text-[#5b657d]">{errorMessage}</p>
+            <IconAlertTriangle className="h-8 w-8 text-[#d23b3b] dark:text-[#f87171]" />
+            <p className="text-[13px] text-[#5b657d] dark:text-white/50">{errorMessage}</p>
             <Button variant="outline" size="sm" onClick={() => fetchData(page, query)}>
               Coba lagi
             </Button>
           </div>
         ) : isLoading ? (
           <div className="flex flex-col items-center gap-3 px-6 py-16 text-center">
-            <IconSpinner className="h-6 w-6 animate-spin text-[#007fc4]" />
-            <p className="text-[13px] text-[#8b93a6]">Memuat data peserta...</p>
+            <IconSpinner className="h-6 w-6 animate-spin text-[#007fc4] dark:text-[#5ec8ff]" />
+            <p className="text-[13px] text-[#8b93a6] dark:text-white/40">Memuat data peserta...</p>
           </div>
         ) : items.length === 0 ? (
           <div className="flex flex-col items-center gap-3 px-6 py-16 text-center">
-            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#d9f4ff] text-[#007fc4]">
+            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#d9f4ff] text-[#007fc4] dark:bg-white/10 dark:text-[#5ec8ff]">
               <IconUsers className="h-6 w-6" />
             </span>
-            <p className="text-[14px] font-medium text-[#16233f]">
+            <p className="text-[14px] font-medium text-[#16233f] dark:text-white">
               {query ? "Peserta tidak ditemukan" : "Belum ada peserta"}
             </p>
-            <p className="max-w-xs text-[12.5px] text-[#8b93a6]">
+            <p className="max-w-xs text-[12.5px] text-[#8b93a6] dark:text-white/40">
               {query
                 ? `Tidak ada peserta yang cocok dengan pencarian "${query}".`
                 : "Tambahkan peserta pertama untuk mulai mengelola akun ujian."}
@@ -280,26 +284,26 @@ export default function PesertaPage() {
             <div ref={tableScrollRef} onScroll={updateScrollThumb} className="overflow-x-auto">
               <table className="w-full min-w-[800px] border-collapse text-left">
                 <thead>
-                  <tr className="border-b border-[#edf0ef] bg-[#f7f9f8]">
-                    <th className="px-5 py-3 text-[11.5px] font-semibold uppercase tracking-wide text-[#8b93a6]">
+                  <tr className="border-b border-[#edf0ef] bg-[#f7f9f8] dark:border-white/10 dark:bg-white/[0.04]">
+                    <th className="px-5 py-3 text-[11.5px] font-semibold uppercase tracking-wide text-[#8b93a6] dark:text-white/40">
                       No. Urut
                     </th>
-                    <th className="px-5 py-3 text-[11.5px] font-semibold uppercase tracking-wide text-[#8b93a6]">
+                    <th className="px-5 py-3 text-[11.5px] font-semibold uppercase tracking-wide text-[#8b93a6] dark:text-white/40">
                       Nama
                     </th>
-                    <th className="px-5 py-3 text-[11.5px] font-semibold uppercase tracking-wide text-[#8b93a6]">
+                    <th className="px-5 py-3 text-[11.5px] font-semibold uppercase tracking-wide text-[#8b93a6] dark:text-white/40">
                       NISN
                     </th>
-                    <th className="px-5 py-3 text-[11.5px] font-semibold uppercase tracking-wide text-[#8b93a6]">
+                    <th className="px-5 py-3 text-[11.5px] font-semibold uppercase tracking-wide text-[#8b93a6] dark:text-white/40">
                       Email
                     </th>
-                    <th className="px-5 py-3 text-[11.5px] font-semibold uppercase tracking-wide text-[#8b93a6]">
+                    <th className="px-5 py-3 text-[11.5px] font-semibold uppercase tracking-wide text-[#8b93a6] dark:text-white/40">
                       Terdaftar
                     </th>
-                    <th className="px-5 py-3 text-[11.5px] font-semibold uppercase tracking-wide text-[#8b93a6]">
+                    <th className="px-5 py-3 text-[11.5px] font-semibold uppercase tracking-wide text-[#8b93a6] dark:text-white/40">
                       Ujian
                     </th>
-                    <th className="px-5 py-3 text-right text-[11.5px] font-semibold uppercase tracking-wide text-[#8b93a6]">
+                    <th className="px-5 py-3 text-right text-[11.5px] font-semibold uppercase tracking-wide text-[#8b93a6] dark:text-white/40">
                       Aksi
                     </th>
                   </tr>
@@ -308,9 +312,9 @@ export default function PesertaPage() {
                   {items.map((peserta) => (
                     <tr
                       key={peserta.id}
-                      className="border-b border-[#f0f2f1] last:border-0 hover:bg-[#f7f9f8]"
+                      className="border-b border-[#f0f2f1] last:border-0 hover:bg-[#f7f9f8] dark:border-white/5 dark:hover:bg-white/[0.03]"
                     >
-                      <td className="px-5 py-3.5 text-[12.5px] font-semibold text-[#5b657d]">
+                      <td className="px-5 py-3.5 text-[12.5px] font-semibold text-[#5b657d] dark:text-white/50">
                         {peserta.noUrut ?? "–"}
                       </td>
                       <td className="px-5 py-3.5">
@@ -320,27 +324,29 @@ export default function PesertaPage() {
                           </span>
                           <Link
                             href={`/peserta/${peserta.id}`}
-                            className="truncate text-[13px] font-medium text-[#16233f] hover:text-[#007fc4]"
+                            className="truncate text-[13px] font-medium text-[#16233f] hover:text-[#007fc4] dark:text-white dark:hover:text-[#5ec8ff]"
                           >
                             {peserta.nama}
                           </Link>
                         </div>
                       </td>
-                      <td className="px-5 py-3.5 text-[12.5px] font-mono text-[#5b657d]">
+                      <td className="px-5 py-3.5 text-[12.5px] font-mono text-[#5b657d] dark:text-white/50">
                         {peserta.nisn ?? "–"}
                       </td>
-                      <td className="px-5 py-3.5 text-[12.5px] text-[#5b657d]">{peserta.email}</td>
-                      <td className="px-5 py-3.5 text-[12.5px] text-[#5b657d]">
+                      <td className="px-5 py-3.5 text-[12.5px] text-[#5b657d] dark:text-white/50">
+                        {peserta.email}
+                      </td>
+                      <td className="px-5 py-3.5 text-[12.5px] text-[#5b657d] dark:text-white/50">
                         {formatterTanggal.format(new Date(peserta.createdAt))}
                       </td>
-                      <td className="px-5 py-3.5 text-[12.5px] text-[#5b657d]">
+                      <td className="px-5 py-3.5 text-[12.5px] text-[#5b657d] dark:text-white/50">
                         {peserta._count.hasilUjian} ujian
                       </td>
                       <td className="px-5 py-3.5">
                         <div className="flex items-center justify-end gap-1.5">
                           <Link
                             href={`/peserta/${peserta.id}`}
-                            className="flex h-8 w-8 items-center justify-center rounded-[8px] text-[#5b657d] hover:bg-[#f0f2f1] hover:text-[#16233f]"
+                            className="flex h-8 w-8 items-center justify-center rounded-[8px] text-[#5b657d] hover:bg-[#f0f2f1] hover:text-[#16233f] dark:text-white/50 dark:hover:bg-white/10 dark:hover:text-white"
                             aria-label={`Lihat detail ${peserta.nama}`}
                           >
                             <IconEye className="h-4 w-4" />
@@ -351,7 +357,7 @@ export default function PesertaPage() {
                               setSelectedPeserta(peserta)
                               setModalMode("edit")
                             }}
-                            className="flex h-8 w-8 items-center justify-center rounded-[8px] text-[#007fc4] hover:bg-[#d9f4ff]"
+                            className="flex h-8 w-8 items-center justify-center rounded-[8px] text-[#007fc4] hover:bg-[#d9f4ff] dark:text-[#5ec8ff] dark:hover:bg-white/10"
                             aria-label={`Ubah ${peserta.nama}`}
                           >
                             <IconPencil className="h-4 w-4" />
@@ -362,7 +368,7 @@ export default function PesertaPage() {
                               setPesertaToDelete(peserta)
                               setDeleteError("")
                             }}
-                            className="flex h-8 w-8 items-center justify-center rounded-[8px] text-[#d23b3b] hover:bg-[#fdf1f1]"
+                            className="flex h-8 w-8 items-center justify-center rounded-[8px] text-[#d23b3b] hover:bg-[#fdf1f1] dark:text-[#f87171] dark:hover:bg-red-500/10"
                             aria-label={`Hapus ${peserta.nama}`}
                           >
                             <IconTrash className="h-4 w-4" />
@@ -378,7 +384,7 @@ export default function PesertaPage() {
             {scrollThumb.visible && (
               <div className="px-5 pb-3">
                 <div
-                  className="relative h-1.5 w-full rounded-full bg-[#eef0ef]"
+                  className="relative h-1.5 w-full rounded-full bg-[#eef0ef] dark:bg-white/10"
                   onClick={(event) => {
                     const scrollEl = tableScrollRef.current
                     if (!scrollEl) return
@@ -389,7 +395,7 @@ export default function PesertaPage() {
                 >
                   <div
                     onPointerDown={handleThumbPointerDown}
-                    className="absolute top-0 h-1.5 cursor-grab touch-none rounded-full bg-[#c7cdd8] transition-colors hover:bg-[#a7afbe] active:cursor-grabbing"
+                    className="absolute top-0 h-1.5 cursor-grab touch-none rounded-full bg-[#c7cdd8] transition-colors hover:bg-[#a7afbe] active:cursor-grabbing dark:bg-white/20 dark:hover:bg-white/30"
                     style={{ width: `${scrollThumb.widthPct}%`, left: `${scrollThumb.leftPct}%` }}
                   />
                 </div>
@@ -397,8 +403,8 @@ export default function PesertaPage() {
             )}
 
             {data && (
-              <div className="flex items-center justify-between border-t border-[#edf0ef] px-5 py-3.5">
-                <p className="text-[12px] text-[#8b93a6]">
+              <div className="flex items-center justify-between border-t border-[#edf0ef] px-5 py-3.5 dark:border-white/10">
+                <p className="text-[12px] text-[#8b93a6] dark:text-white/40">
                   Halaman {data.page} dari {totalPages} &middot; {data.total} peserta
                 </p>
                 <div className="flex items-center gap-1.5">
@@ -406,7 +412,7 @@ export default function PesertaPage() {
                     type="button"
                     onClick={() => setPage((value) => Math.max(1, value - 1))}
                     disabled={page <= 1}
-                    className="flex h-8 w-8 items-center justify-center rounded-[8px] text-[#5b657d] hover:bg-[#f0f2f1] disabled:opacity-40 disabled:hover:bg-transparent"
+                    className="flex h-8 w-8 items-center justify-center rounded-[8px] text-[#5b657d] hover:bg-[#f0f2f1] disabled:opacity-40 disabled:hover:bg-transparent dark:text-white/50 dark:hover:bg-white/10"
                     aria-label="Halaman sebelumnya"
                   >
                     <IconChevronLeft className="h-4 w-4" />
@@ -415,7 +421,7 @@ export default function PesertaPage() {
                     type="button"
                     onClick={() => setPage((value) => Math.min(totalPages, value + 1))}
                     disabled={page >= totalPages}
-                    className="flex h-8 w-8 items-center justify-center rounded-[8px] text-[#5b657d] hover:bg-[#f0f2f1] disabled:opacity-40 disabled:hover:bg-transparent"
+                    className="flex h-8 w-8 items-center justify-center rounded-[8px] text-[#5b657d] hover:bg-[#f0f2f1] disabled:opacity-40 disabled:hover:bg-transparent dark:text-white/50 dark:hover:bg-white/10"
                     aria-label="Halaman berikutnya"
                   >
                     <IconChevronRight className="h-4 w-4" />

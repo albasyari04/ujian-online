@@ -36,11 +36,16 @@ export default async function SoalUjianPage({
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <Link href="/ujian" className="text-[12.5px] font-medium text-[#8b87a8] hover:text-[#4338ca]">
+          <Link
+            href="/ujian"
+            className="text-[12.5px] font-medium text-[#8b87a8] hover:text-[#4338ca] dark:text-white/50 dark:hover:text-[#a5b4fc]"
+          >
             ← Kembali ke daftar ujian
           </Link>
-          <h1 className="mt-1 text-[20px] font-semibold text-[#241f4d]">Soal — {ujian.judul}</h1>
-          <p className="text-[13px] text-[#8b87a8]">
+          <h1 className="mt-1 text-[20px] font-semibold text-[#241f4d] dark:text-white">
+            Soal — {ujian.judul}
+          </h1>
+          <p className="text-[13px] text-[#8b87a8] dark:text-white/50">
             {ujian.soal.length} soal · total {totalPoin} poin
           </p>
         </div>
@@ -52,20 +57,27 @@ export default async function SoalUjianPage({
       </div>
 
       {ujian.soal.length === 0 ? (
-        <div className="rounded-2xl border border-[#ecebf7] bg-white p-10 text-center">
-          <p className="text-[14px] font-medium text-[#241f4d]">Belum ada soal</p>
-          <p className="mt-1 text-[13px] text-[#8b87a8]">Tambahkan soal pertama untuk ujian ini.</p>
+        <div className="rounded-2xl border border-[#ecebf7] bg-white p-10 text-center dark:border-white/10 dark:bg-white/[0.03]">
+          <p className="text-[14px] font-medium text-[#241f4d] dark:text-white">Belum ada soal</p>
+          <p className="mt-1 text-[13px] text-[#8b87a8] dark:text-white/40">
+            Tambahkan soal pertama untuk ujian ini.
+          </p>
         </div>
       ) : (
         <div className="space-y-3">
           {ujian.soal.map((soal, index) => (
-            <div key={soal.id} className="rounded-2xl border border-[#ecebf7] bg-white p-5">
+            <div
+              key={soal.id}
+              className="rounded-2xl border border-[#ecebf7] bg-white p-5 dark:border-white/10 dark:bg-white/[0.03]"
+            >
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
-                  <p className="text-[11.5px] font-medium uppercase tracking-wide text-[#8b87a8]">
+                  <p className="text-[11.5px] font-medium uppercase tracking-wide text-[#8b87a8] dark:text-white/40">
                     Soal {index + 1} · {LABEL_TIPE_SOAL[soal.tipe]} · {soal.poin} poin
                   </p>
-                  <p className="mt-1 whitespace-pre-line text-[14px] text-[#241f4d]">{soal.pertanyaan}</p>
+                  <p className="mt-1 whitespace-pre-line text-[14px] text-[#241f4d] dark:text-white/90">
+                    {soal.pertanyaan}
+                  </p>
                 </div>
                 <div className="flex shrink-0 items-center gap-1">
                   {/* Tombol Edit — wrapper mengelola state open dengan initialData */}
@@ -88,12 +100,14 @@ export default async function SoalUjianPage({
               </div>
 
               {soal.tipe === "PILIHAN_GANDA" && soal.opsi.length > 0 && (
-                <ul className="mt-3 space-y-1.5 border-t border-[#f1f0f8] pt-3">
+                <ul className="mt-3 space-y-1.5 border-t border-[#f1f0f8] pt-3 dark:border-white/10">
                   {soal.opsi.map((opsi, opsiIndex) => (
                     <li
                       key={opsi.id}
                       className={`flex items-center gap-2 text-[13px] ${
-                        opsi.benar ? "font-medium text-[#1f9254]" : "text-[#5b5490]"
+                        opsi.benar
+                          ? "font-medium text-[#1f9254] dark:text-[#6ee7b7]"
+                          : "text-[#5b5490] dark:text-white/50"
                       }`}
                     >
                       <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-current text-[10.5px]">

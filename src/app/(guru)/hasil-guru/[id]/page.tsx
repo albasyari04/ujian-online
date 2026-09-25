@@ -4,7 +4,7 @@ import Image from "next/image"
 
 import { requireGuruSession } from "@/lib/guru/session"
 import { prisma } from "@/lib/prisma"
-import { Card } from "@/components/ui/Card"
+import { Card, StatCard } from "@/components/ui/Card"
 import { Badge } from "@/components/ui/Badge"
 import { IconArrowLeft } from "@/components/ui/Icons"
 import { getSubjectIconSrc } from "@/lib/subject-icons"
@@ -70,12 +70,8 @@ export default async function HasilDetailGuruPage({ params }: { params: Promise<
         Kembali ke Hasil & Nilai
       </Link>
 
-      {/* Kartu header ujian + statistik */}
-      <Card
-        variant="glass"
-        className="relative overflow-hidden rounded-[24px] p-5 sm:p-6"
-      >
-        {/* Dekorasi background */}
+      {/* Kartu header ujian */}
+      <Card variant="glass" className="relative overflow-hidden rounded-[24px] p-5 sm:p-6">
         <span
           className="pointer-events-none absolute -right-16 -top-16 h-52 w-52 rounded-full bg-[radial-gradient(circle,rgba(129,140,248,0.18),transparent_65%)]"
           aria-hidden="true"
@@ -107,75 +103,39 @@ export default async function HasilDetailGuruPage({ params }: { params: Promise<
           </div>
         </div>
 
-        {/* Statistik — TANPA background card, hanya ikon + angka + label */}
-        <div className="relative mt-6 grid grid-cols-2 gap-5 sm:grid-cols-4 sm:gap-6">
-          <div className="flex flex-col items-center gap-2 text-center">
-            <Image
-              src="/image/icon/total-peserta-icon.png"
-              alt=""
-              width={56}
-              height={56}
-              className="h-14 w-14 object-contain drop-shadow-[0_8px_14px_rgba(49,46,129,0.22)]"
-            />
-            <p className="text-[20px] font-bold leading-none text-[#16233f] dark:text-white">
-              {ujian.hasilUjian.length}
-            </p>
-            <p className="text-[11px] font-medium leading-none text-[#8b93a6] dark:text-white/40">Peserta</p>
-          </div>
-
-          <div className="flex flex-col items-center gap-2 text-center">
-            <Image
-              src="/image/icon/selesai.png"
-              alt=""
-              width={56}
-              height={56}
-              className="h-14 w-14 object-contain drop-shadow-[0_8px_14px_rgba(49,46,129,0.22)]"
-            />
-            <p className="text-[20px] font-bold leading-none text-[#16233f] dark:text-white">
-              {selesai.length}
-            </p>
-            <p className="text-[11px] font-medium leading-none text-[#8b93a6] dark:text-white/40">Selesai</p>
-          </div>
-
-          <div className="flex flex-col items-center gap-2 text-center">
-            <Image
-              src="/image/icon/persen.png"
-              alt=""
-              width={56}
-              height={56}
-              className="h-14 w-14 object-contain drop-shadow-[0_8px_14px_rgba(49,46,129,0.22)]"
-            />
-            <p className="text-[20px] font-bold leading-none text-[#16233f] dark:text-white">
-              {rataRata ?? "—"}
-            </p>
-            <p className="text-[11px] font-medium leading-none text-[#8b93a6] dark:text-white/40">Rata-rata</p>
-          </div>
-
-          <div className="flex flex-col items-center gap-2 text-center">
-            <Image
-              src="/image/icon/nilai-tertinggi-icon.png"
-              alt=""
-              width={56}
-              height={56}
-              className="h-14 w-14 object-contain drop-shadow-[0_8px_14px_rgba(49,46,129,0.22)]"
-            />
-            <p className="text-[20px] font-bold leading-none text-[#16233f] dark:text-white">
-              {skorTertinggi ?? "—"}
-            </p>
-            <p className="text-[11px] font-medium leading-none text-[#8b93a6] dark:text-white/40">Nilai Tertinggi</p>
-          </div>
+        {/* Statistik — pakai StatCard */}
+        <div className="relative mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-3.5">
+          <StatCard
+            iconImageSrc="/image/icon/total-peserta-icon.png"
+            label="Peserta"
+            value={ujian.hasilUjian.length}
+            tone="blue"
+          />
+          <StatCard
+            iconImageSrc="/image/icon/selesai-icon.png"
+            label="Selesai"
+            value={selesai.length}
+            tone="emerald"
+          />
+          <StatCard
+            iconImageSrc="/image/icon/rata-rata-score.png"
+            label="Rata-rata"
+            value={rataRata ?? "—"}
+            tone="violet"
+          />
+          <StatCard
+            iconImageSrc="/image/icon/nilai-tertinggi-icon.png"
+            label="Nilai Tertinggi"
+            value={skorTertinggi ?? "—"}
+            tone="amber"
+          />
         </div>
       </Card>
 
       {/* Tabel peserta */}
-      <Card
-        variant="glass"
-        className="overflow-hidden rounded-[20px] p-0"
-      >
-        {/* Header tabel + count */}
+      <Card variant="glass" className="overflow-hidden rounded-[20px] p-0">
         <div className="flex items-center justify-between gap-3 border-b border-[#edf0ef] px-4 py-3.5 dark:border-white/10 sm:px-5">
           <div className="flex items-center gap-2.5">
-            {/* Ikon baru: daftar-peserta-icon.png */}
             <Image
               src="/image/icon/daftar-peserta-icon.png"
               alt=""
@@ -197,7 +157,6 @@ export default async function HasilDetailGuruPage({ params }: { params: Promise<
           )}
         </div>
 
-        {/* Tabel */}
         <div className="overflow-x-auto">
           <table className="w-full min-w-[680px] text-left text-[13px]">
             <thead>

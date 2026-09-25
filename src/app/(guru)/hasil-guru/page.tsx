@@ -3,7 +3,7 @@ import Image from "next/image"
 
 import { requireGuruSession } from "@/lib/guru/session"
 import { prisma } from "@/lib/prisma"
-import { Card } from "@/components/ui/Card"
+import { Card, StatCard } from "@/components/ui/Card"
 import { Badge } from "@/components/ui/Badge"
 import { IconBook, IconChevronRight } from "@/components/ui/Icons"
 import { getSubjectIconSrc } from "@/lib/subject-icons"
@@ -47,71 +47,32 @@ export default async function HasilGuruPage() {
 
   return (
     <div className="space-y-6">
-      {/* Ringkasan keseluruhan — TANPA card, hanya ikon + angka + label */}
-      <div className="grid grid-cols-2 gap-5 sm:grid-cols-4 sm:gap-6">
-        <div className="flex flex-col items-center gap-2 text-center">
-          <Image
-            src="/image/icon/total-ujian-icon.png"
-            alt=""
-            width={56}
-            height={56}
-            className="h-14 w-14 object-contain drop-shadow-[0_8px_14px_rgba(49,46,129,0.22)]"
-          />
-          <p className="text-[22px] font-bold leading-none text-[#16233f] dark:text-white">
-            {ujian.length}
-          </p>
-          <p className="text-[11px] font-medium leading-none text-[#8b93a6] dark:text-white/40">
-            Total Ujian
-          </p>
-        </div>
-
-        <div className="flex flex-col items-center gap-2 text-center">
-          <Image
-            src="/image/icon/total-peserta-icon.png"
-            alt=""
-            width={56}
-            height={56}
-            className="h-14 w-14 object-contain drop-shadow-[0_8px_14px_rgba(49,46,129,0.22)]"
-          />
-          <p className="text-[22px] font-bold leading-none text-[#16233f] dark:text-white">
-            {totalPeserta}
-          </p>
-          <p className="text-[11px] font-medium leading-none text-[#8b93a6] dark:text-white/40">
-            Total Peserta
-          </p>
-        </div>
-
-        <div className="flex flex-col items-center gap-2 text-center">
-          <Image
-            src="/image/icon/selesai-icon.png"
-            alt=""
-            width={56}
-            height={56}
-            className="h-14 w-14 object-contain drop-shadow-[0_8px_14px_rgba(49,46,129,0.22)]"
-          />
-          <p className="text-[22px] font-bold leading-none text-[#16233f] dark:text-white">
-            {totalSelesai}
-          </p>
-          <p className="text-[11px] font-medium leading-none text-[#8b93a6] dark:text-white/40">
-            Selesai Dikerjakan
-          </p>
-        </div>
-
-        <div className="flex flex-col items-center gap-2 text-center">
-          <Image
-            src="/image/icon/rata-rata-score.png"
-            alt=""
-            width={56}
-            height={56}
-            className="h-14 w-14 object-contain drop-shadow-[0_8px_14px_rgba(49,46,129,0.22)]"
-          />
-          <p className="text-[22px] font-bold leading-none text-[#16233f] dark:text-white">
-            {rataRataKeseluruhan ?? "—"}
-          </p>
-          <p className="text-[11px] font-medium leading-none text-[#8b93a6] dark:text-white/40">
-            Rata-rata Keseluruhan
-          </p>
-        </div>
+      {/* Ringkasan keseluruhan — pakai StatCard */}
+      <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-4">
+        <StatCard
+          iconImageSrc="/image/icon/total-ujian-icon.png"
+          label="Total Ujian"
+          value={ujian.length}
+          tone="indigo"
+        />
+        <StatCard
+          iconImageSrc="/image/icon/total-peserta-icon.png"
+          label="Total Peserta"
+          value={totalPeserta}
+          tone="blue"
+        />
+        <StatCard
+          iconImageSrc="/image/icon/selesai-icon.png"
+          label="Selesai Dikerjakan"
+          value={totalSelesai}
+          tone="emerald"
+        />
+        <StatCard
+          iconImageSrc="/image/icon/rata-rata-score.png"
+          label="Rata-rata Keseluruhan"
+          value={rataRataKeseluruhan ?? "—"}
+          tone="violet"
+        />
       </div>
 
       {/* Label seksi daftar ujian */}

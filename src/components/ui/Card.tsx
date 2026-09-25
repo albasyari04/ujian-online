@@ -4,10 +4,6 @@ import Link from "next/link"
 
 /* =========================================================
    CARD DASAR
-   variant "solid" (default) = tampilan lama, dipakai di semua
-   halaman lain — TIDAK berubah.
-   variant "glass" = gaya glassmorphism (transparan + blur),
-   dipakai khusus di halaman guru sesuai permintaan.
 ========================================================= */
 
 type CardVariant = "solid" | "glass"
@@ -34,9 +30,6 @@ export function Card({
 
 /* =========================================================
    STAT CARD
-   Mendukung dua gaya pemakaian yang ditemukan di codebase:
-   - Admin: <StatCard icon={<span>Q</span>} label="..." value={..} tone="emerald" />
-   - Peserta: <StatCard iconImageSrc="/image/icon/x.png" label="..." value={..} description="..." tone="blue" href="/x" />
 ========================================================= */
 
 type StatTone = "indigo" | "blue" | "violet" | "emerald" | "amber" | "red" | "slate"
@@ -107,12 +100,16 @@ export function StatCard({
           {caption && <p className="mt-2 text-[11.5px] text-[#8b93a6] dark:text-white/40">{caption}</p>}
         </div>
         <span
-          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] ring-1 ring-inset ring-black/5 dark:ring-white/10 ${t.icon}`}
+          className={`flex shrink-0 items-center justify-center ${
+            iconImageSrc
+              ? "h-20 w-20 -mr-1 -mt-1 drop-shadow-[0_14px_20px_rgba(49,46,129,0.28)]"
+              : `h-11 w-11 rounded-[14px] ring-1 ring-inset ring-black/5 dark:ring-white/10 ${t.icon}`
+          }`}
         >
           {icon ? (
             icon
           ) : iconImageSrc ? (
-            <Image src={iconImageSrc} alt="" width={28} height={28} className="h-6 w-6 object-contain" />
+            <Image src={iconImageSrc} alt="" width={80} height={80} className="h-20 w-20 object-contain" />
           ) : null}
         </span>
       </div>
@@ -183,7 +180,6 @@ export function RingkasanCard({
 
 /* =========================================================
    FITUR BADGE
-   Dipakai di hero beranda-peserta: badge kecil icon + judul + subjudul.
 ========================================================= */
 
 type FiturTone = "blue" | "violet" | "emerald"
@@ -220,8 +216,6 @@ export function FiturBadge({
 
 /* =========================================================
    TONE GRADIENTS / SHADOW
-   Dipakai di hasil/[id] untuk badge skor akhir.
-   Kunci sesuai fungsi toneSkor(): emerald | amber | red | slate
 ========================================================= */
 
 type SkorTone = "emerald" | "amber" | "red" | "slate"

@@ -68,16 +68,7 @@ export function StatCard({
         </div>
 
         {iconImageSrc ? (
-          <span
-            className="
-              relative -mr-1 -mt-1 flex h-14 w-14 shrink-0 items-center justify-center
-              drop-shadow-[0_12px_16px_rgba(49,46,129,0.22)]
-              transition-transform duration-200 ease-out
-              group-hover:-rotate-3 group-hover:scale-105
-            "
-          >
-            <Image src={iconImageSrc} alt="" width={56} height={56} className="h-14 w-14 object-contain" />
-          </span>
+          <Image src={iconImageSrc} alt="" width={64} height={64} className="h-16 w-16 object-contain" />
         ) : Icon ? (
           <span
             className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] ring-1 ring-inset ring-black/5 dark:ring-white/10 ${t.icon}`}

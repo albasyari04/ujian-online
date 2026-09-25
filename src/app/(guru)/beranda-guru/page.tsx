@@ -7,7 +7,7 @@ import { StatCard } from "@/components/ui/StatCard"
 import { Card } from "@/components/ui/Card"
 import { Badge } from "@/components/ui/Badge"
 import { getSubjectIconSrc } from "@/lib/subject-icons"
-import { IconAlertTriangle, IconClock } from "@/components/ui/Icons"
+import { IconClock } from "@/components/ui/Icons"
 
 // Icon 3D untuk kartu ringkasan di atas — file disimpan di public/image/icon/
 const STAT_ICON = {
@@ -15,6 +15,12 @@ const STAT_ICON = {
   totalSoal: "/image/icon/total-soal-icon.png",
   sedangMengerjakan: "/image/icon/sedang-mengerjakan-icon.png",
   rataRata: "/image/icon/rata-rata-score.png",
+}
+
+// Icon 3D untuk header kartu ringkasan "Ujian Terbaru" & "Pelanggaran Terbaru"
+const SECTION_ICON = {
+  ujianTerbaru: "/image/icon/ujian-sedang-dikerjakan.png",
+  pelanggaran: "/image/icon/pelanggaran-terbaru-icon.png",
 }
 
 function formatTanggal(date: Date) {
@@ -104,12 +110,26 @@ export default async function BerandaGuruPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-5">
-        <Card variant="glass" className="p-5 lg:col-span-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-[15px] font-semibold text-[#16233f] dark:text-white">Ujian Terbaru</h2>
+        <Card
+          variant="glass"
+          className="p-5 shadow-[0_1px_2px_rgba(22,35,63,0.04),0_28px_52px_-26px_rgba(49,46,129,0.4)] ring-1 ring-white/60 ring-inset dark:ring-white/5 lg:col-span-3"
+        >
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2.5">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[14px] bg-gradient-to-br from-[#c4b5fd] to-[#6d28d9] shadow-[0_8px_16px_-6px_rgba(109,40,217,0.5)] ring-1 ring-inset ring-black/5">
+                <Image
+                  src={SECTION_ICON.ujianTerbaru}
+                  alt=""
+                  width={26}
+                  height={26}
+                  className="h-6 w-6 object-contain drop-shadow-sm"
+                />
+              </span>
+              <h2 className="text-[15px] font-semibold text-[#16233f] dark:text-white">Ujian Terbaru</h2>
+            </div>
             <Link
               href="/ujian-guru"
-              className="text-[12.5px] font-medium text-[#4338ca] hover:underline dark:text-[#818cf8]"
+              className="shrink-0 text-[12.5px] font-medium text-[#4338ca] hover:underline dark:text-[#818cf8]"
             >
               Lihat semua
             </Link>
@@ -155,9 +175,20 @@ export default async function BerandaGuruPage() {
           </div>
         </Card>
 
-        <Card variant="glass" className="p-5 lg:col-span-2">
-          <div className="flex items-center gap-2">
-            <IconAlertTriangle className="h-4 w-4 text-[#d23b3b]" />
+        <Card
+          variant="glass"
+          className="p-5 shadow-[0_1px_2px_rgba(22,35,63,0.04),0_28px_52px_-26px_rgba(49,46,129,0.4)] ring-1 ring-white/60 ring-inset dark:ring-white/5 lg:col-span-2"
+        >
+          <div className="flex items-center gap-2.5">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[14px] bg-gradient-to-br from-[#fca5a5] to-[#b52f2f] shadow-[0_8px_16px_-6px_rgba(181,47,47,0.5)] ring-1 ring-inset ring-black/5">
+              <Image
+                src={SECTION_ICON.pelanggaran}
+                alt=""
+                width={26}
+                height={26}
+                className="h-6 w-6 object-contain drop-shadow-sm"
+              />
+            </span>
             <h2 className="text-[15px] font-semibold text-[#16233f] dark:text-white">Pelanggaran Terbaru</h2>
           </div>
 

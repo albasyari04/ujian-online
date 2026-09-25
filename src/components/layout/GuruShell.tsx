@@ -24,10 +24,13 @@ export function GuruShell({
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
-    // h-dvh (bukan h-screen/100vh) supaya tinggi shell selalu pas dengan
-    // visual viewport mobile, walau address bar Chrome muncul/hilang.
-    // h-screen dipertahankan sebagai fallback browser lama yang belum kenal dvh.
-    <div className="flex h-screen h-dvh w-full overflow-hidden bg-[#f8faf9] dark:bg-[#0b1120]">
+    // PENTING: "fixed inset-0" (bukan h-screen / h-dvh) supaya shell ini
+    // selalu presis mengunci ke visual viewport browser mobile, kapan pun,
+    // tanpa bergantung pada dukungan unit "dvh" di versi Tailwind manapun.
+    // Ini menghindari selisih ukuran akibat address bar Chrome yang
+    // muncul/hilang, yang sebelumnya bikin scroll terasa "mentok" sebelum
+    // konten paling bawah benar-benar lepas dari BottomNavGuru.
+    <div className="fixed inset-0 flex w-full overflow-hidden bg-[#f8faf9] dark:bg-[#0b1120]">
       <SidebarGuru open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       <div className="flex h-full min-w-0 flex-1 flex-col">

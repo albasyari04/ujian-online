@@ -262,7 +262,7 @@ export function UjianGuruClient({ ujianAwal, cariAwal }: { ujianAwal: Ujian[]; c
           className="pointer-events-none absolute -bottom-16 left-10 h-40 w-40 rounded-full bg-[radial-gradient(circle,rgba(129,199,253,0.18),transparent_65%)]"
         />
 
-        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative flex items-center justify-between gap-4">
           <div className="min-w-0">
             <p className="text-[12.5px] font-medium text-[#6d78a6] dark:text-white/50">Selamat datang,</p>
             <h1 className="mt-0.5 text-[24px] font-bold leading-tight text-[#16233f] dark:text-white sm:text-[26px]">
@@ -273,38 +273,44 @@ export function UjianGuruClient({ ujianAwal, cariAwal }: { ujianAwal: Ujian[]; c
             </p>
           </div>
 
-          <div className="flex items-center gap-3 sm:shrink-0">
-            <span className="hidden h-16 w-16 shrink-0 items-center justify-center rounded-[18px] bg-white/70 shadow-[0_10px_20px_-10px_rgba(49,46,129,0.35)] backdrop-blur-md dark:bg-white/10 sm:flex">
-              <IconDocument className="h-8 w-8 text-[#4338ca] dark:text-[#a5b4fc]" />
-            </span>
-            <Button onClick={bukaModalBuat} className="shrink-0">
-              <IconPlus className="h-4 w-4" />
-              <span className="hidden sm:inline">Buat Ujian</span>
-              <span className="sm:hidden">Buat</span>
-            </Button>
+          <div className="shrink-0">
+            <Image
+              src="/image/icon/ujian-saya-icon.png"
+              alt=""
+              width={80}
+              height={80}
+              className="h-14 w-14 object-contain drop-shadow-[0_12px_20px_rgba(49,46,129,0.3)] sm:h-20 sm:w-20"
+            />
           </div>
         </div>
 
-        <div className="relative mt-4 flex items-center gap-2 rounded-[12px] border border-white/60 bg-white/60 px-3.5 py-2.5 backdrop-blur-md dark:border-white/10 dark:bg-white/[0.05]">
-          <IconSearch className="h-4 w-4 shrink-0 text-[#94a3b8]" />
-          <input
-            value={cari}
-            onChange={(e) => ubahCari(e.target.value)}
-            placeholder="Cari judul ujian..."
-            className="w-full bg-transparent text-[13px] text-[#34435f] placeholder:text-[#94a3b8] focus:outline-none dark:text-white/80"
-          />
+        <div className="relative mt-4 flex items-center gap-2">
+          <div className="flex flex-1 items-center gap-2 rounded-[12px] border border-white/60 bg-white/60 px-3.5 py-2.5 backdrop-blur-md dark:border-white/10 dark:bg-white/[0.05]">
+            <IconSearch className="h-4 w-4 shrink-0 text-[#94a3b8]" />
+            <input
+              value={cari}
+              onChange={(e) => ubahCari(e.target.value)}
+              placeholder="Cari judul ujian..."
+              className="w-full bg-transparent text-[13px] text-[#34435f] placeholder:text-[#94a3b8] focus:outline-none dark:text-white/80"
+            />
+          </div>
+          <Button onClick={bukaModalBuat} className="shrink-0">
+            <IconPlus className="h-4 w-4" />
+            <span className="hidden sm:inline">Buat Ujian</span>
+            <span className="sm:hidden">Buat</span>
+          </Button>
         </div>
       </div>
 
       {/* ============ TAB FILTER ============ */}
-      <div className="flex flex-wrap gap-1.5">
+      <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {TAB_FILTER.map((t) => {
           const aktif = tab === t.key
           return (
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
-              className={`flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-[12px] font-medium transition-all ${
+              className={`flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-[12px] font-medium transition-all ${
                 aktif
                   ? "border-transparent bg-gradient-to-br from-[#818cf8] to-[#4338ca] text-white shadow-[0_8px_18px_-6px_rgba(67,56,202,0.55)]"
                   : "border-[#e7e4dc] bg-white text-[#5b657d] hover:bg-[#f7f9f8] dark:border-white/10 dark:bg-white/[0.03] dark:text-white/50 dark:hover:bg-white/10"
@@ -367,9 +373,13 @@ export function UjianGuruClient({ ujianAwal, cariAwal }: { ujianAwal: Ujian[]; c
 
                 <div className="flex items-center gap-3">
                   <Link href={`/ujian-guru/${u.id}`} className="shrink-0">
-                    <span className="flex h-14 w-14 items-center justify-center rounded-[16px] bg-white shadow-[0_10px_20px_-10px_rgba(49,46,129,0.3)] transition-transform duration-200 ease-out group-hover:-rotate-3 group-hover:scale-105 dark:bg-white/10">
-                      <Image src={subjectIconSrc} alt="" width={36} height={36} className="h-9 w-9 object-contain" />
-                    </span>
+                    <Image
+                      src={subjectIconSrc}
+                      alt=""
+                      width={48}
+                      height={48}
+                      className="h-12 w-12 object-contain drop-shadow-[0_10px_16px_rgba(49,46,129,0.25)] transition-transform duration-200 ease-out group-hover:-rotate-3 group-hover:scale-105"
+                    />
                   </Link>
 
                   <div className="min-w-0 flex-1">

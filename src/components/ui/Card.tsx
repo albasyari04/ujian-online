@@ -36,7 +36,12 @@ export function Card({
    STAT CARD
    Mendukung dua gaya pemakaian yang ditemukan di codebase:
    - Admin: <StatCard icon={<span>Q</span>} label="..." value={..} tone="emerald" />
-   - Peserta: <StatCard iconImageSrc="/image/icon/x.png" label="..." value={..} description="..." tone="blue" href="/x" />
+   - Peserta/Guru: <StatCard iconImageSrc="/image/icon/x.png" label="..." value={..} description="..." tone="blue" href="/x" />
+
+   PENTING: kalau `iconImageSrc` diisi, icon tampil POLOS —
+   TIDAK ada card/lingkaran/box background di belakangnya,
+   hanya drop-shadow (sama seperti icon mata pelajaran).
+   Card/box gradient (t.icon) hanya dipakai untuk `icon` (SVG).
 ========================================================= */
 
 type StatTone = "indigo" | "blue" | "violet" | "emerald" | "amber" | "red" | "slate"
@@ -96,8 +101,24 @@ export function StatCard({
 
   const body = (
     <div
-      className={`relative overflow-hidden rounded-[18px] border border-[#e7e4dc] bg-white p-4 shadow-[0_1px_2px_rgba(22,35,63,0.04),0_14px_28px_-14px_rgba(49,46,129,0.25)] before:absolute before:inset-0 before:content-[''] dark:border-white/10 dark:bg-[#101a30] dark:shadow-[0_14px_28px_-14px_rgba(0,0,0,0.6)] ${t.glow}`}
+      className="
+        group relative overflow-hidden rounded-[18px] p-4
+        bg-gradient-to-br from-white via-[#fcfbf8] to-[#f6f5f1]
+        shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_4px_0_#eef0f4,0_14px_26px_-16px_rgba(22,35,63,0.3)]
+        transition-all duration-300 ease-out
+        hover:-translate-y-1
+        hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_6px_0_#e3e7ee,0_20px_32px_-16px_rgba(22,35,63,0.38)]
+        dark:from-[#182137] dark:via-[#141c30] dark:to-[#111a2c]
+        dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_0_#0d1424,0_16px_28px_-16px_rgba(0,0,0,0.6)]
+        dark:hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_6px_0_#0d1424,0_22px_34px_-16px_rgba(0,0,0,0.68)]
+      "
     >
+      {/* glare atas — dekorasi permukaan 3D, BUKAN card di belakang icon */}
+      <span
+        className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/75 to-transparent dark:from-white/[0.05]"
+        aria-hidden="true"
+      />
+
       <div className="relative flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-[12px] font-medium text-[#8b93a6] dark:text-white/50">{label}</p>
@@ -106,22 +127,35 @@ export function StatCard({
           </p>
           {caption && <p className="mt-2 text-[11.5px] text-[#8b93a6] dark:text-white/40">{caption}</p>}
         </div>
-        <span
-          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] ring-1 ring-inset ring-black/5 dark:ring-white/10 ${t.icon}`}
-        >
-          {icon ? (
-            icon
-          ) : iconImageSrc ? (
-            <Image src={iconImageSrc} alt="" width={28} height={28} className="h-6 w-6 object-contain" />
-          ) : null}
-        </span>
+
+        {iconImageSrc ? (
+          // Icon POLOS — tanpa card/box/lingkaran background sama sekali
+          <Image
+            src={iconImageSrc}
+            alt=""
+            width={52}
+            height={52}
+            className="
+              -mr-1 -mt-1 h-[52px] w-[52px] shrink-0 object-contain
+              drop-shadow-[0_10px_16px_rgba(49,46,129,0.22)]
+              transition-transform duration-300 ease-out
+              group-hover:-translate-y-0.5 group-hover:-rotate-3
+            "
+          />
+        ) : icon ? (
+          <span
+            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] ring-1 ring-inset ring-black/5 dark:ring-white/10 ${t.icon}`}
+          >
+            {icon}
+          </span>
+        ) : null}
       </div>
     </div>
   )
 
   if (href) {
     return (
-      <Link href={href} className="block transition-transform duration-200 hover:-translate-y-0.5">
+      <Link href={href} className="block">
         {body}
       </Link>
     )

@@ -37,7 +37,7 @@ export function StatCard({
   /** Icon berupa komponen React (svg), mis. IconUsers. Dipakai kalau `iconImageSrc` tidak diisi. */
   icon?: (props: { className?: string }) => ReactElement
   /** Alternatif: path gambar icon 3D siap-pakai (mis. "/image/icon/ujian-saya-icon.png").
-   *  Kalau diisi, background bulat gradient TIDAK dirender — icon tampil polos dengan drop-shadow. */
+   *  Kalau diisi, icon tampil POLOS (tanpa background/box apa pun) — hanya drop-shadow. */
   iconImageSrc?: string
   label: string
   value: string | number
@@ -49,15 +49,23 @@ export function StatCard({
   return (
     <div
       className={`
-        group relative overflow-hidden rounded-[18px] border border-[#e7e4dc] bg-white p-4
-        shadow-[0_1px_2px_rgba(22,35,63,0.04),0_14px_28px_-14px_rgba(49,46,129,0.25)]
-        transition-all duration-200 ease-out
-        before:absolute before:inset-0 before:content-['']
-        hover:-translate-y-1 hover:shadow-[0_6px_14px_rgba(22,35,63,0.07),0_26px_44px_-18px_rgba(49,46,129,0.32)]
-        dark:border-white/10 dark:bg-[#101a30] dark:shadow-[0_14px_28px_-14px_rgba(0,0,0,0.6)]
-        ${t.glow}
+        group relative overflow-hidden rounded-[18px]
+        bg-gradient-to-br from-white via-[#fcfbf8] to-[#f6f5f1] p-4
+        shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_4px_0_#eef0f4,0_14px_26px_-16px_rgba(22,35,63,0.3)]
+        transition-all duration-300 ease-out
+        hover:-translate-y-1
+        hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_6px_0_#e3e7ee,0_20px_32px_-16px_rgba(22,35,63,0.38)]
+        dark:from-[#182137] dark:via-[#141c30] dark:to-[#111a2c]
+        dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_0_#0d1424,0_16px_28px_-16px_rgba(0,0,0,0.6)]
+        dark:hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_6px_0_#0d1424,0_22px_34px_-16px_rgba(0,0,0,0.68)]
       `}
     >
+      {/* glare atas, dekorasi permukaan 3D — bukan card di belakang icon */}
+      <span
+        className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/75 to-transparent dark:from-white/[0.05]"
+        aria-hidden="true"
+      />
+
       <div className="relative flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-[12px] font-medium text-[#8b93a6] dark:text-white/50">{label}</p>
@@ -68,16 +76,19 @@ export function StatCard({
         </div>
 
         {iconImageSrc ? (
-          <span
+          // Icon POLOS, tanpa background/box — sama seperti icon mata pelajaran
+          <Image
+            src={iconImageSrc}
+            alt=""
+            width={52}
+            height={52}
             className="
-              relative -mr-1 -mt-1 flex h-14 w-14 shrink-0 items-center justify-center
-              drop-shadow-[0_12px_16px_rgba(49,46,129,0.22)]
-              transition-transform duration-200 ease-out
-              group-hover:-rotate-3 group-hover:scale-105
+              -mr-1 -mt-1 h-[52px] w-[52px] shrink-0 object-contain
+              drop-shadow-[0_10px_16px_rgba(49,46,129,0.22)]
+              transition-transform duration-300 ease-out
+              group-hover:-translate-y-0.5 group-hover:-rotate-3
             "
-          >
-            <Image src={iconImageSrc} alt="" width={56} height={56} className="h-14 w-14 object-contain" />
-          </span>
+          />
         ) : Icon ? (
           <span
             className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] ring-1 ring-inset ring-black/5 dark:ring-white/10 ${t.icon}`}

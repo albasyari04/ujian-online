@@ -19,7 +19,7 @@ const STAT_ICON = {
 
 // Icon 3D untuk header kartu ringkasan "Ujian Terbaru" & "Pelanggaran Terbaru"
 const SECTION_ICON = {
-  ujianTerbaru: "/image/icon/ujian-sedang-dikerjakan.png",
+  ujianTerbaru: "/image/icon/daftar-jadwal-ujian-icon.png",
   pelanggaran: "/image/icon/pelanggaran-terbaru-icon.png",
 }
 

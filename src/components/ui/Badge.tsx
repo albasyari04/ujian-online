@@ -1,6 +1,6 @@
 import type { ReactNode } from "react"
 
-type BadgeTone = "emerald" | "amber" | "red" | "slate" | "blue"
+type BadgeTone = "emerald" | "amber" | "red" | "slate" | "blue" | "indigo"
 
 const toneClasses: Record<BadgeTone, string> = {
   emerald:
@@ -13,6 +13,8 @@ const toneClasses: Record<BadgeTone, string> = {
     "bg-[#f4f5f7] text-[#5b657d] border-[#e2e5eb] dark:bg-white/10 dark:text-white/60 dark:border-white/20",
   blue:
     "bg-[#eef4ff] text-[#3457c9] border-[#c9d9fb] dark:bg-blue-400/10 dark:text-blue-300 dark:border-blue-400/30",
+  indigo:
+    "bg-[#eef2ff] text-[#4338ca] border-[#c7d2fe] dark:bg-indigo-400/10 dark:text-indigo-300 dark:border-indigo-400/30",
 }
 
 export function Badge({

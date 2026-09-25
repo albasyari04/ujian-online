@@ -1,6 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react"
+import Image from "next/image"
 
 import { FormGuru } from "@/components/admin/FormGuru"
 import { Button } from "@/components/ui/Button"
@@ -154,12 +155,6 @@ export default function GuruPage() {
         </Button>
       </div>
 
-      {/*
-        StatCard dengan `iconImageSrc` merender icon POLOS
-        (tanpa card/lingkaran/box background di baliknya),
-        cukup drop-shadow — sesuai style icon mata pelajaran.
-        File icon sudah ada di public/image/icon/.
-      */}
       <div className="grid grid-cols-2 gap-2.5 sm:gap-4">
         <StatCard
           label="Total Guru"
@@ -248,8 +243,19 @@ export default function GuruPage() {
                     >
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-2.5">
-                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#7c3aed] to-[#a78bfa] text-[11.5px] font-semibold text-white shadow-[0_4px_8px_rgba(124,58,237,0.25)]">
-                            {guru.nama.charAt(0).toUpperCase()}
+                          {/*
+                            Avatar diganti dari inisial huruf menjadi
+                            icon guru-icon.png yang diberikan, tetap
+                            dalam wadah bulat bergradasi ungu (3D).
+                          */}
+                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#7c3aed] to-[#a78bfa] p-1.5 shadow-[0_4px_8px_rgba(124,58,237,0.35)]">
+                            <Image
+                              src="/image/icon/guru-icon.png"
+                              alt=""
+                              width={20}
+                              height={20}
+                              className="h-full w-full object-contain brightness-0 invert"
+                            />
                           </span>
                           <span className="truncate text-[13px] font-medium text-[#16233f] dark:text-white">
                             {guru.nama}
@@ -264,14 +270,19 @@ export default function GuruPage() {
                         {guru._count.ujianDibuat} ujian
                       </td>
                       <td className="px-5 py-3.5">
-                        <div className="flex items-center justify-end gap-1.5">
+                        {/*
+                          Tombol Ubah & Hapus sekarang punya "card bulat"
+                          (rounded-full) permanen dengan warna latar +
+                          shadow 3D, bukan cuma muncul saat hover.
+                        */}
+                        <div className="flex items-center justify-end gap-2">
                           <button
                             type="button"
                             onClick={() => {
                               setSelectedGuru(guru)
                               setModalMode("edit")
                             }}
-                            className="flex h-8 w-8 items-center justify-center rounded-[8px] text-[#007fc4] hover:bg-[#d9f4ff] dark:hover:bg-white/10"
+                            className="flex h-9 w-9 items-center justify-center rounded-full bg-[#e6f5ff] text-[#007fc4] shadow-[0_3px_8px_-2px_rgba(0,127,196,0.4)] ring-1 ring-inset ring-[#007fc4]/10 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_12px_-2px_rgba(0,127,196,0.5)] dark:bg-[#007fc4]/15 dark:text-[#63c2f5] dark:ring-white/10"
                             aria-label={`Ubah ${guru.nama}`}
                           >
                             <IconPencil className="h-4 w-4" />
@@ -282,7 +293,7 @@ export default function GuruPage() {
                               setGuruToDelete(guru)
                               setDeleteError("")
                             }}
-                            className="flex h-8 w-8 items-center justify-center rounded-[8px] text-[#d23b3b] hover:bg-[#fdf1f1] dark:hover:bg-white/10"
+                            className="flex h-9 w-9 items-center justify-center rounded-full bg-[#fdedee] text-[#d23b3b] shadow-[0_3px_8px_-2px_rgba(210,59,59,0.4)] ring-1 ring-inset ring-[#d23b3b]/10 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_12px_-2px_rgba(210,59,59,0.5)] dark:bg-[#d23b3b]/15 dark:text-[#f28b8b] dark:ring-white/10"
                             aria-label={`Hapus ${guru.nama}`}
                           >
                             <IconTrash className="h-4 w-4" />

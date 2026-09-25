@@ -4,9 +4,9 @@ import Image from "next/image"
 
 import { requireGuruSession } from "@/lib/guru/session"
 import { prisma } from "@/lib/prisma"
-import { Card, StatCard } from "@/components/ui/Card"
+import { Card } from "@/components/ui/Card"
 import { Badge } from "@/components/ui/Badge"
-import { IconArrowLeft, IconDocument } from "@/components/ui/Icons"
+import { IconArrowLeft } from "@/components/ui/Icons"
 import { getSubjectIconSrc } from "@/lib/subject-icons"
 
 type SkorTone = "emerald" | "amber" | "red" | "slate"
@@ -107,32 +107,63 @@ export default async function HasilDetailGuruPage({ params }: { params: Promise<
           </div>
         </div>
 
-        {/* Statistik */}
-        <div className="relative mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-3.5">
-          <StatCard
-            iconImageSrc="/image/icon/total-peserta-icon.png"
-            label="Peserta"
-            value={ujian.hasilUjian.length}
-            tone="blue"
-          />
-          <StatCard
-            iconImageSrc="/image/icon/selesai-icon.png"
-            label="Selesai"
-            value={selesai.length}
-            tone="emerald"
-          />
-          <StatCard
-            iconImageSrc="/image/icon/rata-rata-score.png"
-            label="Rata-rata"
-            value={rataRata ?? "—"}
-            tone="violet"
-          />
-          <StatCard
-            iconImageSrc="/image/icon/nilai-tertinggi-icon.png"
-            label="Nilai Tertinggi"
-            value={skorTertinggi ?? "—"}
-            tone="amber"
-          />
+        {/* Statistik — TANPA background card, hanya ikon + angka + label */}
+        <div className="relative mt-6 grid grid-cols-2 gap-5 sm:grid-cols-4 sm:gap-6">
+          <div className="flex flex-col items-center gap-2 text-center">
+            <Image
+              src="/image/icon/total-peserta-icon.png"
+              alt=""
+              width={56}
+              height={56}
+              className="h-14 w-14 object-contain drop-shadow-[0_8px_14px_rgba(49,46,129,0.22)]"
+            />
+            <p className="text-[20px] font-bold leading-none text-[#16233f] dark:text-white">
+              {ujian.hasilUjian.length}
+            </p>
+            <p className="text-[11px] font-medium leading-none text-[#8b93a6] dark:text-white/40">Peserta</p>
+          </div>
+
+          <div className="flex flex-col items-center gap-2 text-center">
+            <Image
+              src="/image/icon/selesai.png"
+              alt=""
+              width={56}
+              height={56}
+              className="h-14 w-14 object-contain drop-shadow-[0_8px_14px_rgba(49,46,129,0.22)]"
+            />
+            <p className="text-[20px] font-bold leading-none text-[#16233f] dark:text-white">
+              {selesai.length}
+            </p>
+            <p className="text-[11px] font-medium leading-none text-[#8b93a6] dark:text-white/40">Selesai</p>
+          </div>
+
+          <div className="flex flex-col items-center gap-2 text-center">
+            <Image
+              src="/image/icon/persen.png"
+              alt=""
+              width={56}
+              height={56}
+              className="h-14 w-14 object-contain drop-shadow-[0_8px_14px_rgba(49,46,129,0.22)]"
+            />
+            <p className="text-[20px] font-bold leading-none text-[#16233f] dark:text-white">
+              {rataRata ?? "—"}
+            </p>
+            <p className="text-[11px] font-medium leading-none text-[#8b93a6] dark:text-white/40">Rata-rata</p>
+          </div>
+
+          <div className="flex flex-col items-center gap-2 text-center">
+            <Image
+              src="/image/icon/nilai-tertinggi-icon.png"
+              alt=""
+              width={56}
+              height={56}
+              className="h-14 w-14 object-contain drop-shadow-[0_8px_14px_rgba(49,46,129,0.22)]"
+            />
+            <p className="text-[20px] font-bold leading-none text-[#16233f] dark:text-white">
+              {skorTertinggi ?? "—"}
+            </p>
+            <p className="text-[11px] font-medium leading-none text-[#8b93a6] dark:text-white/40">Nilai Tertinggi</p>
+          </div>
         </div>
       </Card>
 
@@ -144,9 +175,14 @@ export default async function HasilDetailGuruPage({ params }: { params: Promise<
         {/* Header tabel + count */}
         <div className="flex items-center justify-between gap-3 border-b border-[#edf0ef] px-4 py-3.5 dark:border-white/10 sm:px-5">
           <div className="flex items-center gap-2.5">
-            <span className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-gradient-to-br from-[#818cf8] to-[#4338ca] text-white shadow-[0_6px_14px_-4px_rgba(67,56,202,0.5)]">
-              <IconDocument className="h-4 w-4" />
-            </span>
+            {/* Ikon baru: daftar-peserta-icon.png */}
+            <Image
+              src="/image/icon/daftar-peserta-icon.png"
+              alt=""
+              width={36}
+              height={36}
+              className="h-9 w-9 shrink-0 object-contain drop-shadow-[0_4px_8px_rgba(49,46,129,0.2)]"
+            />
             <div>
               <h2 className="text-[14.5px] font-semibold text-[#16233f] dark:text-white">
                 Daftar Peserta
@@ -178,9 +214,13 @@ export default async function HasilDetailGuruPage({ params }: { params: Promise<
                 <tr>
                   <td colSpan={5} className="px-5 py-14 text-center">
                     <div className="flex flex-col items-center gap-2">
-                      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#f4f5f7] text-[#8b93a6] dark:bg-white/5 dark:text-white/40">
-                        <IconDocument className="h-5 w-5" />
-                      </span>
+                      <Image
+                        src="/image/icon/daftar-peserta-icon.png"
+                        alt=""
+                        width={48}
+                        height={48}
+                        className="h-12 w-12 object-contain opacity-60"
+                      />
                       <p className="text-[13px] font-medium text-[#5b657d] dark:text-white/50">
                         Belum ada peserta yang mengerjakan.
                       </p>

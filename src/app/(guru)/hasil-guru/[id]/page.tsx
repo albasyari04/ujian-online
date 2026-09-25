@@ -58,6 +58,8 @@ export default async function HasilDetailGuruPage({ params }: { params: Promise<
     ? Math.round((selesai.reduce((s, h) => s + (h.skor ?? 0), 0) / selesai.length) * 10) / 10
     : null
   const skorTertinggi = selesai.length ? Math.max(...selesai.map((h) => h.skor ?? 0)) : null
+  const persentaseSelesai =
+    ujian.hasilUjian.length > 0 ? Math.round((selesai.length / ujian.hasilUjian.length) * 100) : 0
 
   return (
     <div className="space-y-5">
@@ -103,7 +105,7 @@ export default async function HasilDetailGuruPage({ params }: { params: Promise<
           </div>
         </div>
 
-        {/* Statistik — pakai StatCard */}
+        {/* Statistik — pakai StatCard (gaya 3D) */}
         <div className="relative mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-3.5">
           <StatCard
             iconImageSrc="/image/icon/total-peserta-icon.png"
@@ -115,6 +117,7 @@ export default async function HasilDetailGuruPage({ params }: { params: Promise<
             iconImageSrc="/image/icon/selesai-icon.png"
             label="Selesai"
             value={selesai.length}
+            description={ujian.hasilUjian.length > 0 ? `${persentaseSelesai}% dari peserta` : undefined}
             tone="emerald"
           />
           <StatCard

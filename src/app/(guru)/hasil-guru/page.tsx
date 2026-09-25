@@ -44,10 +44,22 @@ export default async function HasilGuruPage() {
   const rataRataKeseluruhan = semuaSkorSelesai.length
     ? Math.round((semuaSkorSelesai.reduce((s, v) => s + v, 0) / semuaSkorSelesai.length) * 10) / 10
     : null
+  const persentaseSelesaiKeseluruhan =
+    totalPeserta > 0 ? Math.round((totalSelesai / totalPeserta) * 100) : 0
 
   return (
     <div className="space-y-6">
-      {/* Ringkasan keseluruhan — pakai StatCard */}
+      {/* Header halaman */}
+      <div className="flex flex-col gap-1">
+        <h1 className="text-[19px] font-bold leading-tight text-[#16233f] dark:text-white sm:text-[22px]">
+          Hasil & Nilai
+        </h1>
+        <p className="text-[12.5px] text-[#8b93a6] dark:text-white/40">
+          Ringkasan performa seluruh ujian yang Anda buat.
+        </p>
+      </div>
+
+      {/* Ringkasan keseluruhan — pakai StatCard (gaya 3D) */}
       <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-4">
         <StatCard
           iconImageSrc="/image/icon/total-ujian-icon.png"
@@ -65,6 +77,7 @@ export default async function HasilGuruPage() {
           iconImageSrc="/image/icon/selesai-icon.png"
           label="Selesai Dikerjakan"
           value={totalSelesai}
+          description={totalPeserta > 0 ? `${persentaseSelesaiKeseluruhan}% dari peserta` : undefined}
           tone="emerald"
         />
         <StatCard

@@ -43,6 +43,11 @@ export function Card({
    hanya drop-shadow (sama seperti icon mata pelajaran).
    Card/box gradient (t.icon) hanya dipakai untuk `icon` (SVG).
 
+   RESPONSIVE: icon & teks mengecil di layar sempit (mobile)
+   lalu kembali ke ukuran normal mulai breakpoint `sm`. Ini
+   mencegah icon "berdempetan"/menabrak teks label & angka
+   ketika StatCard dipasang berjejer 3-4 kolom di layar HP.
+
    `className` opsional untuk menambah class tambahan pada card
    luar (mis. "col-span-2 sm:col-span-1" untuk layout grid khusus).
 ========================================================= */
@@ -107,7 +112,7 @@ export function StatCard({
   const body = (
     <div
       className={`
-        group relative overflow-hidden rounded-[18px] p-4
+        group relative overflow-hidden rounded-[14px] p-3
         bg-gradient-to-br from-white via-[#fcfbf8] to-[#f6f5f1]
         shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_4px_0_#eef0f4,0_14px_26px_-16px_rgba(22,35,63,0.3)]
         transition-all duration-300 ease-out
@@ -116,6 +121,7 @@ export function StatCard({
         dark:from-[#182137] dark:via-[#141c30] dark:to-[#111a2c]
         dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_4px_0_#0d1424,0_16px_28px_-16px_rgba(0,0,0,0.6)]
         dark:hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_6px_0_#0d1424,0_22px_34px_-16px_rgba(0,0,0,0.68)]
+        sm:rounded-[18px] sm:p-4
         ${className}
       `}
     >
@@ -125,32 +131,41 @@ export function StatCard({
         aria-hidden="true"
       />
 
-      <div className="relative flex items-start justify-between gap-3">
+      <div className="relative flex items-start justify-between gap-2 sm:gap-3">
         <div className="min-w-0">
-          <p className="text-[12px] font-medium text-[#8b93a6] dark:text-white/50">{label}</p>
-          <p className="mt-1.5 truncate text-[26px] font-semibold leading-none text-[#16233f] dark:text-white">
+          <p className="truncate text-[10.5px] font-medium leading-tight text-[#8b93a6] dark:text-white/50 sm:text-[12px]">
+            {label}
+          </p>
+          <p className="mt-1 truncate text-[18px] font-semibold leading-none text-[#16233f] dark:text-white sm:mt-1.5 sm:text-[26px]">
             {value}
           </p>
-          {caption && <p className="mt-2 text-[11.5px] text-[#8b93a6] dark:text-white/40">{caption}</p>}
+          {caption && (
+            <p className="mt-1.5 truncate text-[10px] text-[#8b93a6] dark:text-white/40 sm:mt-2 sm:text-[11.5px]">
+              {caption}
+            </p>
+          )}
         </div>
 
         {iconImageSrc ? (
-          // Icon POLOS — tanpa card/box/lingkaran background sama sekali
+          // Icon POLOS — tanpa card/box/lingkaran background sama sekali.
+          // Ukuran mengecil di mobile (h-9 w-9) agar tidak menabrak teks
+          // di layout sempit, lalu kembali ke 52px mulai breakpoint sm.
           <Image
             src={iconImageSrc}
             alt=""
             width={52}
             height={52}
             className="
-              -mr-1 -mt-1 h-[52px] w-[52px] shrink-0 object-contain
+              h-9 w-9 shrink-0 object-contain
               drop-shadow-[0_10px_16px_rgba(49,46,129,0.22)]
               transition-transform duration-300 ease-out
               group-hover:-translate-y-0.5 group-hover:-rotate-3
+              sm:-mr-1 sm:-mt-1 sm:h-[52px] sm:w-[52px]
             "
           />
         ) : icon ? (
           <span
-            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] ring-1 ring-inset ring-black/5 dark:ring-white/10 ${t.icon}`}
+            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-[12px] ring-1 ring-inset ring-black/5 dark:ring-white/10 sm:h-11 sm:w-11 sm:rounded-[14px] ${t.icon}`}
           >
             {icon}
           </span>

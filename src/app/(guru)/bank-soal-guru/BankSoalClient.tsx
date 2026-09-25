@@ -28,17 +28,12 @@ type SoalRingkas = { id: string; pertanyaan: string; tipe: "PILIHAN_GANDA" | "ES
 type UjianRingkas = { id: string; judul: string; soal: SoalRingkas[] }
 
 /* =========================================================
-   PALET WARNA PER CARD
-   Dipakai bergantian (berdasarkan index) untuk garis aksen,
-   lingkaran ikon, dan tombol panah — supaya tiap baris ujian
-   punya warna berbeda seperti di mockup (biru/hijau/ungu/oranye).
+   STYLE KARTU UJIAN
+   Satu gaya indigo yang konsisten untuk tombol chevron —
+   tidak lagi warna-warni bergantian, supaya lebih profesional.
 ========================================================= */
-const CARD_TONES = [
-  { bar: "bg-[#2563eb]", grad: "from-[#93c5fd] to-[#2563eb]", shadow: "rgba(37,99,235,0.5)" },
-  { bar: "bg-[#047857]", grad: "from-[#6ee7b7] to-[#047857]", shadow: "rgba(4,120,87,0.5)" },
-  { bar: "bg-[#6d28d9]", grad: "from-[#c4b5fd] to-[#6d28d9]", shadow: "rgba(109,40,217,0.5)" },
-  { bar: "bg-[#b8863b]", grad: "from-[#fcd34d] to-[#b8863b]", shadow: "rgba(184,134,59,0.5)" },
-] as const
+const ARROW_STYLE =
+  "bg-gradient-to-br from-[#818cf8] to-[#4338ca] shadow-[0_8px_16px_-6px_rgba(67,56,202,0.5)]"
 
 export function BankSoalClient({ data }: { data: UjianRingkas[] }) {
   const [cari, setCari] = useState("")
@@ -83,7 +78,7 @@ export function BankSoalClient({ data }: { data: UjianRingkas[] }) {
 
           <div className="shrink-0">
             <Image
-              src="/image/icon/soal-icon.png"
+              src="/image/icon/bankujian-icon.png"
               alt=""
               width={80}
               height={80}
@@ -147,9 +142,8 @@ export function BankSoalClient({ data }: { data: UjianRingkas[] }) {
           </Card>
         )}
 
-        {hasil.map((u, i) => {
+        {hasil.map((u) => {
           const buka = terbuka === u.id
-          const tone = CARD_TONES[i % CARD_TONES.length]
           const jumlahPg = u.soal.filter((s) => s.tipe === "PILIHAN_GANDA").length
           const jumlahEssay = u.soal.length - jumlahPg
 
@@ -159,23 +153,17 @@ export function BankSoalClient({ data }: { data: UjianRingkas[] }) {
               variant="glass"
               className="relative overflow-hidden shadow-[0_1px_2px_rgba(22,35,63,0.04),0_18px_36px_-20px_rgba(49,46,129,0.35)]"
             >
-              <span aria-hidden className={`absolute inset-y-0 left-0 w-1.5 ${tone.bar}`} />
-
               <button
                 onClick={() => setTerbuka(buka ? null : u.id)}
-                className="flex w-full items-center gap-3.5 py-4 pl-6 pr-4"
+                className="flex w-full items-center gap-3.5 px-4.5 py-4"
               >
-                <span
-                  className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-[16px] bg-gradient-to-br ${tone.grad} shadow-[0_10px_20px_-8px_${tone.shadow}] ring-1 ring-inset ring-black/5`}
-                >
-                  <Image
-                    src={getSubjectIconSrc(u.judul)}
-                    alt=""
-                    width={40}
-                    height={40}
-                    className="h-10 w-10 object-contain drop-shadow-sm"
-                  />
-                </span>
+                <Image
+                  src={getSubjectIconSrc(u.judul)}
+                  alt=""
+                  width={48}
+                  height={48}
+                  className="h-12 w-12 shrink-0 object-contain drop-shadow-[0_10px_16px_rgba(49,46,129,0.25)]"
+                />
 
                 <div className="min-w-0 flex-1 text-left">
                   <h3 className="truncate text-[15px] font-semibold text-[#16233f] dark:text-white">{u.judul}</h3>
@@ -190,15 +178,13 @@ export function BankSoalClient({ data }: { data: UjianRingkas[] }) {
                   )}
                 </div>
 
-                <span
-                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br ${tone.grad} text-white shadow-[0_8px_16px_-6px_${tone.shadow}]`}
-                >
+                <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white ${ARROW_STYLE}`}>
                   <IconChevronDown className={`h-4 w-4 transition-transform ${buka ? "rotate-180" : ""}`} />
                 </span>
               </button>
 
               {buka && (
-                <div className="border-t border-[#edf0ef] px-4.5 py-3.5 pl-6 dark:border-white/10">
+                <div className="border-t border-[#edf0ef] px-4.5 py-3.5 dark:border-white/10">
                   {u.soal.length === 0 ? (
                     <p className="py-3 text-center text-[12.5px] text-[#8b93a6] dark:text-white/40">
                       Belum ada soal di ujian ini.

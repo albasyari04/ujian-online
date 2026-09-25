@@ -6,7 +6,9 @@ import { usePathname } from "next/navigation"
 import { navItems } from "./SidebarGuru"
 
 const BOTTOM_NAV_HREFS = ["/beranda-guru", "/ujian-guru", "/bank-soal-guru", "/hasil-guru", "/profil-guru"]
-const FEATURED_HREF = "/ujian-guru"
+
+// ⬇️ DIUBAH: dari "/ujian-guru" menjadi "/bank-soal-guru"
+const FEATURED_HREF = "/bank-soal-guru"
 
 export function BottomNavGuru() {
   const pathname = usePathname()

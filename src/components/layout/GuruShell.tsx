@@ -31,7 +31,7 @@ export function GuruShell({
     // muncul/hilang, yang sebelumnya bikin scroll terasa "mentok" sebelum
     // konten paling bawah benar-benar lepas dari BottomNavGuru.
     <div className="fixed inset-0 flex w-full overflow-hidden bg-[#f8faf9] dark:bg-[#0b1120]">
-      <SidebarGuru open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <SidebarGuru open={sidebarOpen} onClose={() => setSidebarOpen(false)} user={user} />
 
       <div className="flex h-full min-w-0 flex-1 flex-col">
         <NavbarGuru user={user} onMenuClick={() => setSidebarOpen(true)} />

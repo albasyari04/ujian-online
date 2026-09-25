@@ -65,6 +65,14 @@ function IconPengaturan({ className }: { className?: string }) {
   )
 }
 
+function IconChevronRight({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" aria-hidden="true">
+      <path d="M9 6L15 12L9 18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
 export type NavItem = {
   href: string
   label: string
@@ -80,20 +88,40 @@ export const navItems: NavItem[] = [
   { href: "/pengaturan-guru", label: "Pengaturan", icon: IconPengaturan },
 ]
 
+type SidebarUser = {
+  nama: string
+  email?: string
+  fotoUrl?: string | null
+}
+
+function inisialNama(nama: string) {
+  const bersih = nama.trim()
+  if (!bersih) return "G"
+  return bersih
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((kata) => kata[0]?.toUpperCase() ?? "")
+    .join("")
+}
+
 export function SidebarGuru({
   open,
   onClose,
+  user,
 }: {
   open: boolean
   onClose: () => void
+  user?: SidebarUser
 }) {
   const pathname = usePathname()
+  const namaGuru = user?.nama?.trim() || "Guru"
+  const fotoGuru = user?.fotoUrl
 
   return (
     <>
       {open && (
         <div
-          className="fixed inset-0 z-30 bg-black/40 lg:hidden"
+          className="fixed inset-0 z-30 bg-black/40 backdrop-blur-[2px] lg:hidden"
           onClick={onClose}
           aria-hidden="true"
         />
@@ -101,7 +129,7 @@ export function SidebarGuru({
 
       <aside
         className={`
-          fixed inset-y-0 left-0 z-40 flex w-[210px] shrink-0 flex-col
+          fixed inset-y-0 left-0 z-40 flex w-[218px] shrink-0 flex-col
           bg-[radial-gradient(circle_at_50%_-10%,rgba(129,140,248,0.25),transparent_35%),linear-gradient(180deg,#312e81_0%,#3730a3_56%,#1e1b4b_100%)] px-3.5 py-6 text-white
           shadow-[10px_0_32px_rgba(30,27,75,0.24)]
           transition-transform duration-200 ease-out
@@ -109,22 +137,27 @@ export function SidebarGuru({
           ${open ? "translate-x-0" : "-translate-x-full"}
         `}
       >
+        {/* Logo & judul */}
         <div className="-mt-2 flex shrink-0 flex-col items-center justify-center px-1">
-          <Image
-            src="/image/ujian-online.png"
-            alt="Ujian Online"
-            width={80}
-            height={80}
-            className="h-[80px] w-[80px] object-contain drop-shadow-[0_8px_12px_rgba(0,0,0,0.3)]"
-          />
-          <div className="mt-1 text-center">
+          <span className="relative flex h-[76px] w-[76px] items-center justify-center">
+            <span className="absolute inset-0 rounded-full bg-white/10 blur-xl" aria-hidden="true" />
+            <Image
+              src="/image/ujian-online.png"
+              alt="Ujian Online"
+              width={76}
+              height={76}
+              className="relative h-[76px] w-[76px] object-contain drop-shadow-[0_10px_16px_rgba(0,0,0,0.35)]"
+            />
+          </span>
+          <div className="mt-1.5 text-center">
             <p className="text-[14px] font-semibold leading-tight tracking-[0.01em] text-white">Ujian Online</p>
-            <p className="text-[10.5px] text-white/60">Portal Guru</p>
+            <p className="text-[10.5px] text-white/55">Portal Guru</p>
           </div>
         </div>
 
         <div className="mt-5 shrink-0 border-t border-white/10" />
 
+        {/* Navigasi */}
         <nav className="mt-5 flex flex-1 flex-col gap-1 overflow-y-auto overscroll-contain pr-1">
           {navItems.map(({ href, label, icon: Icon }) => {
             const active = pathname === href || pathname.startsWith(`${href}/`)
@@ -135,26 +168,59 @@ export function SidebarGuru({
                 href={href}
                 onClick={onClose}
                 className={`
-                  flex shrink-0 items-center gap-3 rounded-[12px] px-3.5 py-2.5 text-[13.5px] font-medium transition-colors
-                  ${active ? "bg-white text-[#312e81] shadow-[0_8px_18px_rgba(0,0,0,0.2)]" : "text-white/75 hover:bg-white/10 hover:text-white"}
+                  group flex shrink-0 items-center gap-3 rounded-[13px] px-3 py-2.5 text-[13.5px] font-medium
+                  transition-all duration-200 ease-out
+                  ${
+                    active
+                      ? "bg-white text-[#312e81] shadow-[0_8px_18px_rgba(0,0,0,0.22)]"
+                      : "text-white/70 hover:translate-x-0.5 hover:bg-white/10 hover:text-white"
+                  }
                 `}
               >
-                <Icon className="h-[18px] w-[18px] shrink-0" />
-                <span className="flex-1">{label}</span>
-                {active && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#818cf8] shadow-[0_0_8px_rgba(129,140,248,0.8)]" aria-hidden="true" />}
+                <span
+                  className={`
+                    flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] transition-colors
+                    ${
+                      active
+                        ? "bg-gradient-to-br from-[#818cf8] to-[#4338ca] text-white shadow-[0_6px_12px_-4px_rgba(67,56,202,0.55)]"
+                        : "bg-white/10 text-white/70 group-hover:bg-white/15 group-hover:text-white"
+                    }
+                  `}
+                >
+                  <Icon className="h-[17px] w-[17px]" />
+                </span>
+                <span className="flex-1 truncate">{label}</span>
+                {active && (
+                  <span
+                    className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#818cf8] shadow-[0_0_8px_rgba(129,140,248,0.9)]"
+                    aria-hidden="true"
+                  />
+                )}
               </Link>
             )
           })}
         </nav>
 
+        {/* Kartu profil guru — nama & foto dinamis */}
         <div className="mt-4 shrink-0 border-t border-white/10 pt-4">
-          <div className="flex items-center gap-2 rounded-[12px] border border-white/10 bg-white/[0.08] px-2.5 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_8px_18px_rgba(0,0,0,0.12)]">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#a5b4fc] to-[#6366f1] text-[12px] font-semibold text-white shadow-[0_4px_10px_rgba(99,102,241,0.3)]">G</span>
+          <Link
+            href="/profil-guru"
+            onClick={onClose}
+            className="group flex items-center gap-2.5 rounded-[13px] border border-white/10 bg-white/[0.08] px-2.5 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_8px_18px_rgba(0,0,0,0.14)] transition-colors hover:bg-white/[0.14]"
+          >
+            <span className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-[#a5b4fc] to-[#6366f1] text-[12.5px] font-semibold text-white shadow-[0_4px_10px_rgba(99,102,241,0.35)] ring-2 ring-white/20">
+              {fotoGuru && fotoGuru.trim() !== "" ? (
+                <Image src={fotoGuru} alt={namaGuru} fill sizes="36px" className="object-cover" />
+              ) : (
+                inisialNama(namaGuru)
+              )}
+            </span>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-[11.5px] font-semibold">Guru</p>
-              <p className="truncate text-[10px] text-white/60">Pengajar</p>
+              <p className="truncate text-[12px] font-semibold text-white">{namaGuru}</p>
+              <p className="truncate text-[10px] text-white/55">Pengajar</p>
             </div>
-          </div>
+            <IconChevronRight className="h-4 w-4 shrink-0 text-white/40 transition-transform group-hover:translate-x-0.5 group-hover:text-white/70" />
+          </Link>
         </div>
       </aside>
     </>

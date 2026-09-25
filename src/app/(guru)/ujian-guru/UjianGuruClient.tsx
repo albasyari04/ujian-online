@@ -1,6 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
+import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
@@ -8,6 +9,7 @@ import { Badge } from "@/components/ui/Badge"
 import { Button } from "@/components/ui/Button"
 import { Card } from "@/components/ui/Card"
 import { Modal } from "@/components/ui/Modal"
+import { getSubjectIconSrc } from "@/lib/subject-icons"
 import {
   IconPlus,
   IconSearch,
@@ -186,14 +188,15 @@ export function UjianGuruClient({ ujianAwal, cariAwal }: { ujianAwal: Ujian[]; c
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
           <h1 className="text-[20px] font-semibold text-[#16233f] dark:text-white">Ujian Saya</h1>
           <p className="mt-0.5 text-[13px] text-[#5b657d] dark:text-white/50">Kelola seluruh ujian yang Anda buat.</p>
         </div>
-        <Button onClick={bukaModalBuat}>
+        <Button onClick={bukaModalBuat} className="shrink-0">
           <IconPlus className="h-4 w-4" />
-          Buat Ujian
+          <span className="hidden sm:inline">Buat Ujian</span>
+          <span className="sm:hidden">Buat</span>
         </Button>
       </div>
 
@@ -242,8 +245,16 @@ export function UjianGuruClient({ ujianAwal, cariAwal }: { ujianAwal: Ujian[]; c
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {hasilFilter.map((u) => {
             const status = statusUjian(u.mulai, u.selesai)
+            const subjectIconSrc = getSubjectIconSrc(u.judul)
             return (
-              <Card key={u.id} className="flex flex-col gap-3 p-4 transition-transform hover:-translate-y-0.5">
+              <Card
+                key={u.id}
+                className="
+                  group flex flex-col gap-3 p-4
+                  transition-all duration-200 ease-out
+                  hover:-translate-y-1 hover:shadow-[0_6px_16px_rgba(22,35,63,0.07),0_28px_44px_-18px_rgba(49,46,129,0.32)]
+                "
+              >
                 <div className="flex items-start justify-between gap-2">
                   <Badge tone={status.tone}>{status.label}</Badge>
                   <div className="flex items-center gap-1">
@@ -264,8 +275,26 @@ export function UjianGuruClient({ ujianAwal, cariAwal }: { ujianAwal: Ujian[]; c
                   </div>
                 </div>
 
-                <Link href={`/ujian-guru/${u.id}`} className="block">
-                  <h3 className="line-clamp-2 text-[14.5px] font-semibold text-[#16233f] hover:text-[#4338ca] dark:text-white dark:hover:text-[#818cf8]">
+                <Link href={`/ujian-guru/${u.id}`} className="flex items-center gap-2.5">
+                  <span
+                    className="
+                      flex h-10 w-10 shrink-0 items-center justify-center rounded-[13px]
+                      bg-gradient-to-b from-white to-[#f3f6f8] ring-1 ring-inset ring-black/5
+                      shadow-[0_8px_14px_-8px_rgba(49,46,129,0.28)]
+                      transition-transform duration-200 ease-out
+                      group-hover:-rotate-3 group-hover:scale-105
+                      dark:from-white/10 dark:to-white/5 dark:ring-white/10
+                    "
+                  >
+                    <Image
+                      src={subjectIconSrc}
+                      alt=""
+                      width={24}
+                      height={24}
+                      className="h-6 w-6 object-contain"
+                    />
+                  </span>
+                  <h3 className="line-clamp-2 min-w-0 flex-1 text-[14.5px] font-semibold text-[#16233f] group-hover:text-[#4338ca] dark:text-white dark:group-hover:text-[#818cf8]">
                     {u.judul}
                   </h3>
                 </Link>

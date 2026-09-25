@@ -2,7 +2,7 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 
 import { prisma } from "@/lib/prisma"
-import { FormSoal } from "@/components/admin/FormSoal"
+import { FormSoalTrigger } from "@/components/ujian/FormSoalTrigger"
 import { ImportSoal } from "@/components/admin/ImportSoal"
 import { HapusButton } from "@/components/admin/HapusButton"
 import { LABEL_TIPE_SOAL } from "@/lib/ujian-utils"
@@ -46,7 +46,8 @@ export default async function SoalUjianPage({
         </div>
         <div className="flex items-center gap-2">
           <ImportSoal ujianId={ujian.id} />
-          <FormSoal ujianId={ujian.id} />
+          {/* Tombol "Tambah Soal" — wrapper mengelola state open */}
+          <FormSoalTrigger ujianId={ujian.id} trigger="create" />
         </div>
       </div>
 
@@ -67,8 +68,10 @@ export default async function SoalUjianPage({
                   <p className="mt-1 whitespace-pre-line text-[14px] text-[#241f4d]">{soal.pertanyaan}</p>
                 </div>
                 <div className="flex shrink-0 items-center gap-1">
-                  <FormSoal
+                  {/* Tombol Edit — wrapper mengelola state open dengan initialData */}
+                  <FormSoalTrigger
                     ujianId={ujian.id}
+                    trigger="edit"
                     initialData={{
                       id: soal.id,
                       pertanyaan: soal.pertanyaan,

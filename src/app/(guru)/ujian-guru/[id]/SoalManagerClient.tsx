@@ -4,42 +4,28 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 
 import type { Soal, Opsi } from "@prisma/client"
-import { FormSoal, type SoalAwal } from "@/components/ujian/FormSoal"
+import { FormSoalTrigger } from "@/components/ujian/FormSoalTrigger"
 import { ImportSoal } from "@/components/admin/ImportSoal"
 import { Badge } from "@/components/ui/Badge"
-import { Button } from "@/components/ui/Button"
 import { Card } from "@/components/ui/Card"
-import { IconDocument, IconPencil, IconPlus, IconTrash } from "@/components/ui/Icons"
+import { IconDocument, IconTrash } from "@/components/ui/Icons"
 
-export function SoalManagerClient({ ujianId, soalAwal }: { ujianId: string; soalAwal: (Soal & { opsi: Opsi[] })[] }) {
+export function SoalManagerClient({
+  ujianId,
+  soalAwal,
+}: {
+  ujianId: string
+  soalAwal: (Soal & { opsi: Opsi[] })[]
+}) {
   const router = useRouter()
   const [daftarSoal, setDaftarSoal] = useState(soalAwal)
-  const [formMode, setFormMode] = useState<"create" | "edit" | null>(null)
-  const [editingSoal, setEditingSoal] = useState<SoalAwal | undefined>(undefined)
-
-  function openFormBuat() {
-    setEditingSoal(undefined)
-    setFormMode("create")
-  }
-
-  function openFormEdit(s: SoalAwal) {
-    setEditingSoal(s)
-    setFormMode("edit")
-  }
-
-  function closeForm() {
-    setFormMode(null)
-    setEditingSoal(undefined)
-  }
 
   function handleSuccess() {
-    // Refresh data di server & client
     router.refresh()
     fetch(`/api/ujian/${ujianId}/soal`)
       .then((res) => res.json())
       .then((data) => setDaftarSoal(data))
       .catch(() => router.refresh())
-    closeForm()
   }
 
   async function handleDelete(soalId: string) {
@@ -63,19 +49,17 @@ export function SoalManagerClient({ ujianId, soalAwal }: { ujianId: string; soal
         </div>
         <div className="flex items-center gap-2.5">
           <ImportSoal ujianId={ujianId} onSuccess={handleSuccess} />
-          <Button
-            onClick={openFormBuat}
-            className="flex items-center gap-2 rounded-[10px] bg-gradient-to-br from-[#818cf8] to-[#4338ca] px-4 py-2.5 text-[13px] font-semibold text-white shadow-[0_6px_16px_-4px_rgba(67,56,202,0.4)] transition-all hover:-translate-y-0.5 hover:shadow-[0_8px_20px_-4px_rgba(67,56,202,0.5)]"
-          >
-            <IconPlus className="h-4 w-4" />
-            Tambah Soal
-          </Button>
+          {/* Tombol Tambah Soal — pakai FormSoalTrigger */}
+          <FormSoalTrigger ujianId={ujianId} trigger="create" />
         </div>
       </div>
 
       {/* Daftar Soal */}
       {daftarSoal.length === 0 ? (
-        <Card variant="glass" className="flex flex-col items-center justify-center gap-3 px-6 py-16 text-center">
+        <Card
+          variant="glass"
+          className="flex flex-col items-center justify-center gap-3 px-6 py-16 text-center"
+        >
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#f1f5f9] dark:bg-white/5">
             <IconDocument className="h-7 w-7 text-[#94a3b8]" />
           </div>
@@ -85,14 +69,7 @@ export function SoalManagerClient({ ujianId, soalAwal }: { ujianId: string; soal
               Tambahkan soal pertama untuk ujian ini.
             </p>
           </div>
-          <Button
-            onClick={openFormBuat}
-            variant="outline"
-            className="mt-2 rounded-[10px] border-[#e7e4dc] px-4 py-2 text-[12.5px] font-medium text-[#4338ca] hover:bg-[#eef2ff] dark:border-white/10 dark:text-[#818cf8] dark:hover:bg-white/5"
-          >
-            <IconPlus className="mr-1.5 h-3.5 w-3.5" />
-            Tambah Soal Pertama
-          </Button>
+          <FormSoalTrigger ujianId={ujianId} trigger="create" label="Tambah Soal Pertama" />
         </Card>
       ) : (
         <div className="space-y-3.5">
@@ -116,25 +93,21 @@ export function SoalManagerClient({ ujianId, soalAwal }: { ujianId: string; soal
                 </div>
 
                 <div className="flex items-center gap-1 opacity-100 transition-opacity duration-200 sm:opacity-0 sm:group-hover:opacity-100">
+                  {/* Tombol Edit — pakai FormSoalTrigger */}
+                  <FormSoalTrigger
+                    ujianId={ujianId}
+                    trigger="edit"
+                    initialData={{
+                      id: soal.id,
+                      pertanyaan: soal.pertanyaan,
+                      tipe: soal.tipe,
+                      poin: soal.poin,
+                      opsi: soal.opsi,
+                    }}
+                  />
                   <button
                     type="button"
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      openFormEdit(soal)
-                    }}
-                    className="flex h-8 w-8 items-center justify-center rounded-full bg-white/50 text-[#5b657d] shadow-sm backdrop-blur-sm transition-all hover:bg-[#eef2ff] hover:text-[#4338ca] dark:bg-white/5 dark:text-white/40 dark:hover:bg-white/10 dark:hover:text-[#818cf8]"
-                    aria-label="Edit soal"
-                  >
-                    <IconPencil className="h-3.5 w-3.5" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      handleDelete(soal.id)
-                    }}
+                    onClick={() => handleDelete(soal.id)}
                     className="flex h-8 w-8 items-center justify-center rounded-full bg-white/50 text-[#d23b3b] shadow-sm backdrop-blur-sm transition-all hover:bg-[#fdf1f1] dark:bg-white/5 dark:hover:bg-red-500/10"
                     aria-label="Hapus soal"
                   >
@@ -150,15 +123,6 @@ export function SoalManagerClient({ ujianId, soalAwal }: { ujianId: string; soal
           ))}
         </div>
       )}
-
-      {/* Modal Form Soal — controlled dari sini */}
-      <FormSoal
-        ujianId={ujianId}
-        initialData={editingSoal}
-        open={formMode !== null}
-        onClose={closeForm}
-        onSuccess={handleSuccess}
-      />
     </>
   )
 }

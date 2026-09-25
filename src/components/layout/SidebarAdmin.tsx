@@ -122,6 +122,14 @@ function IconKartuUjian({ className }: { className?: string }) {
   )
 }
 
+function IconChevronRight({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" aria-hidden="true">
+      <path d="M9 6L15 12L9 18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
 /* =========================================================
    NAV ITEMS
 ========================================================= */
@@ -150,14 +158,34 @@ export const navItems: NavItem[] = [
    SIDEBAR ADMIN
 ========================================================= */
 
+type SidebarAdminUser = {
+  nama: string
+  email?: string
+  fotoUrl?: string | null
+}
+
+function inisialNama(nama: string) {
+  const bersih = nama.trim()
+  if (!bersih) return "A"
+  return bersih
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((kata) => kata[0]?.toUpperCase() ?? "")
+    .join("")
+}
+
 export function SidebarAdmin({
   open,
   onClose,
+  user,
 }: {
   open: boolean
   onClose: () => void
+  user?: SidebarAdminUser
 }) {
   const pathname = usePathname()
+  const namaAdmin = user?.nama?.trim() || "Administrator"
+  const fotoAdmin = user?.fotoUrl
 
   return (
     <>
@@ -232,16 +260,26 @@ export function SidebarAdmin({
           </nav>
         </div>
 
-        {/* ===== BAGIAN BAWAH: PROFIL (STICKY / TIDAK IKUT SCROLL) ===== */}
+        {/* ===== BAGIAN BAWAH: PROFIL (STICKY / TIDAK IKUT SCROLL) — nama & foto dinamis ===== */}
         <div className="mt-4 shrink-0 border-t border-white/10 pt-4">
-          <div className="flex items-center gap-2 rounded-[12px] border border-white/10 bg-white/[0.08] px-2.5 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_8px_18px_rgba(0,0,0,0.12)]">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#00b8ff] to-[#0074c8] text-[12px] font-semibold text-white shadow-[0_4px_10px_rgba(0,167,255,0.3)]">A</span>
+          <Link
+            href="/profil-admin"
+            onClick={onClose}
+            className="group flex items-center gap-2.5 rounded-[12px] border border-white/10 bg-white/[0.08] px-2.5 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_8px_18px_rgba(0,0,0,0.12)] transition-colors hover:bg-white/[0.14]"
+          >
+            <span className="relative flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-[#00b8ff] to-[#0074c8] text-[12px] font-semibold text-white shadow-[0_4px_10px_rgba(0,167,255,0.3)] ring-2 ring-white/20">
+              {fotoAdmin && fotoAdmin.trim() !== "" ? (
+                <Image src={fotoAdmin} alt={namaAdmin} fill sizes="32px" className="object-cover" />
+              ) : (
+                inisialNama(namaAdmin)
+              )}
+            </span>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-[11.5px] font-semibold">Administrator</p>
+              <p className="truncate text-[11.5px] font-semibold">{namaAdmin}</p>
               <p className="truncate text-[10px] text-white/60">Super Admin</p>
             </div>
-            <span className="text-[12px] text-white/70">⌄</span>
-          </div>
+            <IconChevronRight className="h-3.5 w-3.5 shrink-0 text-white/40 transition-transform group-hover:translate-x-0.5 group-hover:text-white/70" />
+          </Link>
         </div>
       </aside>
     </>

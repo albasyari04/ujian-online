@@ -1,18 +1,21 @@
 import Link from "next/link"
+import Image from "next/image"
 
 import { requireGuruSession } from "@/lib/guru/session"
 import { prisma } from "@/lib/prisma"
 import { StatCard } from "@/components/ui/StatCard"
 import { Card } from "@/components/ui/Card"
 import { Badge } from "@/components/ui/Badge"
-import {
-  IconDocument,
-  IconUsers,
-  IconTrendingUp,
-  IconAlertTriangle,
-  IconClock,
-  IconCheckCircle,
-} from "@/components/ui/Icons"
+import { getSubjectIconSrc } from "@/lib/subject-icons"
+import { IconAlertTriangle, IconClock } from "@/components/ui/Icons"
+
+// Icon 3D untuk kartu ringkasan di atas — file disimpan di public/image/icon/
+const STAT_ICON = {
+  ujianSaya: "/image/icon/ujian-saya-icon.png",
+  totalSoal: "/image/icon/total-soal-icon.png",
+  sedangMengerjakan: "/image/icon/sedang-mengerjakan-icon.png",
+  rataRata: "/image/icon/rata-rata-score.png",
+}
 
 function formatTanggal(date: Date) {
   return new Intl.DateTimeFormat("id-ID", {
@@ -83,11 +86,16 @@ export default async function BerandaGuruPage() {
       </div>
 
       <div className="grid grid-cols-2 gap-3.5 lg:grid-cols-4">
-        <StatCard icon={IconDocument} label="Ujian Saya" value={ujianSaya.length} tone="indigo" />
-        <StatCard icon={IconCheckCircle} label="Total Soal" value={totalSoal} tone="emerald" />
-        <StatCard icon={IconUsers} label="Sedang Mengerjakan" value={pesertaMengerjakan} tone="amber" />
+        <StatCard iconImageSrc={STAT_ICON.ujianSaya} label="Ujian Saya" value={ujianSaya.length} tone="indigo" />
+        <StatCard iconImageSrc={STAT_ICON.totalSoal} label="Total Soal" value={totalSoal} tone="emerald" />
         <StatCard
-          icon={IconTrendingUp}
+          iconImageSrc={STAT_ICON.sedangMengerjakan}
+          label="Sedang Mengerjakan"
+          value={pesertaMengerjakan}
+          tone="amber"
+        />
+        <StatCard
+          iconImageSrc={STAT_ICON.rataRata}
           label="Rata-rata Skor"
           value={rataRata !== null ? rataRata : "—"}
           hint={hasilSelesai.length ? `dari ${hasilSelesai.length} peserta selesai` : "belum ada data"}
@@ -116,13 +124,18 @@ export default async function BerandaGuruPage() {
 
             {ujianTerbaru.map((ujian) => {
               const status = statusUjian(ujian.mulai, ujian.selesai)
+              const subjectIconSrc = getSubjectIconSrc(ujian.judul)
               return (
                 <Link
                   key={ujian.id}
                   href={`/ujian-guru/${ujian.id}`}
-                  className="flex items-center justify-between gap-3 rounded-[14px] border border-[#edf0ef] px-3.5 py-3 transition-colors hover:bg-[#f7f9f8] dark:border-white/10 dark:hover:bg-white/5"
+                  className="flex items-center gap-3 rounded-[14px] border border-[#edf0ef] px-3.5 py-3 transition-colors hover:bg-[#f7f9f8] dark:border-white/10 dark:hover:bg-white/5"
                 >
-                  <div className="min-w-0">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] bg-[#f7f9f8] ring-1 ring-inset ring-black/5 dark:bg-white/5 dark:ring-white/10">
+                    <Image src={subjectIconSrc} alt="" width={24} height={24} className="h-6 w-6 object-contain" />
+                  </span>
+
+                  <div className="min-w-0 flex-1">
                     <p className="truncate text-[13.5px] font-medium text-[#16233f] dark:text-white">
                       {ujian.judul}
                     </p>
@@ -130,6 +143,7 @@ export default async function BerandaGuruPage() {
                       {ujian._count.soal} soal · {ujian._count.hasilUjian} peserta · {formatTanggal(ujian.mulai)}
                     </p>
                   </div>
+
                   <Badge tone={status.tone}>{status.label}</Badge>
                 </Link>
               )

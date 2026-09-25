@@ -1,4 +1,5 @@
 import type { ReactElement } from "react"
+import Image from "next/image"
 
 type Tone = "indigo" | "emerald" | "amber" | "red" | "slate"
 
@@ -27,12 +28,17 @@ const TONE_STYLES: Record<Tone, { icon: string; glow: string }> = {
 
 export function StatCard({
   icon: Icon,
+  iconImageSrc,
   label,
   value,
   hint,
   tone = "indigo",
 }: {
-  icon: (props: { className?: string }) => ReactElement
+  /** Icon berupa komponen React (svg), mis. IconUsers. Dipakai kalau `iconImageSrc` tidak diisi. */
+  icon?: (props: { className?: string }) => ReactElement
+  /** Alternatif: path gambar icon 3D siap-pakai (mis. "/image/icon/ujian-saya-icon.png").
+   *  Kalau diisi, background bulat gradient TIDAK dirender — icon tampil polos dengan drop-shadow. */
+  iconImageSrc?: string
   label: string
   value: string | number
   hint?: string
@@ -42,7 +48,15 @@ export function StatCard({
 
   return (
     <div
-      className={`relative overflow-hidden rounded-[18px] border border-[#e7e4dc] bg-white p-4 shadow-[0_1px_2px_rgba(22,35,63,0.04),0_14px_28px_-14px_rgba(49,46,129,0.25)] before:absolute before:inset-0 before:content-[''] dark:border-white/10 dark:bg-[#101a30] dark:shadow-[0_14px_28px_-14px_rgba(0,0,0,0.6)] ${t.glow}`}
+      className={`
+        group relative overflow-hidden rounded-[18px] border border-[#e7e4dc] bg-white p-4
+        shadow-[0_1px_2px_rgba(22,35,63,0.04),0_14px_28px_-14px_rgba(49,46,129,0.25)]
+        transition-all duration-200 ease-out
+        before:absolute before:inset-0 before:content-['']
+        hover:-translate-y-1 hover:shadow-[0_6px_14px_rgba(22,35,63,0.07),0_26px_44px_-18px_rgba(49,46,129,0.32)]
+        dark:border-white/10 dark:bg-[#101a30] dark:shadow-[0_14px_28px_-14px_rgba(0,0,0,0.6)]
+        ${t.glow}
+      `}
     >
       <div className="relative flex items-start justify-between gap-3">
         <div className="min-w-0">
@@ -52,11 +66,25 @@ export function StatCard({
           </p>
           {hint && <p className="mt-2 text-[11.5px] text-[#8b93a6] dark:text-white/40">{hint}</p>}
         </div>
-        <span
-          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] ring-1 ring-inset ring-black/5 dark:ring-white/10 ${t.icon}`}
-        >
-          <Icon className="h-5 w-5" />
-        </span>
+
+        {iconImageSrc ? (
+          <span
+            className="
+              relative -mr-1 -mt-1 flex h-14 w-14 shrink-0 items-center justify-center
+              drop-shadow-[0_12px_16px_rgba(49,46,129,0.22)]
+              transition-transform duration-200 ease-out
+              group-hover:-rotate-3 group-hover:scale-105
+            "
+          >
+            <Image src={iconImageSrc} alt="" width={56} height={56} className="h-14 w-14 object-contain" />
+          </span>
+        ) : Icon ? (
+          <span
+            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] ring-1 ring-inset ring-black/5 dark:ring-white/10 ${t.icon}`}
+          >
+            <Icon className="h-5 w-5" />
+          </span>
+        ) : null}
       </div>
     </div>
   )

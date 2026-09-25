@@ -116,13 +116,13 @@ export default async function BerandaGuruPage() {
         >
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2.5">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[14px] bg-gradient-to-br from-[#c4b5fd] to-[#6d28d9] shadow-[0_8px_16px_-6px_rgba(109,40,217,0.5)] ring-1 ring-inset ring-black/5">
+              <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[16px] bg-gradient-to-br from-[#c4b5fd] to-[#6d28d9] shadow-[0_8px_16px_-6px_rgba(109,40,217,0.5)] ring-1 ring-inset ring-black/5">
                 <Image
                   src={SECTION_ICON.ujianTerbaru}
                   alt=""
-                  width={26}
-                  height={26}
-                  className="h-6 w-6 object-contain drop-shadow-sm"
+                  width={44}
+                  height={44}
+                  className="h-11 w-11 object-contain drop-shadow-sm"
                 />
               </span>
               <h2 className="text-[15px] font-semibold text-[#16233f] dark:text-white">Ujian Terbaru</h2>
@@ -180,13 +180,13 @@ export default async function BerandaGuruPage() {
           className="p-5 shadow-[0_1px_2px_rgba(22,35,63,0.04),0_28px_52px_-26px_rgba(49,46,129,0.4)] ring-1 ring-white/60 ring-inset dark:ring-white/5 lg:col-span-2"
         >
           <div className="flex items-center gap-2.5">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[14px] bg-gradient-to-br from-[#fca5a5] to-[#b52f2f] shadow-[0_8px_16px_-6px_rgba(181,47,47,0.5)] ring-1 ring-inset ring-black/5">
+            <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[16px] bg-gradient-to-br from-[#fca5a5] to-[#b52f2f] shadow-[0_8px_16px_-6px_rgba(181,47,47,0.5)] ring-1 ring-inset ring-black/5">
               <Image
                 src={SECTION_ICON.pelanggaran}
                 alt=""
-                width={26}
-                height={26}
-                className="h-6 w-6 object-contain drop-shadow-sm"
+                width={44}
+                height={44}
+                className="h-11 w-11 object-contain drop-shadow-sm"
               />
             </span>
             <h2 className="text-[15px] font-semibold text-[#16233f] dark:text-white">Pelanggaran Terbaru</h2>

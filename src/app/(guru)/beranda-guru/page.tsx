@@ -23,6 +23,10 @@ const SECTION_ICON = {
   pelanggaran: "/image/icon/pelanggaran-terbaru-icon.png",
 }
 
+// Kelas bersama untuk card glassmorphism 3D (shadow berlapis + highlight cahaya di sudut atas)
+const GLASS_3D_CARD =
+  "relative overflow-hidden p-5 shadow-[0_2px_4px_rgba(22,35,63,0.06),0_14px_28px_-10px_rgba(49,46,129,0.28),0_40px_70px_-28px_rgba(49,46,129,0.5)] ring-1 ring-white/70 ring-inset before:pointer-events-none before:absolute before:inset-0 before:bg-gradient-to-br before:from-white/50 before:via-white/5 before:to-transparent before:content-[''] dark:ring-white/10 dark:before:from-white/10 dark:before:via-transparent"
+
 function formatTanggal(date: Date) {
   return new Intl.DateTimeFormat("id-ID", {
     day: "numeric",
@@ -110,19 +114,16 @@ export default async function BerandaGuruPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-5">
-        <Card
-          variant="glass"
-          className="p-5 shadow-[0_1px_2px_rgba(22,35,63,0.04),0_28px_52px_-26px_rgba(49,46,129,0.4)] ring-1 ring-white/60 ring-inset dark:ring-white/5 lg:col-span-3"
-        >
-          <div className="flex items-center justify-between gap-2">
+        <Card variant="glass" className={`${GLASS_3D_CARD} lg:col-span-3`}>
+          <div className="relative flex items-center justify-between gap-2">
             <div className="flex items-center gap-2.5">
-              <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[16px] bg-gradient-to-br from-[#c4b5fd] to-[#6d28d9] shadow-[0_8px_16px_-6px_rgba(109,40,217,0.5)] ring-1 ring-inset ring-black/5">
+              <span className="relative flex h-12 w-12 shrink-0 items-center justify-center drop-shadow-[0_12px_18px_rgba(49,46,129,0.3)]">
                 <Image
                   src={SECTION_ICON.ujianTerbaru}
                   alt=""
-                  width={44}
-                  height={44}
-                  className="h-11 w-11 object-contain drop-shadow-sm"
+                  width={48}
+                  height={48}
+                  className="h-12 w-12 object-contain"
                 />
               </span>
               <h2 className="text-[15px] font-semibold text-[#16233f] dark:text-white">Ujian Terbaru</h2>
@@ -135,7 +136,7 @@ export default async function BerandaGuruPage() {
             </Link>
           </div>
 
-          <div className="mt-4 space-y-2.5">
+          <div className="relative mt-4 space-y-2.5">
             {ujianTerbaru.length === 0 && (
               <p className="rounded-[12px] bg-white/40 px-4 py-6 text-center text-[13px] text-[#8b93a6] backdrop-blur-sm dark:bg-white/5 dark:text-white/40">
                 Anda belum membuat ujian apa pun.
@@ -175,24 +176,21 @@ export default async function BerandaGuruPage() {
           </div>
         </Card>
 
-        <Card
-          variant="glass"
-          className="p-5 shadow-[0_1px_2px_rgba(22,35,63,0.04),0_28px_52px_-26px_rgba(49,46,129,0.4)] ring-1 ring-white/60 ring-inset dark:ring-white/5 lg:col-span-2"
-        >
-          <div className="flex items-center gap-2.5">
-            <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[16px] bg-gradient-to-br from-[#fca5a5] to-[#b52f2f] shadow-[0_8px_16px_-6px_rgba(181,47,47,0.5)] ring-1 ring-inset ring-black/5">
+        <Card variant="glass" className={`${GLASS_3D_CARD} lg:col-span-2`}>
+          <div className="relative flex items-center gap-2.5">
+            <span className="relative flex h-12 w-12 shrink-0 items-center justify-center drop-shadow-[0_12px_18px_rgba(181,47,47,0.3)]">
               <Image
                 src={SECTION_ICON.pelanggaran}
                 alt=""
-                width={44}
-                height={44}
-                className="h-11 w-11 object-contain drop-shadow-sm"
+                width={48}
+                height={48}
+                className="h-12 w-12 object-contain"
               />
             </span>
             <h2 className="text-[15px] font-semibold text-[#16233f] dark:text-white">Pelanggaran Terbaru</h2>
           </div>
 
-          <div className="mt-4 space-y-2.5">
+          <div className="relative mt-4 space-y-2.5">
             {pelanggaranTerbaru.length === 0 && (
               <p className="rounded-[12px] bg-white/40 px-4 py-6 text-center text-[13px] text-[#8b93a6] backdrop-blur-sm dark:bg-white/5 dark:text-white/40">
                 Tidak ada pelanggaran terbaru.

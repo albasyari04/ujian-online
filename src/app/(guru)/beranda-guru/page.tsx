@@ -104,7 +104,7 @@ export default async function BerandaGuruPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-5">
-        <Card className="p-5 lg:col-span-3">
+        <Card variant="glass" className="p-5 lg:col-span-3">
           <div className="flex items-center justify-between">
             <h2 className="text-[15px] font-semibold text-[#16233f] dark:text-white">Ujian Terbaru</h2>
             <Link
@@ -117,7 +117,7 @@ export default async function BerandaGuruPage() {
 
           <div className="mt-4 space-y-2.5">
             {ujianTerbaru.length === 0 && (
-              <p className="rounded-[12px] bg-[#f7f9f8] px-4 py-6 text-center text-[13px] text-[#8b93a6] dark:bg-white/5 dark:text-white/40">
+              <p className="rounded-[12px] bg-white/40 px-4 py-6 text-center text-[13px] text-[#8b93a6] backdrop-blur-sm dark:bg-white/5 dark:text-white/40">
                 Anda belum membuat ujian apa pun.
               </p>
             )}
@@ -129,11 +129,15 @@ export default async function BerandaGuruPage() {
                 <Link
                   key={ujian.id}
                   href={`/ujian-guru/${ujian.id}`}
-                  className="flex items-center gap-3 rounded-[14px] border border-[#edf0ef] px-3.5 py-3 transition-colors hover:bg-[#f7f9f8] dark:border-white/10 dark:hover:bg-white/5"
+                  className="group flex items-center gap-3 rounded-[14px] border border-white/40 bg-white/35 px-3.5 py-3 backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/60 hover:shadow-[0_10px_24px_-14px_rgba(49,46,129,0.35)] dark:border-white/10 dark:bg-white/[0.03] dark:hover:bg-white/[0.08]"
                 >
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] bg-[#f7f9f8] ring-1 ring-inset ring-black/5 dark:bg-white/5 dark:ring-white/10">
-                    <Image src={subjectIconSrc} alt="" width={24} height={24} className="h-6 w-6 object-contain" />
-                  </span>
+                  <Image
+                    src={subjectIconSrc}
+                    alt=""
+                    width={40}
+                    height={40}
+                    className="h-10 w-10 shrink-0 object-contain drop-shadow-[0_10px_16px_rgba(49,46,129,0.25)] transition-transform duration-200 ease-out group-hover:-rotate-3 group-hover:scale-105"
+                  />
 
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-[13.5px] font-medium text-[#16233f] dark:text-white">
@@ -151,7 +155,7 @@ export default async function BerandaGuruPage() {
           </div>
         </Card>
 
-        <Card className="p-5 lg:col-span-2">
+        <Card variant="glass" className="p-5 lg:col-span-2">
           <div className="flex items-center gap-2">
             <IconAlertTriangle className="h-4 w-4 text-[#d23b3b]" />
             <h2 className="text-[15px] font-semibold text-[#16233f] dark:text-white">Pelanggaran Terbaru</h2>
@@ -159,13 +163,16 @@ export default async function BerandaGuruPage() {
 
           <div className="mt-4 space-y-2.5">
             {pelanggaranTerbaru.length === 0 && (
-              <p className="rounded-[12px] bg-[#f7f9f8] px-4 py-6 text-center text-[13px] text-[#8b93a6] dark:bg-white/5 dark:text-white/40">
+              <p className="rounded-[12px] bg-white/40 px-4 py-6 text-center text-[13px] text-[#8b93a6] backdrop-blur-sm dark:bg-white/5 dark:text-white/40">
                 Tidak ada pelanggaran terbaru.
               </p>
             )}
 
             {pelanggaranTerbaru.map((log) => (
-              <div key={log.id} className="rounded-[14px] border border-[#edf0ef] px-3.5 py-3 dark:border-white/10">
+              <div
+                key={log.id}
+                className="rounded-[14px] border border-white/40 bg-white/35 px-3.5 py-3 backdrop-blur-md dark:border-white/10 dark:bg-white/[0.03]"
+              >
                 <div className="flex items-center justify-between gap-2">
                   <p className="truncate text-[13px] font-medium text-[#16233f] dark:text-white">
                     {log.hasilUjian.user.nama}

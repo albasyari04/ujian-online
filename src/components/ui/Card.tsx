@@ -4,18 +4,29 @@ import Link from "next/link"
 
 /* =========================================================
    CARD DASAR
+   variant "solid" (default) = tampilan lama, dipakai di semua
+   halaman lain — TIDAK berubah.
+   variant "glass" = gaya glassmorphism (transparan + blur),
+   dipakai khusus di halaman guru sesuai permintaan.
 ========================================================= */
+
+type CardVariant = "solid" | "glass"
+
+const CARD_VARIANT_STYLES: Record<CardVariant, string> = {
+  solid:
+    "border border-[#e7e4dc] bg-white shadow-[0_1px_2px_rgba(22,35,63,0.04),0_10px_24px_-12px_rgba(49,46,129,0.18)] dark:border-white/10 dark:bg-[#101a30] dark:shadow-[0_10px_24px_-12px_rgba(0,0,0,0.55)]",
+  glass:
+    "border border-white/50 bg-white/55 shadow-[0_1px_2px_rgba(22,35,63,0.04),0_24px_48px_-18px_rgba(49,46,129,0.3)] backdrop-blur-xl backdrop-saturate-150 dark:border-white/10 dark:bg-white/[0.06] dark:shadow-[0_24px_48px_-18px_rgba(0,0,0,0.65)]",
+}
 
 export function Card({
   children,
   className = "",
+  variant = "solid",
   ...props
-}: { children: ReactNode; className?: string } & HTMLAttributes<HTMLDivElement>) {
+}: { children: ReactNode; className?: string; variant?: CardVariant } & HTMLAttributes<HTMLDivElement>) {
   return (
-    <div
-      className={`rounded-[18px] border border-[#e7e4dc] bg-white shadow-[0_1px_2px_rgba(22,35,63,0.04),0_10px_24px_-12px_rgba(49,46,129,0.18)] dark:border-white/10 dark:bg-[#101a30] dark:shadow-[0_10px_24px_-12px_rgba(0,0,0,0.55)] ${className}`}
-      {...props}
-    >
+    <div className={`rounded-[18px] ${CARD_VARIANT_STYLES[variant]} ${className}`} {...props}>
       {children}
     </div>
   )
@@ -71,13 +82,10 @@ export function StatCard({
   tone = "indigo",
   href,
 }: {
-  /** Icon berupa elemen React siap-pakai, mis. <IconUsers className="h-5 w-5" /> atau <span>Q</span> */
   icon?: ReactNode
-  /** Alternatif: path gambar icon (dipakai di halaman peserta) */
   iconImageSrc?: string | null
   label: string
   value: string | number
-  /** Teks kecil di bawah value. `hint` adalah alias dari `description`. */
   description?: string
   hint?: string
   tone?: StatTone

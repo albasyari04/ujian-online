@@ -1,10 +1,12 @@
 import { notFound } from "next/navigation"
 import Link from "next/link"
+import Image from "next/image"
 
 import { requireGuruSession } from "@/lib/guru/session"
 import { prisma } from "@/lib/prisma"
 import { Card } from "@/components/ui/Card"
 import { Badge } from "@/components/ui/Badge"
+import { getSubjectIconSrc } from "@/lib/subject-icons"
 import { IconArrowLeft, IconUsers, IconDocument, IconClock } from "@/components/ui/Icons"
 import { SoalManagerClient } from "./SoalManagerClient"
 
@@ -33,6 +35,7 @@ export default async function DetailUjianGuruPage({ params }: { params: Promise<
   if (!ujian) notFound()
 
   const totalPoin = ujian.soal.reduce((sum, s) => sum + s.poin, 0)
+  const subjectIconSrc = getSubjectIconSrc(ujian.judul)
 
   return (
     <div className="space-y-5">
@@ -44,26 +47,35 @@ export default async function DetailUjianGuruPage({ params }: { params: Promise<
         Kembali ke Ujian Saya
       </Link>
 
-      <Card className="p-5">
+      <Card variant="glass" className="p-5">
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
-          <div>
-            <h1 className="text-[19px] font-semibold text-[#16233f] dark:text-white">{ujian.judul}</h1>
-            {ujian.deskripsi && (
-              <p className="mt-1.5 text-[13px] text-[#5b657d] dark:text-white/50">{ujian.deskripsi}</p>
-            )}
-            <div className="mt-3 flex flex-wrap items-center gap-3 text-[12px] text-[#8b93a6] dark:text-white/40">
-              <span className="flex items-center gap-1.5">
-                <IconClock className="h-3.5 w-3.5" />
-                {formatTanggal(ujian.mulai)} – {formatTanggal(ujian.selesai)}
-              </span>
-              <span className="flex items-center gap-1.5">
-                <IconDocument className="h-3.5 w-3.5" />
-                {ujian.soal.length} soal · {totalPoin} poin
-              </span>
-              <span className="flex items-center gap-1.5">
-                <IconUsers className="h-3.5 w-3.5" />
-                {ujian._count.hasilUjian} peserta
-              </span>
+          <div className="flex items-start gap-3.5">
+            <Image
+              src={subjectIconSrc}
+              alt=""
+              width={48}
+              height={48}
+              className="h-12 w-12 shrink-0 object-contain drop-shadow-[0_12px_18px_rgba(49,46,129,0.28)]"
+            />
+            <div>
+              <h1 className="text-[19px] font-semibold text-[#16233f] dark:text-white">{ujian.judul}</h1>
+              {ujian.deskripsi && (
+                <p className="mt-1.5 text-[13px] text-[#5b657d] dark:text-white/50">{ujian.deskripsi}</p>
+              )}
+              <div className="mt-3 flex flex-wrap items-center gap-3 text-[12px] text-[#8b93a6] dark:text-white/40">
+                <span className="flex items-center gap-1.5">
+                  <IconClock className="h-3.5 w-3.5" />
+                  {formatTanggal(ujian.mulai)} – {formatTanggal(ujian.selesai)}
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <IconDocument className="h-3.5 w-3.5" />
+                  {ujian.soal.length} soal · {totalPoin} poin
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <IconUsers className="h-3.5 w-3.5" />
+                  {ujian._count.hasilUjian} peserta
+                </span>
+              </div>
             </div>
           </div>
           <Link href={`/hasil-guru/${ujian.id}`}>

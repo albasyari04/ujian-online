@@ -201,7 +201,7 @@ export function UjianGuruClient({ ujianAwal, cariAwal }: { ujianAwal: Ujian[]; c
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-2 rounded-[11px] border border-[#e7e4dc] bg-white px-3.5 py-2.5 dark:border-white/10 dark:bg-[#101a30] sm:max-w-[320px]">
+        <div className="flex items-center gap-2 rounded-[11px] border border-white/50 bg-white/45 px-3.5 py-2.5 backdrop-blur-md dark:border-white/10 dark:bg-white/[0.05] sm:max-w-[320px]">
           <IconSearch className="h-4 w-4 shrink-0 text-[#94a3b8]" />
           <input
             value={cari}
@@ -216,10 +216,10 @@ export function UjianGuruClient({ ujianAwal, cariAwal }: { ujianAwal: Ujian[]; c
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
-              className={`rounded-full border px-3 py-1.5 text-[12px] font-medium transition-colors ${
+              className={`rounded-full border px-3 py-1.5 text-[12px] font-medium backdrop-blur-md transition-all ${
                 tab === t.key
-                  ? "border-transparent bg-[#4338ca] text-white shadow-[0_6px_14px_-6px_rgba(67,56,202,0.6)]"
-                  : "border-[#e7e4dc] text-[#5b657d] hover:bg-[#f7f9f8] dark:border-white/10 dark:text-white/50 dark:hover:bg-white/5"
+                  ? "border-transparent bg-gradient-to-br from-[#818cf8] to-[#4338ca] text-white shadow-[0_8px_18px_-6px_rgba(67,56,202,0.55)]"
+                  : "border-white/50 bg-white/35 text-[#5b657d] hover:bg-white/60 dark:border-white/10 dark:bg-white/[0.03] dark:text-white/50 dark:hover:bg-white/10"
               }`}
             >
               {t.label}
@@ -229,7 +229,7 @@ export function UjianGuruClient({ ujianAwal, cariAwal }: { ujianAwal: Ujian[]; c
       </div>
 
       {hasilFilter.length === 0 ? (
-        <Card className="flex flex-col items-center justify-center gap-2 px-6 py-14 text-center">
+        <Card variant="glass" className="flex flex-col items-center justify-center gap-2 px-6 py-14 text-center">
           <IconDocument className="h-9 w-9 text-[#c7cdd8]" />
           <p className="text-[13.5px] font-medium text-[#5b657d] dark:text-white/50">
             {daftar.length === 0 ? "Belum ada ujian yang Anda buat." : "Tidak ada ujian yang cocok dengan pencarian."}
@@ -249,10 +249,12 @@ export function UjianGuruClient({ ujianAwal, cariAwal }: { ujianAwal: Ujian[]; c
             return (
               <Card
                 key={u.id}
+                variant="glass"
                 className="
                   group flex flex-col gap-3 p-4
                   transition-all duration-200 ease-out
-                  hover:-translate-y-1 hover:shadow-[0_6px_16px_rgba(22,35,63,0.07),0_28px_44px_-18px_rgba(49,46,129,0.32)]
+                  hover:-translate-y-1 hover:bg-white/70 hover:shadow-[0_10px_24px_-10px_rgba(22,35,63,0.1),0_32px_52px_-18px_rgba(49,46,129,0.38)]
+                  dark:hover:bg-white/[0.1]
                 "
               >
                 <div className="flex items-start justify-between gap-2">
@@ -276,24 +278,13 @@ export function UjianGuruClient({ ujianAwal, cariAwal }: { ujianAwal: Ujian[]; c
                 </div>
 
                 <Link href={`/ujian-guru/${u.id}`} className="flex items-center gap-2.5">
-                  <span
-                    className="
-                      flex h-10 w-10 shrink-0 items-center justify-center rounded-[13px]
-                      bg-gradient-to-b from-white to-[#f3f6f8] ring-1 ring-inset ring-black/5
-                      shadow-[0_8px_14px_-8px_rgba(49,46,129,0.28)]
-                      transition-transform duration-200 ease-out
-                      group-hover:-rotate-3 group-hover:scale-105
-                      dark:from-white/10 dark:to-white/5 dark:ring-white/10
-                    "
-                  >
-                    <Image
-                      src={subjectIconSrc}
-                      alt=""
-                      width={24}
-                      height={24}
-                      className="h-6 w-6 object-contain"
-                    />
-                  </span>
+                  <Image
+                    src={subjectIconSrc}
+                    alt=""
+                    width={40}
+                    height={40}
+                    className="h-10 w-10 shrink-0 object-contain drop-shadow-[0_10px_16px_rgba(49,46,129,0.25)] transition-transform duration-200 ease-out group-hover:-rotate-3 group-hover:scale-105"
+                  />
                   <h3 className="line-clamp-2 min-w-0 flex-1 text-[14.5px] font-semibold text-[#16233f] group-hover:text-[#4338ca] dark:text-white dark:group-hover:text-[#818cf8]">
                     {u.judul}
                   </h3>

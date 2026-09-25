@@ -1,14 +1,14 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
 
 import type { Soal, Opsi } from "@prisma/client"
-import { FormSoalTrigger } from "@/components/ujian/FormSoalTrigger"
 import { ImportSoal } from "@/components/admin/ImportSoal"
 import { Badge } from "@/components/ui/Badge"
 import { Card } from "@/components/ui/Card"
-import { IconDocument, IconTrash } from "@/components/ui/Icons"
+import { IconDocument, IconPencil, IconPlus, IconTrash } from "@/components/ui/Icons"
 
 export function SoalManagerClient({
   ujianId,
@@ -49,8 +49,14 @@ export function SoalManagerClient({
         </div>
         <div className="flex items-center gap-2.5">
           <ImportSoal ujianId={ujianId} onSuccess={handleSuccess} />
-          {/* Tombol Tambah Soal — pakai FormSoalTrigger */}
-          <FormSoalTrigger ujianId={ujianId} trigger="create" />
+          {/* Link ke halaman Tambah Soal */}
+          <Link
+            href={`/ujian-guru/${ujianId}/soal/baru`}
+            className="inline-flex items-center gap-2 rounded-[10px] bg-gradient-to-br from-[#818cf8] to-[#4338ca] px-4 py-2.5 text-[13px] font-semibold text-white shadow-[0_6px_16px_-4px_rgba(67,56,202,0.4)] transition-all hover:-translate-y-0.5 hover:shadow-[0_8px_20px_-4px_rgba(67,56,202,0.5)]"
+          >
+            <IconPlus className="h-4 w-4" />
+            Tambah Soal
+          </Link>
         </div>
       </div>
 
@@ -69,7 +75,13 @@ export function SoalManagerClient({
               Tambahkan soal pertama untuk ujian ini.
             </p>
           </div>
-          <FormSoalTrigger ujianId={ujianId} trigger="create" label="Tambah Soal Pertama" />
+          <Link
+            href={`/ujian-guru/${ujianId}/soal/baru`}
+            className="mt-2 inline-flex items-center gap-1.5 rounded-[10px] border border-[#e7e4dc] bg-white px-4 py-2 text-[12.5px] font-medium text-[#4338ca] hover:bg-[#eef2ff] dark:border-white/10 dark:bg-white/5 dark:text-[#818cf8] dark:hover:bg-white/10"
+          >
+            <IconPlus className="h-3.5 w-3.5" />
+            Tambah Soal Pertama
+          </Link>
         </Card>
       ) : (
         <div className="space-y-3.5">
@@ -93,18 +105,14 @@ export function SoalManagerClient({
                 </div>
 
                 <div className="flex items-center gap-1 opacity-100 transition-opacity duration-200 sm:opacity-0 sm:group-hover:opacity-100">
-                  {/* Tombol Edit — pakai FormSoalTrigger */}
-                  <FormSoalTrigger
-                    ujianId={ujianId}
-                    trigger="edit"
-                    initialData={{
-                      id: soal.id,
-                      pertanyaan: soal.pertanyaan,
-                      tipe: soal.tipe,
-                      poin: soal.poin,
-                      opsi: soal.opsi,
-                    }}
-                  />
+                  {/* Link ke halaman Edit Soal */}
+                  <Link
+                    href={`/ujian-guru/${ujianId}/soal/${soal.id}/edit`}
+                    className="flex h-8 w-8 items-center justify-center rounded-full bg-white/50 text-[#5b657d] shadow-sm backdrop-blur-sm transition-all hover:bg-[#eef2ff] hover:text-[#4338ca] dark:bg-white/5 dark:text-white/40 dark:hover:bg-white/10 dark:hover:text-[#818cf8]"
+                    aria-label="Edit soal"
+                  >
+                    <IconPencil className="h-3.5 w-3.5" />
+                  </Link>
                   <button
                     type="button"
                     onClick={() => handleDelete(soal.id)}

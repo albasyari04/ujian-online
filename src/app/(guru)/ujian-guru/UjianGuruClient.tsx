@@ -20,6 +20,69 @@ import {
   IconClock,
 } from "@/components/ui/Icons"
 
+/* =========================================================
+   IKON TAMBAHAN LOKAL
+   Belum ada padanannya di components/ui/Icons.tsx, jadi
+   didefinisikan langsung di sini. Bisa dipindah ke Icons.tsx
+   kalau nanti mau dipakai di halaman lain juga.
+========================================================= */
+function IconGrid({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className}>
+      <rect x="3" y="3" width="8" height="8" rx="2" fill="currentColor" />
+      <rect x="13" y="3" width="8" height="8" rx="2" fill="currentColor" />
+      <rect x="3" y="13" width="8" height="8" rx="2" fill="currentColor" />
+      <rect x="13" y="13" width="8" height="8" rx="2" fill="currentColor" />
+    </svg>
+  )
+}
+
+function IconPlay({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className}>
+      <path d="M7 4.5v15l13-7.5-13-7.5Z" fill="currentColor" />
+    </svg>
+  )
+}
+
+function IconCheckCircle({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className}>
+      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" />
+      <path
+        d="M8.5 12.3 11 14.8l4.5-5.1"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+function IconCalendar({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className}>
+      <rect x="3.5" y="5" width="17" height="15.5" rx="3" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M3.5 9.5h17M8 3v3.5M16 3v3.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function IconArrowRight({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className}>
+      <path
+        d="M5 12h14M13 6l6 6-6 6"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
 type Ujian = {
   id: string
   judul: string
@@ -67,16 +130,16 @@ function statusUjian(mulai: string | Date, selesai: string | Date) {
   const now = new Date()
   const m = new Date(mulai)
   const s = new Date(selesai)
-  if (now < m) return { key: "akan-datang" as const, label: "Akan Datang", tone: "amber" as const }
-  if (now > s) return { key: "selesai" as const, label: "Selesai", tone: "slate" as const }
-  return { key: "berlangsung" as const, label: "Berlangsung", tone: "emerald" as const }
+  if (now < m) return { key: "akan-datang" as const, label: "Akan Datang", tone: "emerald" as const, Icon: IconClock }
+  if (now > s) return { key: "selesai" as const, label: "Selesai", tone: "slate" as const, Icon: IconCheckCircle }
+  return { key: "berlangsung" as const, label: "Berlangsung", tone: "blue" as const, Icon: IconPlay }
 }
 
 const TAB_FILTER = [
-  { key: "semua", label: "Semua" },
-  { key: "akan-datang", label: "Akan Datang" },
-  { key: "berlangsung", label: "Berlangsung" },
-  { key: "selesai", label: "Selesai" },
+  { key: "semua", label: "Semua", Icon: IconGrid },
+  { key: "akan-datang", label: "Akan Datang", Icon: IconClock },
+  { key: "berlangsung", label: "Berlangsung", Icon: IconPlay },
+  { key: "selesai", label: "Selesai", Icon: IconCheckCircle },
 ] as const
 
 export function UjianGuruClient({ ujianAwal, cariAwal }: { ujianAwal: Ujian[]; cariAwal: string }) {
@@ -188,20 +251,41 @@ export function UjianGuruClient({ ujianAwal, cariAwal }: { ujianAwal: Ujian[]; c
 
   return (
     <div className="space-y-5">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h1 className="text-[20px] font-semibold text-[#16233f] dark:text-white">Ujian Saya</h1>
-          <p className="mt-0.5 text-[13px] text-[#5b657d] dark:text-white/50">Kelola seluruh ujian yang Anda buat.</p>
-        </div>
-        <Button onClick={bukaModalBuat} className="shrink-0">
-          <IconPlus className="h-4 w-4" />
-          <span className="hidden sm:inline">Buat Ujian</span>
-          <span className="sm:hidden">Buat</span>
-        </Button>
-      </div>
+      {/* ============ HERO ============ */}
+      <div className="relative overflow-hidden rounded-[24px] border border-[#e7e4dc] bg-gradient-to-br from-[#eef4ff] via-white to-[#f5f3ff] p-5 shadow-[0_1px_2px_rgba(22,35,63,0.04),0_20px_40px_-20px_rgba(49,46,129,0.25)] dark:border-white/10 dark:from-[#0d1526] dark:via-[#0d1526] dark:to-[#131b30] sm:p-7">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-10 -top-14 h-48 w-48 rounded-full bg-[radial-gradient(circle,rgba(129,140,248,0.22),transparent_65%)]"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -bottom-16 left-10 h-40 w-40 rounded-full bg-[radial-gradient(circle,rgba(129,199,253,0.18),transparent_65%)]"
+        />
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-2 rounded-[11px] border border-white/50 bg-white/45 px-3.5 py-2.5 backdrop-blur-md dark:border-white/10 dark:bg-white/[0.05] sm:max-w-[320px]">
+        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            <p className="text-[12.5px] font-medium text-[#6d78a6] dark:text-white/50">Selamat datang,</p>
+            <h1 className="mt-0.5 text-[24px] font-bold leading-tight text-[#16233f] dark:text-white sm:text-[26px]">
+              Ujian Saya
+            </h1>
+            <p className="mt-1 text-[13px] text-[#5b657d] dark:text-white/50">
+              Kelola seluruh ujian yang Anda buat.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3 sm:shrink-0">
+            <span className="hidden h-16 w-16 shrink-0 items-center justify-center rounded-[18px] bg-white/70 shadow-[0_10px_20px_-10px_rgba(49,46,129,0.35)] backdrop-blur-md dark:bg-white/10 sm:flex">
+              <IconDocument className="h-8 w-8 text-[#4338ca] dark:text-[#a5b4fc]" />
+            </span>
+            <Button onClick={bukaModalBuat} className="shrink-0">
+              <IconPlus className="h-4 w-4" />
+              <span className="hidden sm:inline">Buat Ujian</span>
+              <span className="sm:hidden">Buat</span>
+            </Button>
+          </div>
+        </div>
+
+        <div className="relative mt-4 flex items-center gap-2 rounded-[12px] border border-white/60 bg-white/60 px-3.5 py-2.5 backdrop-blur-md dark:border-white/10 dark:bg-white/[0.05]">
           <IconSearch className="h-4 w-4 shrink-0 text-[#94a3b8]" />
           <input
             value={cari}
@@ -210,24 +294,30 @@ export function UjianGuruClient({ ujianAwal, cariAwal }: { ujianAwal: Ujian[]; c
             className="w-full bg-transparent text-[13px] text-[#34435f] placeholder:text-[#94a3b8] focus:outline-none dark:text-white/80"
           />
         </div>
+      </div>
 
-        <div className="flex flex-wrap gap-1.5">
-          {TAB_FILTER.map((t) => (
+      {/* ============ TAB FILTER ============ */}
+      <div className="flex flex-wrap gap-1.5">
+        {TAB_FILTER.map((t) => {
+          const aktif = tab === t.key
+          return (
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
-              className={`rounded-full border px-3 py-1.5 text-[12px] font-medium backdrop-blur-md transition-all ${
-                tab === t.key
+              className={`flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-[12px] font-medium transition-all ${
+                aktif
                   ? "border-transparent bg-gradient-to-br from-[#818cf8] to-[#4338ca] text-white shadow-[0_8px_18px_-6px_rgba(67,56,202,0.55)]"
-                  : "border-white/50 bg-white/35 text-[#5b657d] hover:bg-white/60 dark:border-white/10 dark:bg-white/[0.03] dark:text-white/50 dark:hover:bg-white/10"
+                  : "border-[#e7e4dc] bg-white text-[#5b657d] hover:bg-[#f7f9f8] dark:border-white/10 dark:bg-white/[0.03] dark:text-white/50 dark:hover:bg-white/10"
               }`}
             >
+              <t.Icon className="h-3.5 w-3.5" />
               {t.label}
             </button>
-          ))}
-        </div>
+          )
+        })}
       </div>
 
+      {/* ============ DAFTAR UJIAN ============ */}
       {hasilFilter.length === 0 ? (
         <Card variant="glass" className="flex flex-col items-center justify-center gap-2 px-6 py-14 text-center">
           <IconDocument className="h-9 w-9 text-[#c7cdd8]" />
@@ -242,7 +332,7 @@ export function UjianGuruClient({ ujianAwal, cariAwal }: { ujianAwal: Ujian[]; c
           )}
         </Card>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-2">
           {hasilFilter.map((u) => {
             const status = statusUjian(u.mulai, u.selesai)
             const subjectIconSrc = getSubjectIconSrc(u.judul)
@@ -250,15 +340,13 @@ export function UjianGuruClient({ ujianAwal, cariAwal }: { ujianAwal: Ujian[]; c
               <Card
                 key={u.id}
                 variant="glass"
-                className="
-                  group flex flex-col gap-3 p-4
-                  transition-all duration-200 ease-out
-                  hover:-translate-y-1 hover:bg-white/70 hover:shadow-[0_10px_24px_-10px_rgba(22,35,63,0.1),0_32px_52px_-18px_rgba(49,46,129,0.38)]
-                  dark:hover:bg-white/[0.1]
-                "
+                className="group relative flex flex-col gap-3 p-4 transition-all duration-200 ease-out hover:-translate-y-1 hover:bg-white/70 hover:shadow-[0_10px_24px_-10px_rgba(22,35,63,0.1),0_32px_52px_-18px_rgba(49,46,129,0.38)] dark:hover:bg-white/[0.1]"
               >
-                <div className="flex items-start justify-between gap-2">
-                  <Badge tone={status.tone}>{status.label}</Badge>
+                <div className="flex items-center justify-between gap-2">
+                  <Badge tone={status.tone}>
+                    <status.Icon className="h-3 w-3" />
+                    {status.label}
+                  </Badge>
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => bukaModalEdit(u)}
@@ -277,25 +365,38 @@ export function UjianGuruClient({ ujianAwal, cariAwal }: { ujianAwal: Ujian[]; c
                   </div>
                 </div>
 
-                <Link href={`/ujian-guru/${u.id}`} className="flex items-center gap-2.5">
-                  <Image
-                    src={subjectIconSrc}
-                    alt=""
-                    width={40}
-                    height={40}
-                    className="h-10 w-10 shrink-0 object-contain drop-shadow-[0_10px_16px_rgba(49,46,129,0.25)] transition-transform duration-200 ease-out group-hover:-rotate-3 group-hover:scale-105"
-                  />
-                  <h3 className="line-clamp-2 min-w-0 flex-1 text-[14.5px] font-semibold text-[#16233f] group-hover:text-[#4338ca] dark:text-white dark:group-hover:text-[#818cf8]">
-                    {u.judul}
-                  </h3>
-                </Link>
+                <div className="flex items-center gap-3">
+                  <Link href={`/ujian-guru/${u.id}`} className="shrink-0">
+                    <span className="flex h-14 w-14 items-center justify-center rounded-[16px] bg-white shadow-[0_10px_20px_-10px_rgba(49,46,129,0.3)] transition-transform duration-200 ease-out group-hover:-rotate-3 group-hover:scale-105 dark:bg-white/10">
+                      <Image src={subjectIconSrc} alt="" width={36} height={36} className="h-9 w-9 object-contain" />
+                    </span>
+                  </Link>
 
-                <div className="flex items-center gap-1.5 text-[11.5px] text-[#8b93a6] dark:text-white/40">
-                  <IconClock className="h-3.5 w-3.5" />
-                  {formatRentang(u.mulai, u.selesai)}
+                  <div className="min-w-0 flex-1">
+                    <Link href={`/ujian-guru/${u.id}`}>
+                      <h3 className="line-clamp-1 text-[15px] font-semibold text-[#16233f] group-hover:text-[#4338ca] dark:text-white dark:group-hover:text-[#818cf8]">
+                        {u.judul}
+                      </h3>
+                    </Link>
+                    {u.deskripsi && (
+                      <p className="line-clamp-1 text-[12px] text-[#8b93a6] dark:text-white/40">{u.deskripsi}</p>
+                    )}
+                    <div className="mt-1 flex items-center gap-1.5 text-[11.5px] text-[#8b93a6] dark:text-white/40">
+                      <IconCalendar className="h-3.5 w-3.5" />
+                      {formatRentang(u.mulai, u.selesai)}
+                    </div>
+                  </div>
+
+                  <Link
+                    href={`/ujian-guru/${u.id}`}
+                    aria-label="Kelola soal & hasil"
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#818cf8] to-[#4338ca] text-white shadow-[0_8px_16px_-6px_rgba(67,56,202,0.55)] transition-transform duration-200 ease-out group-hover:translate-x-0.5"
+                  >
+                    <IconArrowRight className="h-4 w-4" />
+                  </Link>
                 </div>
 
-                <div className="mt-auto flex items-center justify-between border-t border-[#edf0ef] pt-3 text-[12px] text-[#5b657d] dark:border-white/10 dark:text-white/50">
+                <div className="flex items-center justify-between border-t border-[#edf0ef] pt-3 text-[12px] text-[#5b657d] dark:border-white/10 dark:text-white/50">
                   <span className="flex items-center gap-1.5">
                     <IconDocument className="h-3.5 w-3.5" />
                     {u._count.soal} soal
@@ -304,15 +405,11 @@ export function UjianGuruClient({ ujianAwal, cariAwal }: { ujianAwal: Ujian[]; c
                     <IconUsers className="h-3.5 w-3.5" />
                     {u._count.hasilUjian} peserta
                   </span>
-                  <span>{u.durasiMenit} menit</span>
+                  <span className="flex items-center gap-1.5">
+                    <IconClock className="h-3.5 w-3.5" />
+                    {u.durasiMenit} menit
+                  </span>
                 </div>
-
-                <Link
-                  href={`/ujian-guru/${u.id}`}
-                  className="mt-1 rounded-[10px] bg-[#f7f9f8] py-2 text-center text-[12.5px] font-medium text-[#34435f] hover:bg-[#eef2ff] hover:text-[#4338ca] dark:bg-white/5 dark:text-white/70 dark:hover:bg-white/10"
-                >
-                  Kelola Soal & Hasil
-                </Link>
               </Card>
             )
           })}

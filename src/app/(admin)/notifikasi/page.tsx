@@ -1,8 +1,10 @@
+import Image from "next/image"
 import Link from "next/link"
 
 import { prisma } from "@/lib/prisma"
 import { Badge } from "@/components/ui/Badge"
 import { Card } from "@/components/ui/Card"
+import { getSubjectIconSrc } from "@/lib/subject-icons"
 
 const formatterWaktu = new Intl.DateTimeFormat("id-ID", {
   day: "numeric",
@@ -110,28 +112,43 @@ export default async function NotifikasiPage() {
             </p>
           ) : (
             <div className="divide-y divide-[#f0f2f1] dark:divide-white/[0.06]">
-              {ujianMendatang.map((ujian) => (
-                <Link
-                  key={ujian.id}
-                  href={`/ujian/${ujian.id}/hasil`}
-                  className="flex items-center justify-between gap-3 px-5 py-3.5 transition-colors hover:bg-[#f7f9f8] dark:hover:bg-white/[0.04]"
-                >
-                  <div className="flex min-w-0 items-center gap-3">
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#e6f0ff] text-[#2563eb] dark:bg-[#2563eb]/15 dark:text-[#8fb1ff]">
-                      <IconCalendar className="h-4.5 w-4.5" />
-                    </span>
-                    <div className="min-w-0">
-                      <p className="truncate text-[13px] font-medium text-[#16233f] dark:text-white">
-                        {ujian.judul}
-                      </p>
-                      <p className="mt-0.5 text-[11.5px] text-[#8b93a6] dark:text-white/40">
-                        Mulai {formatterWaktu.format(ujian.mulai)}
-                      </p>
+              {ujianMendatang.map((ujian) => {
+                const iconSrc = getSubjectIconSrc(ujian.judul)
+                return (
+                  <Link
+                    key={ujian.id}
+                    href={`/ujian/${ujian.id}/hasil`}
+                    className="flex items-center justify-between gap-3 px-5 py-3.5 transition-colors hover:bg-[#f7f9f8] dark:hover:bg-white/[0.04]"
+                  >
+                    <div className="flex min-w-0 items-center gap-3">
+                      {/*
+                        Icon per-baris diganti dari kalender generik
+                        menjadi icon mata pelajaran (sama seperti di
+                        halaman Bank Soal & Laporan), memakai
+                        getSubjectIconSrc dari lib/subject-icons.ts.
+                      */}
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center">
+                        <Image
+                          src={iconSrc}
+                          alt=""
+                          width={36}
+                          height={36}
+                          className="h-9 w-9 object-contain drop-shadow-[0_3px_6px_rgba(0,0,0,0.18)]"
+                        />
+                      </span>
+                      <div className="min-w-0">
+                        <p className="truncate text-[13px] font-medium text-[#16233f] dark:text-white">
+                          {ujian.judul}
+                        </p>
+                        <p className="mt-0.5 text-[11.5px] text-[#8b93a6] dark:text-white/40">
+                          Mulai {formatterWaktu.format(ujian.mulai)}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                  <Badge tone="blue">Terjadwal</Badge>
-                </Link>
-              ))}
+                    <Badge tone="blue">Terjadwal</Badge>
+                  </Link>
+                )
+              })}
             </div>
           )}
         </Card>

@@ -98,7 +98,7 @@ export default async function BerandaPesertaPage() {
         style={{ aspectRatio: "1769 / 592" }}
       >
         <Image
-          src="/image/banner/banner-peserta-beranda.jpg"
+          src="/image/banner/peserta-beranda.png"
           alt=""
           fill
           priority

@@ -124,13 +124,6 @@ export default async function BerandaPesertaPage() {
             </span>
           </h1>
 
-          <p
-            className="max-w-[92%] text-white/85 drop-shadow-[0_1px_3px_rgba(10,42,99,0.4)]"
-            style={{ fontSize: "clamp(8.5px, 1.5vw, 15px)" }}
-          >
-            Siap menguji kemampuan Anda? Mulai ujian dan pantau perkembangan belajar Anda.
-          </p>
-
           <Link
             href="/ujian-tersedia"
             className="mt-[0.4vw] inline-flex w-fit items-center gap-[0.5em] rounded-full bg-white font-semibold text-[#123a8f] shadow-[0_10px_20px_-6px_rgba(10,42,99,0.55)] transition-all active:scale-[0.98] sm:hover:-translate-y-0.5 sm:hover:shadow-[0_14px_26px_-6px_rgba(10,42,99,0.6)]"

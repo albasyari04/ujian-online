@@ -82,20 +82,23 @@ export default async function BerandaPesertaPage() {
   return (
     <div className="flex flex-col gap-6">
       {/* ===================== HERO / SAMBUTAN ===================== */}
-      {/* Banner foto (banner-peserta-beranda.png) punya teks & logo bawaan bahasa Inggris
-          ("Welcome Back, Aryan Sharma!", tombol "Start New Exam", logo "EDTECH") yang tercetak
-          langsung di gambarnya — bukan HTML, jadi tidak bisa diganti langsung. Solusinya: panel
-          gradient biru pekat menutupi bagian gambar yang berisi teks bawaan tsb, lalu di ATAS
-          gradient itu kita tumpuk teks & tombol milik aplikasi ini sendiri (selalu putih, supaya
-          selalu terbaca baik di mode terang maupun gelap karena latarnya tetap foto biru yang sama).
+      {/* Foto banner (banner-peserta-beranda.jpg) di area kiri-atas SUDAH biru gelap dengan
+          sendirinya (sisa desain asli setelah teks bahasa Inggris & tombolnya dihapus dari
+          gambar), jadi teks sambutan kita bisa langsung ditempel di atasnya TANPA gradient/
+          overlay tambahan — persis seperti referensi banner-peserta-beranda-desain.png.
 
-          Tidak ada Card/border yang membungkus banner — banner tampil polos penuh-lebar, teks
-          menumpuk LANGSUNG di atas foto (sesuai referensi desain banner-peserta-beranda-desain.png),
-          bukan diletakkan di bawahnya, dan tidak ada badge/ikon fitur lagi — hanya judul sambutan,
-          deskripsi singkat, dan tombol "Mulai Ujian Baru". */}
-      <div className="relative isolate w-full overflow-hidden rounded-[18px] min-h-[220px] sm:min-h-[340px] md:min-h-[360px]">
+          Rasio gambar asli (1769:592) dipakai apa adanya di SEMUA ukuran layar (bukan cuma
+          mobile), jadi banner tidak pernah dipotong sedikit pun, di HP maupun desktop. Supaya
+          teks tetap muat rapi walau banner jadi pendek di layar sempit, semua ukuran teks &
+          padding memakai satuan vw (persentase lebar layar) via clamp() — jadi teks ikut
+          mengecil/membesar proporsional mengikuti lebar banner, sama seperti kalau teks itu
+          betulan bagian dari gambar. */}
+      <div
+        className="relative w-full overflow-hidden rounded-[18px] min-h-[108px]"
+        style={{ aspectRatio: "1769 / 592" }}
+      >
         <Image
-          src="/image/banner/banner-peserta-beranda.png"
+          src="/image/banner/banner-peserta-beranda.jpg"
           alt=""
           fill
           priority
@@ -104,36 +107,44 @@ export default async function BerandaPesertaPage() {
         />
 
         <div
-          className="absolute inset-y-0 left-0 z-[5] w-full sm:w-[62%] md:w-[54%]"
-          style={{
-            background:
-              "linear-gradient(100deg, #0a2a63 0%, #0a2a63 55%, rgba(10,42,99,0.85) 78%, rgba(10,42,99,0) 100%)",
-          }}
-          aria-hidden="true"
-        />
-
-        <div className="relative z-10 flex h-full flex-col justify-center gap-2.5 p-5 sm:gap-3 sm:p-8 sm:max-w-[58%] lg:max-w-[52%]">
-          <h1 className="text-[19px] font-bold leading-snug text-white sm:text-[22px] sm:leading-[1.2] md:text-[30px]">
-            Selamat datang, <span aria-hidden="true">👋</span>
-            <br />
-            <span className="text-[#8fd0ff]">{namaDepan}</span>
+          className="absolute inset-0 z-10 flex flex-col justify-center gap-[0.6vw] px-[4vw] py-[1.5vw] sm:max-w-[55%] lg:max-w-[46%]"
+        >
+          <h1 className="leading-[1.15] text-white drop-shadow-[0_1px_4px_rgba(10,42,99,0.45)]">
+            <span
+              className="block font-normal"
+              style={{ fontSize: "clamp(10px, 2.3vw, 22px)" }}
+            >
+              Selamat datang, <span aria-hidden="true">👋</span>
+            </span>
+            <span
+              className="block font-bold text-[#8fd0ff]"
+              style={{ fontSize: "clamp(15px, 4.2vw, 40px)", lineHeight: 1.1 }}
+            >
+              {namaDepan}
+            </span>
           </h1>
 
-          <p className="max-w-[300px] text-[12.5px] text-white/80 sm:text-[13.5px]">
+          <p
+            className="max-w-[92%] text-white/85 drop-shadow-[0_1px_3px_rgba(10,42,99,0.4)]"
+            style={{ fontSize: "clamp(8.5px, 1.5vw, 15px)" }}
+          >
             Siap menguji kemampuan Anda? Mulai ujian dan pantau perkembangan belajar Anda.
           </p>
 
           <Link
             href="/ujian-tersedia"
-            className="mt-1 inline-flex w-fit items-center gap-2 rounded-full bg-white px-5 py-2.5 text-[13px] font-semibold text-[#123a8f] shadow-[0_10px_20px_-6px_rgba(10,42,99,0.55)] transition-all active:scale-[0.98] sm:mt-2 sm:hover:-translate-y-0.5 sm:hover:shadow-[0_14px_26px_-6px_rgba(10,42,99,0.6)]"
+            className="mt-[0.4vw] inline-flex w-fit items-center gap-[0.5em] rounded-full bg-white font-semibold text-[#123a8f] shadow-[0_10px_20px_-6px_rgba(10,42,99,0.55)] transition-all active:scale-[0.98] sm:hover:-translate-y-0.5 sm:hover:shadow-[0_14px_26px_-6px_rgba(10,42,99,0.6)]"
+            style={{
+              fontSize: "clamp(8.5px, 1.5vw, 14px)",
+              padding: "clamp(6px, 1.2vw, 11px) clamp(12px, 2.4vw, 22px)",
+            }}
           >
-            <IconSend className="h-4 w-4" />
+            <IconSend className="h-[1.3em] w-[1.3em]" />
             Mulai Ujian Baru
-            <IconChevronRight className="h-4 w-4" />
+            <IconChevronRight className="h-[1.3em] w-[1.3em]" />
           </Link>
         </div>
       </div>
-
 
       {/* ===================== STAT CARDS ===================== */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">

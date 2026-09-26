@@ -14,65 +14,28 @@ import { getSubjectIconSrc } from "@/lib/subject-icons"
 export const dynamic = "force-dynamic"
 
 /* =========================================================
-   ICON LOKAL
+   ICON GAMBAR (dari public/image/icon/)
+   Semua file PNG aslinya berwarna hitam, jadi di mode gelap
+   diberi filter invert supaya tetap terlihat terang.
 ========================================================= */
 
-/** Ikon buku terbuka — untuk "Ujian Tersedia". */
-function IconBukaBuku({ className }: { className?: string }) {
+function IconGambar({
+  src,
+  className = "h-[18px] w-[18px]",
+}: {
+  src: string
+  className?: string
+}) {
   return (
-    <svg viewBox="0 0 24 24" className={className} fill="none" aria-hidden="true">
-      <path
-        d="M21.6,18.9l-1.8-1.2v-12c0-0.5-0.4-0.9-0.9-0.9h-6c-0.5,0-0.9,0.4-0.9,0.9v3.6H9.9V5.7c0-0.5-0.4-0.9-0.9-0.9h-6
-	c-0.5,0-0.9,0.4-0.9,0.9v12l-1.8,1.2c-0.4,0.3-0.5,0.8-0.1,1.2c0.2,0.3,0.5,0.4,0.8,0.4c0.2,0,0.3-0.1,0.5-0.2l1.8-1.2V21
-	c0,0.5,0.4,0.9,0.9,0.9h6c0.5,0,0.9-0.4,0.9-0.9v-3.6h2.1v3.6c0,0.5,0.4,0.9,0.9,0.9h6c0.5,0,0.9-0.4,0.9-0.9v-1.8l1.8,1.2
-	c0.2,0.1,0.3,0.2,0.5,0.2c0.3,0,0.6-0.1,0.8-0.4C22,19.7,22,19.2,21.6,18.9z M10.8,17.4H3.9v-12h6.9V17.4z M20.1,17.4h-6.9V5.7
-	h6.9V17.4z"
-        fill="currentColor"
+    <span className={`relative inline-block shrink-0 ${className}`}>
+      <Image
+        src={src}
+        alt=""
+        fill
+        sizes="20px"
+        className="object-contain dark:brightness-0 dark:invert"
       />
-    </svg>
-  )
-}
-
-/** Ikon kalender — untuk "Riwayat Ujian". */
-function IconKalender({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} fill="none" aria-hidden="true">
-      <path
-        d="M19.6,4.8h-2.7V3c0-0.5-0.4-0.9-0.9-0.9S15.1,2.5,15.1,3v1.8H8.9V3c0-0.5-0.4-0.9-0.9-0.9S7.1,2.5,7.1,3v1.8H4.4
-	C3.1,4.8,2,5.9,2,7.1v12.5c0,1.3,1.1,2.4,2.4,2.4h15.3c1.3,0,2.4-1.1,2.4-2.4V7.1C22,5.9,20.9,4.8,19.6,4.8z M20.2,19.6
-	c0,0.3-0.2,0.5-0.5,0.5H4.4c-0.3,0-0.5-0.2-0.5-0.5V9.8h16.3V19.6z M11.7,13.5c0-0.5-0.4-0.9-0.9-0.9s-0.9,0.4-0.9,0.9
-	c0,0.5,0.4,0.9,0.9,0.9S11.7,14,11.7,13.5z M11.7,16.2c0-0.5-0.4-0.9-0.9-0.9s-0.9,0.4-0.9,0.9c0,0.5,0.4,0.9,0.9,0.9
-	S11.7,16.7,11.7,16.2z M14.4,13.5c0-0.5-0.4-0.9-0.9-0.9c-0.5,0-0.9,0.4-0.9,0.9c0,0.5,0.4,0.9,0.9,0.9
-	C14,14.4,14.4,14,14.4,13.5z M14.4,16.2c0-0.5-0.4-0.9-0.9-0.9c-0.5,0-0.9,0.4-0.9,0.9c0,0.5,0.4,0.9,0.9,0.9
-	C14,17.1,14.4,16.7,14.4,16.2z M17.1,13.5c0-0.5-0.4-0.9-0.9-0.9c-0.5,0-0.9,0.4-0.9,0.9c0,0.5,0.4,0.9,0.9,0.9
-	C16.7,14.4,17.1,14,17.1,13.5z M17.1,16.2c0-0.5-0.4-0.9-0.9-0.9c-0.5,0-0.9,0.4-0.9,0.9c0,0.5,0.4,0.9,0.9,0.9
-	C16.7,17.1,17.1,16.7,17.1,16.2z"
-        fill="currentColor"
-      />
-    </svg>
-  )
-}
-
-
-
-/** Ikon buku dengan kaca pembesar — untuk kalender jadwal. */
-function IconSorot({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} fill="none" aria-hidden="true">
-      <path
-        d="M21.6,18.9l-1.8-1.2v-12c0-0.5-0.4-0.9-0.9-0.9h-6c-0.5,0-0.9,0.4-0.9,0.9v3.6H9.9V5.7c0-0.5-0.4-0.9-0.9-0.9h-6
-	c-0.5,0-0.9,0.4-0.9,0.9v12l-1.8,1.2c-0.4,0.3-0.5,0.8-0.1,1.2c0.2,0.3,0.5,0.4,0.8,0.4c0.2,0,0.3-0.1,0.5-0.2l1.8-1.2V21
-	c0,0.5,0.4,0.9,0.9,0.9h6c0.5,0,0.9-0.4,0.9-0.9v-3.6h2.1v3.6c0,0.5,0.4,0.9,0.9,0.9h6c0.5,0,0.9-0.4,0.9-0.9v-1.8l1.8,1.2
-	c0.2,0.1,0.3,0.2,0.5,0.2c0.3,0,0.6-0.1,0.8-0.4C22,19.7,22,19.2,21.6,18.9z M10.8,17.4H3.9v-12h6.9V17.4z M20.1,17.4h-6.9V5.7
-	h6.9V17.4z"
-        fill="currentColor"
-      />
-      <path
-        d="M15.3,12.9c-0.9,0.9-2.1,1.4-3.4,1.4s-2.5-0.5-3.4-1.4c-0.3-0.3-0.3-0.9,0-1.2c0.3-0.3,0.9-0.3,1.2,0c0.6,0.6,1.4,0.9,2.2,0.9
-	s1.6-0.3,2.2-0.9c0.3-0.3,0.9-0.3,1.2,0C15.6,12,15.6,12.6,15.3,12.9z"
-        fill="currentColor"
-      />
-    </svg>
+    </span>
   )
 }
 
@@ -147,8 +110,6 @@ export default async function BerandaPesertaPage() {
   return (
     <div className="flex flex-col gap-6">
       {/* ===================== HERO / SAMBUTAN ===================== */}
-      {/* Tombol "Mulai Ujian Baru" overlay sudah DIHAPUS — tombol
-          "Start New Exam" bawaan banner dibiarkan terlihat apa adanya. */}
       <div
         className="relative w-full overflow-hidden rounded-[18px] min-h-[108px]"
         style={{ aspectRatio: "1769 / 592" }}
@@ -286,7 +247,11 @@ export default async function BerandaPesertaPage() {
           <section className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <h2 className="flex items-center gap-2 text-[15px] font-semibold text-[#16233f] dark:text-white">
-                <IconBukaBuku className="h-[18px] w-[18px] text-[#3457c9] dark:text-blue-300" />
+                {/* Icon dari public/image/icon/ujian-tersedia-icon.png */}
+                <IconGambar
+                  src="/image/icon/ujian-tersedia-icon.png"
+                  className="h-[18px] w-[18px]"
+                />
                 Ujian Tersedia
               </h2>
               {tersedia.length > 0 && <Badge tone="blue">{tersedia.length} aktif</Badge>}
@@ -354,7 +319,11 @@ export default async function BerandaPesertaPage() {
           <section className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <h2 className="flex items-center gap-2 text-[15px] font-semibold text-[#16233f] dark:text-white">
-                <IconKalender className="h-[18px] w-[18px] text-[#3457c9] dark:text-blue-300" />
+                {/* Icon dari public/image/icon/calendar.png */}
+                <IconGambar
+                  src="/image/icon/calendar.png"
+                  className="h-[18px] w-[18px]"
+                />
                 Riwayat Ujian
               </h2>
               {selesai.length > 0 && (
@@ -414,7 +383,11 @@ export default async function BerandaPesertaPage() {
           <Card className="flex flex-col gap-3 p-4">
             <div className="flex items-center justify-between">
               <h2 className="flex items-center gap-2 text-[15px] font-semibold text-[#16233f] dark:text-white">
-                <IconSorot className="h-[18px] w-[18px] text-[#3457c9] dark:text-blue-300" />
+                {/* Icon dari public/image/icon/sorotan-icon.png */}
+                <IconGambar
+                  src="/image/icon/sorotan-icon.png"
+                  className="h-[18px] w-[18px]"
+                />
                 Sorotan Ujian
               </h2>
               {tersedia.length > 0 ? (

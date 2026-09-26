@@ -82,71 +82,145 @@ export default async function BerandaPesertaPage() {
   return (
     <div className="flex flex-col gap-6">
       {/* ===================== HERO / SAMBUTAN ===================== */}
-      {/* Banner foto baru (banner-peserta-beranda.png). Banner ini punya teks & logo bawaan
+      {/* Banner foto (banner-peserta-beranda.png) punya teks & logo bawaan bahasa Inggris
           ("Welcome Back, Aryan Sharma!", tombol "Start New Exam", logo "EDTECH") yang tercetak
           langsung di gambarnya — bukan HTML, jadi tidak bisa diganti langsung. Solusinya: panel
           gradient biru pekat menutupi seluruh teks bawaan tsb, lalu di atasnya kita pasang teks
-          & tombol milik aplikasi ini sendiri (selalu putih, supaya kontras & selalu terbaca baik
-          di mode terang maupun gelap karena latarnya tetap foto biru yang sama). */}
-      <Card className="relative isolate min-h-[320px] overflow-hidden p-0 sm:min-h-[360px]">
-        <Image
-          src="/image/banner/banner-peserta-beranda.png"
-          alt=""
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover object-left"
-        />
+          & tombol milik aplikasi ini sendiri (selalu putih, supaya selalu terbaca baik di mode
+          terang maupun gelap karena latarnya tetap foto biru yang sama).
 
-        <div
-          className="absolute inset-y-0 left-0 z-[5] w-[92%] sm:w-[66%] md:w-[56%]"
-          style={{
-            background:
-              "linear-gradient(100deg, #0a2a63 0%, #0a2a63 55%, rgba(10,42,99,0.85) 78%, rgba(10,42,99,0) 100%)",
-          }}
-          aria-hidden="true"
-        />
-
-        <div className="relative z-10 flex h-full flex-col justify-center gap-3 p-6 sm:gap-3.5 sm:p-8 md:max-w-[58%] lg:max-w-[52%]">
-          <h1 className="text-[22px] font-bold leading-[1.2] text-white sm:text-[30px]">
-            Selamat datang, <span aria-hidden="true">👋</span>
-            <br />
-            <span className="text-[#8fd0ff]">{namaDepan}</span>
-          </h1>
-
-          <p className="max-w-[300px] text-[12.5px] text-white/80 sm:text-[13.5px]">
-            Siap menguji kemampuan Anda? Mulai ujian dan pantau perkembangan belajar Anda.
-          </p>
-
-          <div className="mt-1 flex flex-wrap gap-2 sm:flex-nowrap">
-            <FiturBadge
-              iconImageSrc="/image/icon/dockumen.png"
-              title="Ujian Online"
-              subtitle="Mudah & Praktis"
-              tone="blue"
+          Dua tata letak dipakai sesuai lebar layar:
+          - MOBILE (di bawah breakpoint sm): gambar banner ditampilkan UTUH memakai aspect-ratio
+            asli gambar (2167:725) — tidak pernah dipotong sama sekali, jadi banner selalu
+            "terlihat semuanya" — lalu teks sambutan diletakkan di BAWAH gambar (bukan menumpuk
+            di atasnya) supaya selalu punya ruang cukup & mudah dibaca walau layar sempit.
+          - SM ke atas: teks menumpuk di atas foto persis seperti pada desain referensi
+            (banner-peserta-beranda-desain.png). */}
+      <Card className="relative isolate overflow-hidden p-0">
+        {/* ---------- Versi MOBILE ---------- */}
+        <div className="sm:hidden">
+          <div className="relative w-full overflow-hidden" style={{ aspectRatio: "2167 / 725" }}>
+            <Image
+              src="/image/banner/banner-peserta-beranda.png"
+              alt=""
+              fill
+              priority
+              sizes="100vw"
+              className="object-cover"
             />
-            <FiturBadge
-              iconImageSrc="/image/icon/hasil-belajar.png"
-              title="Hasil Belajar"
-              subtitle="Pantau Perkembangan"
-              tone="violet"
-            />
-            <FiturBadge
-              iconImageSrc="/image/icon/aman-terpercaya.png"
-              title="Aman & Terpercaya"
-              subtitle="Data Anda Terlindungi"
-              tone="emerald"
+            <div
+              className="absolute inset-0"
+              style={{
+                background:
+                  "linear-gradient(100deg, #0a2a63 0%, #0a2a63 55%, rgba(10,42,99,0.85) 72%, rgba(10,42,99,0) 92%)",
+              }}
+              aria-hidden="true"
             />
           </div>
 
-          <Link
-            href="/ujian-tersedia"
-            className="mt-2 inline-flex w-fit items-center gap-2 rounded-full bg-white px-5 py-2.5 text-[13px] font-semibold text-[#123a8f] shadow-[0_10px_20px_-6px_rgba(10,42,99,0.55)] transition-all hover:-translate-y-0.5 hover:shadow-[0_14px_26px_-6px_rgba(10,42,99,0.6)]"
-          >
-            <IconSend className="h-4 w-4" />
-            Mulai Ujian Baru
-            <IconChevronRight className="h-4 w-4" />
-          </Link>
+          <div className="flex flex-col gap-2.5 bg-[#0a2a63] px-4 py-4">
+            <h1 className="text-[19px] font-bold leading-snug text-white">
+              Selamat datang, <span aria-hidden="true">👋</span>
+              <br />
+              <span className="text-[#8fd0ff]">{namaDepan}</span>
+            </h1>
+
+            <p className="text-[12.5px] text-white/80">
+              Siap menguji kemampuan Anda? Mulai ujian dan pantau perkembangan belajar Anda.
+            </p>
+
+            <div className="flex flex-wrap gap-2">
+              <FiturBadge
+                iconImageSrc="/image/icon/dockumen.png"
+                title="Ujian Online"
+                subtitle="Mudah & Praktis"
+                tone="blue"
+              />
+              <FiturBadge
+                iconImageSrc="/image/icon/hasil-belajar.png"
+                title="Hasil Belajar"
+                subtitle="Pantau Perkembangan"
+                tone="violet"
+              />
+              <FiturBadge
+                iconImageSrc="/image/icon/aman-terpercaya.png"
+                title="Aman & Terpercaya"
+                subtitle="Data Anda Terlindungi"
+                tone="emerald"
+              />
+            </div>
+
+            <Link
+              href="/ujian-tersedia"
+              className="mt-1 inline-flex w-fit items-center gap-2 rounded-full bg-white px-5 py-2.5 text-[13px] font-semibold text-[#123a8f] shadow-[0_10px_20px_-6px_rgba(10,42,99,0.55)] transition-all active:scale-[0.98]"
+            >
+              <IconSend className="h-4 w-4" />
+              Mulai Ujian Baru
+              <IconChevronRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+
+        {/* ---------- Versi SM ke atas (teks menumpuk di atas foto) ---------- */}
+        <div className="relative isolate hidden min-h-[320px] overflow-hidden sm:block sm:min-h-[340px] md:min-h-[360px]">
+          <Image
+            src="/image/banner/banner-peserta-beranda.png"
+            alt=""
+            fill
+            sizes="100vw"
+            className="object-cover"
+          />
+
+          <div
+            className="absolute inset-y-0 left-0 z-[5] w-[62%] md:w-[54%]"
+            style={{
+              background:
+                "linear-gradient(100deg, #0a2a63 0%, #0a2a63 55%, rgba(10,42,99,0.85) 78%, rgba(10,42,99,0) 100%)",
+            }}
+            aria-hidden="true"
+          />
+
+          <div className="relative z-10 flex h-full flex-col justify-center gap-3 p-8 md:max-w-[58%] lg:max-w-[52%]">
+            <h1 className="text-[22px] font-bold leading-[1.2] text-white sm:text-[30px]">
+              Selamat datang, <span aria-hidden="true">👋</span>
+              <br />
+              <span className="text-[#8fd0ff]">{namaDepan}</span>
+            </h1>
+
+            <p className="max-w-[300px] text-[12.5px] text-white/80 sm:text-[13.5px]">
+              Siap menguji kemampuan Anda? Mulai ujian dan pantau perkembangan belajar Anda.
+            </p>
+
+            <div className="mt-1 flex flex-wrap gap-2 sm:flex-nowrap">
+              <FiturBadge
+                iconImageSrc="/image/icon/dockumen.png"
+                title="Ujian Online"
+                subtitle="Mudah & Praktis"
+                tone="blue"
+              />
+              <FiturBadge
+                iconImageSrc="/image/icon/hasil-belajar.png"
+                title="Hasil Belajar"
+                subtitle="Pantau Perkembangan"
+                tone="violet"
+              />
+              <FiturBadge
+                iconImageSrc="/image/icon/aman-terpercaya.png"
+                title="Aman & Terpercaya"
+                subtitle="Data Anda Terlindungi"
+                tone="emerald"
+              />
+            </div>
+
+            <Link
+              href="/ujian-tersedia"
+              className="mt-2 inline-flex w-fit items-center gap-2 rounded-full bg-white px-5 py-2.5 text-[13px] font-semibold text-[#123a8f] shadow-[0_10px_20px_-6px_rgba(10,42,99,0.55)] transition-all hover:-translate-y-0.5 hover:shadow-[0_14px_26px_-6px_rgba(10,42,99,0.6)]"
+            >
+              <IconSend className="h-4 w-4" />
+              Mulai Ujian Baru
+              <IconChevronRight className="h-4 w-4" />
+            </Link>
+          </div>
         </div>
       </Card>
 

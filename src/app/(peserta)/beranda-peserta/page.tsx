@@ -11,19 +11,13 @@ import { Button } from "@/components/ui/Button"
 import { CalendarCard } from "@/components/ui/CalendarCard"
 import { getSubjectIconSrc } from "@/lib/subject-icons"
 
-
 export const dynamic = "force-dynamic"
 
 /* =========================================================
    ICON LOKAL
-   Icon-icon di bawah ini ditulis inline agar bisa dipakai
-   langsung di Server Component tanpa perlu import dari
-   components/ui/Icons (yang mungkin hanya tersedia untuk
-   client component).
 ========================================================= */
 
-/** Ikon buku terbuka — pengganti ikon "Ujian Tersedia".
- *  Mengikuti gaya ujian-tersedia-icon.png (buku terbuka polos). */
+/** Ikon buku terbuka — pengganti ikon "Ujian Tersedia". */
 function IconBukaBuku({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" className={className} fill="none" aria-hidden="true">
@@ -38,8 +32,7 @@ function IconBukaBuku({ className }: { className?: string }) {
   )
 }
 
-/** Ikon kalender bergaya jadwal-icon.png — pengganti ikon jam
- *  pada heading "Riwayat Ujian". Didesain agar kontras di mode gelap. */
+/** Ikon kalender — pengganti ikon pada heading "Riwayat Ujian". */
 function IconKalender({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" className={className} fill="none" aria-hidden="true">
@@ -54,8 +47,7 @@ function IconKalender({ className }: { className?: string }) {
   )
 }
 
-/** Ikon kamera video bergaya sorotan-icon.png — pengganti ikon
- *  bola lampu pada heading "Sorotan Ujian". */
+/** Ikon kamera video — pengganti ikon pada heading "Sorotan Ujian". */
 function IconVideo({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" className={className} fill="none" aria-hidden="true">
@@ -129,10 +121,8 @@ export default async function BerandaPesertaPage() {
       ? selesai.reduce((total, hasil) => total + (hasil.skor ?? 0), 0) / selesai.length
       : null
 
-  // Nama lengkap peserta sesuai akun yang login.
   const namaLengkap = (session.user.name ?? "Peserta").trim() || "Peserta"
 
-  // Tanggal yang ditandai di kalender: rentang aktif ujian yang sedang berjalan.
   const markedDates: Record<string, "berlangsung" | "akan_datang" | "berakhir"> = {}
   ujianAktif.forEach((ujian) => {
     markedDates[dateKey(ujian.mulai)] = "berlangsung"
@@ -143,6 +133,8 @@ export default async function BerandaPesertaPage() {
   return (
     <div className="flex flex-col gap-6">
       {/* ===================== HERO / SAMBUTAN ===================== */}
+      {/* Tombol "Mulai Ujian Baru" overlay sudah DIHAPUS — tombol
+          "Start New Exam" bawaan banner dibiarkan terlihat apa adanya. */}
       <div
         className="relative w-full overflow-hidden rounded-[18px] min-h-[108px]"
         style={{ aspectRatio: "1769 / 592" }}
@@ -156,8 +148,7 @@ export default async function BerandaPesertaPage() {
           className="object-cover"
         />
 
-        {/* Blok teks sambutan — kiri-atas banner, mengikuti tata letak
-            "Welcome Back, Aryan Sharma!" pada gambar desain. */}
+        {/* Blok teks sambutan — kiri-atas banner */}
         <div
           className="absolute z-10 flex flex-col"
           style={{
@@ -200,21 +191,6 @@ export default async function BerandaPesertaPage() {
             Start your exam and track your performance.
           </p>
         </div>
-
-        {/* Tombol — digeser lebih ke bawah supaya tidak mepet dengan
-            deskripsi, dan ukuran font/padding diperkecil sedikit. */}
-        <Link
-          href="/ujian-tersedia"
-          className="absolute z-10 inline-flex items-center gap-[0.55em] rounded-full bg-white font-bold text-[#123a8f] shadow-[0_10px_22px_-6px_rgba(10,42,99,0.55)] transition-all active:scale-[0.98] sm:hover:-translate-y-0.5 sm:hover:shadow-[0_14px_28px_-6px_rgba(10,42,99,0.65)]"
-          style={{
-            left: "4vw",
-            top: "78%",
-            fontSize: "clamp(8px, 1.2vw, 14px)",
-            padding: "clamp(5px, 0.85vw, 10px) clamp(12px, 1.7vw, 20px)",
-          }}
-        >
-
-        </Link>
       </div>
 
       {/* ===================== STAT CARDS ===================== */}
@@ -296,7 +272,6 @@ export default async function BerandaPesertaPage() {
           <section className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <h2 className="flex items-center gap-2 text-[15px] font-semibold text-[#16233f] dark:text-white">
-                {/* Icon diganti: buku terbuka — warna kontras di light & dark */}
                 <IconBukaBuku className="h-[18px] w-[18px] text-[#3457c9] dark:text-blue-300" />
                 Ujian Tersedia
               </h2>
@@ -365,7 +340,6 @@ export default async function BerandaPesertaPage() {
           <section className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <h2 className="flex items-center gap-2 text-[15px] font-semibold text-[#16233f] dark:text-white">
-                {/* Icon diganti: kalender — warna kontras di light & dark */}
                 <IconKalender className="h-[18px] w-[18px] text-[#8b93a6] dark:text-white/70" />
                 Riwayat Ujian
               </h2>
@@ -424,7 +398,6 @@ export default async function BerandaPesertaPage() {
           <Card className="flex flex-col gap-3 p-4">
             <div className="flex items-center justify-between">
               <p className="flex items-center gap-2 text-[13.5px] font-semibold text-[#16233f] dark:text-white">
-                {/* Icon diganti: kamera video — warna amber kontras di light & dark */}
                 <IconVideo className="h-4 w-4 text-[#e8a33d] dark:text-amber-300" />
                 Sorotan Ujian
               </p>

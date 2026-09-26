@@ -68,8 +68,14 @@ export default async function BerandaPesertaPage() {
   const sedangDikerjakan = hasilSaya.filter((hasil) => hasil.status === "SEDANG_DIKERJAKAN")
   const tersedia = ujianAktif.filter((ujian) => !sudahDiambil.has(ujian.id))
   const selesai = hasilSaya.filter((hasil) => hasil.status === "SELESAI")
-  const rataRata = selesai.length > 0 ? selesai.reduce((total, hasil) => total + (hasil.skor ?? 0), 0) / selesai.length : null
-  const namaDepan = (session.user.name ?? "Peserta").trim().split(" ")[0]
+  const rataRata =
+    selesai.length > 0
+      ? selesai.reduce((total, hasil) => total + (hasil.skor ?? 0), 0) / selesai.length
+      : null
+
+  // Nama lengkap peserta sesuai akun yang login.
+  // Fallback ke "Peserta" jika session.user.name kosong/null.
+  const namaLengkap = (session.user.name ?? "Peserta").trim() || "Peserta"
 
   // Tanggal yang ditandai di kalender: rentang aktif ujian yang sedang berjalan.
   const markedDates: Record<string, "berlangsung" | "akan_datang" | "berakhir"> = {}
@@ -82,17 +88,10 @@ export default async function BerandaPesertaPage() {
   return (
     <div className="flex flex-col gap-6">
       {/* ===================== HERO / SAMBUTAN ===================== */}
-      {/* Foto banner (banner-peserta-beranda.jpg) di area kiri-atas SUDAH biru gelap dengan
-          sendirinya (sisa desain asli setelah teks bahasa Inggris & tombolnya dihapus dari
-          gambar), jadi teks sambutan kita bisa langsung ditempel di atasnya TANPA gradient/
-          overlay tambahan — persis seperti referensi banner-peserta-beranda-desain.png.
-
-          Rasio gambar asli (1769:592) dipakai apa adanya di SEMUA ukuran layar (bukan cuma
-          mobile), jadi banner tidak pernah dipotong sedikit pun, di HP maupun desktop. Supaya
-          teks tetap muat rapi walau banner jadi pendek di layar sempit, semua ukuran teks &
-          padding memakai satuan vw (persentase lebar layar) via clamp() — jadi teks ikut
-          mengecil/membesar proporsional mengikuti lebar banner, sama seperti kalau teks itu
-          betulan bagian dari gambar. */}
+      {/* Banner tetap memakai rasio asli 1769:592 di semua ukuran layar.
+          Teks & tombol ditempel pada area kiri-bawah banner (area yang
+          ditandai hijau di referensi), memakai satuan vw via clamp()
+          supaya ikut mengecil/membesar proporsional dengan banner. */}
       <div
         className="relative w-full overflow-hidden rounded-[18px] min-h-[108px]"
         style={{ aspectRatio: "1769 / 592" }}
@@ -106,35 +105,46 @@ export default async function BerandaPesertaPage() {
           className="object-cover"
         />
 
+        {/* Area teks & tombol — diposisikan di kiri-bawah banner,
+            sesuai area yang sudah ditandai. */}
         <div
-          className="absolute inset-0 z-10 flex flex-col justify-center gap-[0.6vw] px-[4vw] py-[1.5vw] sm:max-w-[55%] lg:max-w-[46%]"
+          className="absolute z-10 flex flex-col justify-end gap-[0.5vw]"
+          style={{
+            left: "3.5vw",
+            bottom: "6vw",
+            width: "34vw",
+          }}
         >
-          <h1 className="leading-[1.15] text-white drop-shadow-[0_1px_4px_rgba(10,42,99,0.45)]">
+          <h1 className="leading-[1.1] text-white drop-shadow-[0_1px_4px_rgba(10,42,99,0.55)]">
             <span
               className="block font-normal"
-              style={{ fontSize: "clamp(10px, 2.3vw, 22px)" }}
+              style={{ fontSize: "clamp(9px, 1.6vw, 16px)" }}
             >
               Selamat datang, <span aria-hidden="true">👋</span>
             </span>
             <span
-              className="block font-bold text-[#8fd0ff]"
-              style={{ fontSize: "clamp(15px, 4.2vw, 40px)", lineHeight: 1.1 }}
+              className="block font-bold text-white"
+              style={{
+                fontSize: "clamp(13px, 2.4vw, 26px)",
+                lineHeight: 1.1,
+                textShadow: "0 2px 6px rgba(10,42,99,0.6)",
+              }}
             >
-              {namaDepan}
+              {namaLengkap}
             </span>
           </h1>
 
           <Link
             href="/ujian-tersedia"
-            className="mt-[0.4vw] inline-flex w-fit items-center gap-[0.5em] rounded-full bg-white font-semibold text-[#123a8f] shadow-[0_10px_20px_-6px_rgba(10,42,99,0.55)] transition-all active:scale-[0.98] sm:hover:-translate-y-0.5 sm:hover:shadow-[0_14px_26px_-6px_rgba(10,42,99,0.6)]"
+            className="mt-[0.3vw] inline-flex w-fit items-center gap-[0.5em] rounded-full bg-white font-semibold text-[#123a8f] shadow-[0_10px_20px_-6px_rgba(10,42,99,0.55)] transition-all active:scale-[0.98] sm:hover:-translate-y-0.5 sm:hover:shadow-[0_14px_26px_-6px_rgba(10,42,99,0.6)]"
             style={{
-              fontSize: "clamp(8.5px, 1.5vw, 14px)",
-              padding: "clamp(6px, 1.2vw, 11px) clamp(12px, 2.4vw, 22px)",
+              fontSize: "clamp(8px, 1.15vw, 13px)",
+              padding: "clamp(5px, 0.9vw, 9px) clamp(10px, 1.8vw, 18px)",
             }}
           >
-            <IconSend className="h-[1.3em] w-[1.3em]" />
+            <IconSend className="h-[1.25em] w-[1.25em]" />
             Mulai Ujian Baru
-            <IconChevronRight className="h-[1.3em] w-[1.3em]" />
+            <IconChevronRight className="h-[1.25em] w-[1.25em]" />
           </Link>
         </div>
       </div>
@@ -371,7 +381,9 @@ export default async function BerandaPesertaPage() {
                 <p className="text-[12.5px] text-[#8b93a6] dark:text-white/50">
                   Tidak ada ujian yang perlu disorot saat ini.
                 </p>
-                <p className="text-[11px] text-[#a3aebd] dark:text-white/30">Ujian yang penting akan muncul di sini.</p>
+                <p className="text-[11px] text-[#a3aebd] dark:text-white/30">
+                  Ujian yang penting akan muncul di sini.
+                </p>
               </div>
             ) : (
               <div className="flex flex-col gap-2.5">

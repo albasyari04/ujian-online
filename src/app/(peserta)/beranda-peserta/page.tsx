@@ -10,9 +10,65 @@ import { Badge } from "@/components/ui/Badge"
 import { Button } from "@/components/ui/Button"
 import { CalendarCard } from "@/components/ui/CalendarCard"
 import { getSubjectIconSrc } from "@/lib/subject-icons"
-import { IconBook, IconChevronRight, IconClock, IconLightbulb, IconSend } from "@/components/ui/Icons"
+import { IconChevronRight, IconSend } from "@/components/ui/Icons"
 
 export const dynamic = "force-dynamic"
+
+/* =========================================================
+   ICON LOKAL
+   Icon-icon di bawah ini ditulis inline agar bisa dipakai
+   langsung di Server Component tanpa perlu import dari
+   components/ui/Icons (yang mungkin hanya tersedia untuk
+   client component).
+========================================================= */
+
+/** Ikon buku terbuka — pengganti ikon "Ujian Tersedia".
+ *  Mengikuti gaya ujian-tersedia-icon.png (buku terbuka polos). */
+function IconBukaBuku({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" aria-hidden="true">
+      <path
+        d="M12 6.5C10.4 5 8.1 4.3 5.5 4.5C4.7 4.6 4 5.2 4 6.1V17.5C4 18.4 4.8 19 5.7 18.9C8.1 18.7 10.3 19.4 12 20.7C13.7 19.4 15.9 18.7 18.3 18.9C19.2 19 20 18.4 20 17.5V6.1C20 5.2 19.3 4.6 18.5 4.5C15.9 4.3 13.6 5 12 6.5Z"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinejoin="round"
+      />
+      <path d="M12 6.5V20.7" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+/** Ikon kalender bergaya jadwal-icon.png — pengganti ikon jam
+ *  pada heading "Riwayat Ujian". Didesain agar kontras di mode gelap. */
+function IconKalender({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" aria-hidden="true">
+      <rect x="3.5" y="5.5" width="17" height="15" rx="2" stroke="currentColor" strokeWidth="1.7" />
+      <path d="M3.5 10H20.5" stroke="currentColor" strokeWidth="1.7" />
+      <path d="M8 3.5V7" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+      <path d="M16 3.5V7" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+      <circle cx="8.3" cy="14" r="1" fill="currentColor" />
+      <circle cx="12" cy="14" r="1" fill="currentColor" />
+      <circle cx="15.7" cy="14" r="1" fill="currentColor" />
+    </svg>
+  )
+}
+
+/** Ikon kamera video bergaya sorotan-icon.png — pengganti ikon
+ *  bola lampu pada heading "Sorotan Ujian". */
+function IconVideo({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" aria-hidden="true">
+      <rect x="3" y="6.5" width="12.5" height="11" rx="2.4" stroke="currentColor" strokeWidth="1.7" />
+      <path
+        d="M15.5 10.5L20.3 8.1C20.9 7.8 21.5 8.2 21.5 8.8V15.2C21.5 15.8 20.9 16.2 20.3 15.9L15.5 13.5V10.5Z"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
 
 /* =========================================================
    FORMATTER
@@ -87,12 +143,6 @@ export default async function BerandaPesertaPage() {
   return (
     <div className="flex flex-col gap-6">
       {/* ===================== HERO / SAMBUTAN ===================== */}
-      {/* Banner memakai rasio asli 1769:592. Semua teks & tombol memakai
-          satuan vw via clamp() supaya proporsional di semua ukuran layar.
-          Posisi teks mengikuti tata letak banner-peserta-beranda-desain.png:
-            - "Selamat datang," + nama peserta + deskripsi  → kiri-atas
-            - Tombol "Mulai Ujian Baru"                     → di bawah deskripsi,
-              tepat menimpa tombol "Start New Exam" bawaan banner */}
       <div
         className="relative w-full overflow-hidden rounded-[18px] min-h-[108px]"
         style={{ aspectRatio: "1769 / 592" }}
@@ -106,9 +156,8 @@ export default async function BerandaPesertaPage() {
           className="object-cover"
         />
 
-        {/* Blok teks — diposisikan meniru layout desain:
-            kiri ~3.5vw, blok mulai dari atas ~20% tinggi banner,
-            dengan lebar ~42vw supaya tidak menabrak area ilustrasi. */}
+        {/* Blok teks sambutan — kiri-atas banner, mengikuti tata letak
+            "Welcome Back, Aryan Sharma!" pada gambar desain. */}
         <div
           className="absolute z-10 flex flex-col"
           style={{
@@ -118,7 +167,6 @@ export default async function BerandaPesertaPage() {
           }}
         >
           <h1 className="leading-[1.1] text-white drop-shadow-[0_2px_6px_rgba(10,42,99,0.55)]">
-            {/* Baris 1: "Selamat datang, 👋" — sejajar dengan "Welcome Back," di desain */}
             <span
               className="block font-medium"
               style={{ fontSize: "clamp(10px, 1.6vw, 20px)" }}
@@ -126,7 +174,6 @@ export default async function BerandaPesertaPage() {
               Selamat datang, <span aria-hidden="true">👋</span>
             </span>
 
-            {/* Baris 2: Nama lengkap peserta — sejajar dengan "Aryan Sharma!" di desain */}
             <span
               className="mt-[0.3vw] block font-extrabold text-white"
               style={{
@@ -140,7 +187,6 @@ export default async function BerandaPesertaPage() {
             </span>
           </h1>
 
-          {/* Baris 3 & 4: deskripsi dua baris, sama persis dengan desain. */}
           <p
             className="mt-[1vw] font-normal text-white/95"
             style={{
@@ -155,22 +201,21 @@ export default async function BerandaPesertaPage() {
           </p>
         </div>
 
-        {/* Tombol — diletakkan tepat di atas tombol "Start New Exam" bawaan
-            banner. Ukuran & posisi disesuaikan supaya tombol overlay
-            menimpa tombol asli banner. */}
+        {/* Tombol — digeser lebih ke bawah supaya tidak mepet dengan
+            deskripsi, dan ukuran font/padding diperkecil sedikit. */}
         <Link
           href="/ujian-tersedia"
-          className="absolute z-10 inline-flex items-center gap-[0.6em] rounded-full bg-white font-bold text-[#123a8f] shadow-[0_10px_22px_-6px_rgba(10,42,99,0.55)] transition-all active:scale-[0.98] sm:hover:-translate-y-0.5 sm:hover:shadow-[0_14px_28px_-6px_rgba(10,42,99,0.65)]"
+          className="absolute z-10 inline-flex items-center gap-[0.55em] rounded-full bg-white font-bold text-[#123a8f] shadow-[0_10px_22px_-6px_rgba(10,42,99,0.55)] transition-all active:scale-[0.98] sm:hover:-translate-y-0.5 sm:hover:shadow-[0_14px_28px_-6px_rgba(10,42,99,0.65)]"
           style={{
             left: "4vw",
-            top: "72%",
-            fontSize: "clamp(9px, 1.4vw, 17px)",
-            padding: "clamp(6px, 1vw, 12px) clamp(14px, 2vw, 24px)",
+            top: "78%",
+            fontSize: "clamp(8px, 1.2vw, 14px)",
+            padding: "clamp(5px, 0.85vw, 10px) clamp(12px, 1.7vw, 20px)",
           }}
         >
-          <IconSend className="h-[1.2em] w-[1.2em]" />
+          <IconSend className="h-[1.15em] w-[1.15em]" />
           Mulai Ujian Baru
-          <IconChevronRight className="h-[1.2em] w-[1.2em]" />
+          <IconChevronRight className="h-[1.15em] w-[1.15em]" />
         </Link>
       </div>
 
@@ -253,7 +298,8 @@ export default async function BerandaPesertaPage() {
           <section className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <h2 className="flex items-center gap-2 text-[15px] font-semibold text-[#16233f] dark:text-white">
-                <IconBook className="h-[18px] w-[18px] text-[#3457c9] dark:text-blue-300" />
+                {/* Icon diganti: buku terbuka — warna kontras di light & dark */}
+                <IconBukaBuku className="h-[18px] w-[18px] text-[#3457c9] dark:text-blue-300" />
                 Ujian Tersedia
               </h2>
               {tersedia.length > 0 && <Badge tone="blue">{tersedia.length} aktif</Badge>}
@@ -321,7 +367,8 @@ export default async function BerandaPesertaPage() {
           <section className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <h2 className="flex items-center gap-2 text-[15px] font-semibold text-[#16233f] dark:text-white">
-                <IconClock className="h-[18px] w-[18px] text-[#8b93a6] dark:text-white/50" />
+                {/* Icon diganti: kalender — warna kontras di light & dark */}
+                <IconKalender className="h-[18px] w-[18px] text-[#8b93a6] dark:text-white/70" />
                 Riwayat Ujian
               </h2>
               {selesai.length > 0 && (
@@ -379,7 +426,8 @@ export default async function BerandaPesertaPage() {
           <Card className="flex flex-col gap-3 p-4">
             <div className="flex items-center justify-between">
               <p className="flex items-center gap-2 text-[13.5px] font-semibold text-[#16233f] dark:text-white">
-                <IconLightbulb className="h-4 w-4 text-[#e8a33d]" />
+                {/* Icon diganti: kamera video — warna amber kontras di light & dark */}
+                <IconVideo className="h-4 w-4 text-[#e8a33d] dark:text-amber-300" />
                 Sorotan Ujian
               </p>
               {tersedia.length > 0 ? (

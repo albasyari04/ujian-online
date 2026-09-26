@@ -320,8 +320,8 @@ export default async function BerandaPesertaPage() {
                     terlihat sejajar ukurannya dengan icon heading lainnya. */}
                 <IconGambar
                   src="/image/icon/riwayat-ujian-icon.png"
-                  size={20}
-                  className="scale-[1.40]"
+                  size={25}
+                  className="scale-[1.45]"
                 />
                 Riwayat Ujian
               </h2>

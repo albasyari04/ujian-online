@@ -15,27 +15,28 @@ export const dynamic = "force-dynamic"
 
 /* =========================================================
    ICON GAMBAR (dari public/image/icon/)
-   Semua file PNG aslinya berwarna hitam, jadi di mode gelap
-   diberi filter invert supaya tetap terlihat terang.
+   Memakai width/height eksplisit (bukan `fill`) supaya lebih
+   andal dirender di Server Component. Icon hitam otomatis
+   dibalik jadi putih di mode gelap via filter CSS.
 ========================================================= */
 
 function IconGambar({
   src,
-  className = "h-[18px] w-[18px]",
+  size = 18,
+  className = "",
 }: {
   src: string
+  size?: number
   className?: string
 }) {
   return (
-    <span className={`relative inline-block shrink-0 ${className}`}>
-      <Image
-        src={src}
-        alt=""
-        fill
-        sizes="20px"
-        className="object-contain dark:brightness-0 dark:invert"
-      />
-    </span>
+    <Image
+      src={src}
+      alt=""
+      width={size}
+      height={size}
+      className={`shrink-0 object-contain dark:brightness-0 dark:invert ${className}`}
+    />
   )
 }
 
@@ -123,7 +124,6 @@ export default async function BerandaPesertaPage() {
           className="object-cover"
         />
 
-        {/* Blok teks sambutan — kiri-atas banner */}
         <div
           className="absolute z-10 flex flex-col"
           style={{
@@ -247,11 +247,7 @@ export default async function BerandaPesertaPage() {
           <section className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <h2 className="flex items-center gap-2 text-[15px] font-semibold text-[#16233f] dark:text-white">
-                {/* Icon dari public/image/icon/ujian-tersedia-icon.png */}
-                <IconGambar
-                  src="/image/icon/ujian-tersedia-icon.png"
-                  className="h-[18px] w-[18px]"
-                />
+                <IconGambar src="/image/icon/ujian-tersedia-icon.png" size={18} />
                 Ujian Tersedia
               </h2>
               {tersedia.length > 0 && <Badge tone="blue">{tersedia.length} aktif</Badge>}
@@ -319,11 +315,8 @@ export default async function BerandaPesertaPage() {
           <section className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <h2 className="flex items-center gap-2 text-[15px] font-semibold text-[#16233f] dark:text-white">
-                {/* Icon dari public/image/icon/calendar.png */}
-                <IconGambar
-                  src="/image/icon/calendar.png"
-                  className="h-[18px] w-[18px]"
-                />
+                {/* Icon riwayat ujian dari public/image/icon/riwayat-ujian-icon.png */}
+                <IconGambar src="/image/icon/riwayat-ujian-icon.png" size={18} />
                 Riwayat Ujian
               </h2>
               {selesai.length > 0 && (
@@ -383,11 +376,7 @@ export default async function BerandaPesertaPage() {
           <Card className="flex flex-col gap-3 p-4">
             <div className="flex items-center justify-between">
               <h2 className="flex items-center gap-2 text-[15px] font-semibold text-[#16233f] dark:text-white">
-                {/* Icon dari public/image/icon/sorotan-icon.png */}
-                <IconGambar
-                  src="/image/icon/sorotan-icon.png"
-                  className="h-[18px] w-[18px]"
-                />
+                <IconGambar src="/image/icon/sorotan-icon.png" size={18} />
                 Sorotan Ujian
               </h2>
               {tersedia.length > 0 ? (

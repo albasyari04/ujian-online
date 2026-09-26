@@ -17,46 +17,60 @@ export const dynamic = "force-dynamic"
    ICON LOKAL
 ========================================================= */
 
-/** Ikon buku terbuka — pengganti ikon "Ujian Tersedia". */
+/** Ikon buku terbuka — untuk "Ujian Tersedia". */
 function IconBukaBuku({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" className={className} fill="none" aria-hidden="true">
       <path
-        d="M12 6.5C10.4 5 8.1 4.3 5.5 4.5C4.7 4.6 4 5.2 4 6.1V17.5C4 18.4 4.8 19 5.7 18.9C8.1 18.7 10.3 19.4 12 20.7C13.7 19.4 15.9 18.7 18.3 18.9C19.2 19 20 18.4 20 17.5V6.1C20 5.2 19.3 4.6 18.5 4.5C15.9 4.3 13.6 5 12 6.5Z"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinejoin="round"
+        d="M21.6,18.9l-1.8-1.2v-12c0-0.5-0.4-0.9-0.9-0.9h-6c-0.5,0-0.9,0.4-0.9,0.9v3.6H9.9V5.7c0-0.5-0.4-0.9-0.9-0.9h-6
+	c-0.5,0-0.9,0.4-0.9,0.9v12l-1.8,1.2c-0.4,0.3-0.5,0.8-0.1,1.2c0.2,0.3,0.5,0.4,0.8,0.4c0.2,0,0.3-0.1,0.5-0.2l1.8-1.2V21
+	c0,0.5,0.4,0.9,0.9,0.9h6c0.5,0,0.9-0.4,0.9-0.9v-3.6h2.1v3.6c0,0.5,0.4,0.9,0.9,0.9h6c0.5,0,0.9-0.4,0.9-0.9v-1.8l1.8,1.2
+	c0.2,0.1,0.3,0.2,0.5,0.2c0.3,0,0.6-0.1,0.8-0.4C22,19.7,22,19.2,21.6,18.9z M10.8,17.4H3.9v-12h6.9V17.4z M20.1,17.4h-6.9V5.7
+	h6.9V17.4z"
+        fill="currentColor"
       />
-      <path d="M12 6.5V20.7" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
     </svg>
   )
 }
 
-/** Ikon kalender — pengganti ikon pada heading "Riwayat Ujian". */
+/** Ikon kalender — untuk "Riwayat Ujian". */
 function IconKalender({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" className={className} fill="none" aria-hidden="true">
-      <rect x="3.5" y="5.5" width="17" height="15" rx="2" stroke="currentColor" strokeWidth="1.7" />
-      <path d="M3.5 10H20.5" stroke="currentColor" strokeWidth="1.7" />
-      <path d="M8 3.5V7" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-      <path d="M16 3.5V7" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-      <circle cx="8.3" cy="14" r="1" fill="currentColor" />
-      <circle cx="12" cy="14" r="1" fill="currentColor" />
-      <circle cx="15.7" cy="14" r="1" fill="currentColor" />
+      <path
+        d="M19.6,4.8h-2.7V3c0-0.5-0.4-0.9-0.9-0.9S15.1,2.5,15.1,3v1.8H8.9V3c0-0.5-0.4-0.9-0.9-0.9S7.1,2.5,7.1,3v1.8H4.4
+	C3.1,4.8,2,5.9,2,7.1v12.5c0,1.3,1.1,2.4,2.4,2.4h15.3c1.3,0,2.4-1.1,2.4-2.4V7.1C22,5.9,20.9,4.8,19.6,4.8z M20.2,19.6
+	c0,0.3-0.2,0.5-0.5,0.5H4.4c-0.3,0-0.5-0.2-0.5-0.5V9.8h16.3V19.6z M11.7,13.5c0-0.5-0.4-0.9-0.9-0.9s-0.9,0.4-0.9,0.9
+	c0,0.5,0.4,0.9,0.9,0.9S11.7,14,11.7,13.5z M11.7,16.2c0-0.5-0.4-0.9-0.9-0.9s-0.9,0.4-0.9,0.9c0,0.5,0.4,0.9,0.9,0.9
+	S11.7,16.7,11.7,16.2z M14.4,13.5c0-0.5-0.4-0.9-0.9-0.9c-0.5,0-0.9,0.4-0.9,0.9c0,0.5,0.4,0.9,0.9,0.9
+	C14,14.4,14.4,14,14.4,13.5z M14.4,16.2c0-0.5-0.4-0.9-0.9-0.9c-0.5,0-0.9,0.4-0.9,0.9c0,0.5,0.4,0.9,0.9,0.9
+	C14,17.1,14.4,16.7,14.4,16.2z M17.1,13.5c0-0.5-0.4-0.9-0.9-0.9c-0.5,0-0.9,0.4-0.9,0.9c0,0.5,0.4,0.9,0.9,0.9
+	C16.7,14.4,17.1,14,17.1,13.5z M17.1,16.2c0-0.5-0.4-0.9-0.9-0.9c-0.5,0-0.9,0.4-0.9,0.9c0,0.5,0.4,0.9,0.9,0.9
+	C16.7,17.1,17.1,16.7,17.1,16.2z"
+        fill="currentColor"
+      />
     </svg>
   )
 }
 
-/** Ikon kamera video — pengganti ikon pada heading "Sorotan Ujian". */
-function IconVideo({ className }: { className?: string }) {
+
+
+/** Ikon buku dengan kaca pembesar — untuk kalender jadwal. */
+function IconSorot({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" className={className} fill="none" aria-hidden="true">
-      <rect x="3" y="6.5" width="12.5" height="11" rx="2.4" stroke="currentColor" strokeWidth="1.7" />
       <path
-        d="M15.5 10.5L20.3 8.1C20.9 7.8 21.5 8.2 21.5 8.8V15.2C21.5 15.8 20.9 16.2 20.3 15.9L15.5 13.5V10.5Z"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinejoin="round"
+        d="M21.6,18.9l-1.8-1.2v-12c0-0.5-0.4-0.9-0.9-0.9h-6c-0.5,0-0.9,0.4-0.9,0.9v3.6H9.9V5.7c0-0.5-0.4-0.9-0.9-0.9h-6
+	c-0.5,0-0.9,0.4-0.9,0.9v12l-1.8,1.2c-0.4,0.3-0.5,0.8-0.1,1.2c0.2,0.3,0.5,0.4,0.8,0.4c0.2,0,0.3-0.1,0.5-0.2l1.8-1.2V21
+	c0,0.5,0.4,0.9,0.9,0.9h6c0.5,0,0.9-0.4,0.9-0.9v-3.6h2.1v3.6c0,0.5,0.4,0.9,0.9,0.9h6c0.5,0,0.9-0.4,0.9-0.9v-1.8l1.8,1.2
+	c0.2,0.1,0.3,0.2,0.5,0.2c0.3,0,0.6-0.1,0.8-0.4C22,19.7,22,19.2,21.6,18.9z M10.8,17.4H3.9v-12h6.9V17.4z M20.1,17.4h-6.9V5.7
+	h6.9V17.4z"
+        fill="currentColor"
+      />
+      <path
+        d="M15.3,12.9c-0.9,0.9-2.1,1.4-3.4,1.4s-2.5-0.5-3.4-1.4c-0.3-0.3-0.3-0.9,0-1.2c0.3-0.3,0.9-0.3,1.2,0c0.6,0.6,1.4,0.9,2.2,0.9
+	s1.6-0.3,2.2-0.9c0.3-0.3,0.9-0.3,1.2,0C15.6,12,15.6,12.6,15.3,12.9z"
+        fill="currentColor"
       />
     </svg>
   )
@@ -340,7 +354,7 @@ export default async function BerandaPesertaPage() {
           <section className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <h2 className="flex items-center gap-2 text-[15px] font-semibold text-[#16233f] dark:text-white">
-                <IconKalender className="h-[18px] w-[18px] text-[#8b93a6] dark:text-white/70" />
+                <IconKalender className="h-[18px] w-[18px] text-[#3457c9] dark:text-blue-300" />
                 Riwayat Ujian
               </h2>
               {selesai.length > 0 && (
@@ -388,19 +402,21 @@ export default async function BerandaPesertaPage() {
 
         {/* ===================== PANEL KANAN ===================== */}
         <div className="flex flex-col gap-6">
-          <CalendarCard
-            initialYear={sekarang.getFullYear()}
-            initialMonth={sekarang.getMonth()}
-            todayKey={kunciHariIni}
-            markedDates={markedDates}
-          />
+          <div className="lg:col-span-1">
+            <CalendarCard
+              initialYear={sekarang.getFullYear()}
+              initialMonth={sekarang.getMonth()}
+              todayKey={kunciHariIni}
+              markedDates={markedDates}
+            />
+          </div>
 
           <Card className="flex flex-col gap-3 p-4">
             <div className="flex items-center justify-between">
-              <p className="flex items-center gap-2 text-[13.5px] font-semibold text-[#16233f] dark:text-white">
-                <IconVideo className="h-4 w-4 text-[#e8a33d] dark:text-amber-300" />
+              <h2 className="flex items-center gap-2 text-[15px] font-semibold text-[#16233f] dark:text-white">
+                <IconSorot className="h-[18px] w-[18px] text-[#3457c9] dark:text-blue-300" />
                 Sorotan Ujian
-              </p>
+              </h2>
               {tersedia.length > 0 ? (
                 <Badge tone="amber">{tersedia.length} tersedia</Badge>
               ) : (

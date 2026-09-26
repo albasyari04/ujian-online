@@ -18,6 +18,7 @@ export const dynamic = "force-dynamic"
    Memakai width/height eksplisit (bukan `fill`) supaya lebih
    andal dirender di Server Component. Icon hitam otomatis
    dibalik jadi putih di mode gelap via filter CSS.
+   `className` tambahan berguna untuk scale/offset per-icon.
 ========================================================= */
 
 function IconGambar({
@@ -315,8 +316,13 @@ export default async function BerandaPesertaPage() {
           <section className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <h2 className="flex items-center gap-2 text-[15px] font-semibold text-[#16233f] dark:text-white">
-                {/* Icon riwayat ujian dari public/image/icon/riwayat-ujian-icon.png */}
-                <IconGambar src="/image/icon/riwayat-ujian-icon.png" size={18} />
+                {/* PERBAIKAN: tambah className scale agar icon riwayat ujian
+                    terlihat sejajar ukurannya dengan icon heading lainnya. */}
+                <IconGambar
+                  src="/image/icon/riwayat-ujian-icon.png"
+                  size={18}
+                  className="scale-[1.35]"
+                />
                 Riwayat Ujian
               </h2>
               {selesai.length > 0 && (

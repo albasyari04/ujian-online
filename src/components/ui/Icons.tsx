@@ -331,3 +331,19 @@ export function IconSave({ className }: IconProps) {
     </svg>
   )
 }
+
+/** Ikon pesawat kertas — dipakai di tombol CTA "Mulai Ujian Baru" pada banner beranda. */
+export function IconSend({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" aria-hidden="true">
+      <path
+        d="M20.5 3.5L3 10.8C2.4 11 2.4 11.9 3 12.1L9.8 14.8L12.5 21.6C12.7 22.2 13.6 22.2 13.8 21.6L20.9 4.1C21.1 3.5 20.9 3.3 20.5 3.5Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
+      <path d="M9.8 14.8L20.5 3.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  )
+}

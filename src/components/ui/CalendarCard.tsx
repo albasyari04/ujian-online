@@ -1,9 +1,10 @@
 "use client"
 
 import { useMemo, useState } from "react"
+import Image from "next/image"
 
 import { Card } from "@/components/ui/Card"
-import { IconCalendar, IconChevronLeft, IconChevronRight } from "@/components/ui/Icons"
+import { IconChevronLeft, IconChevronRight } from "@/components/ui/Icons"
 
 type StatusJadwal = "berlangsung" | "akan_datang" | "berakhir"
 
@@ -71,8 +72,14 @@ export function CalendarCard({
     <Card className="p-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#f0efe8] text-[#8b93a6] dark:bg-white/10 dark:text-white/60">
-            <IconCalendar className="h-3.5 w-3.5" />
+          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#f0efe8] dark:bg-white/10">
+            <Image
+              src="/image/icon/calender.png"
+              alt=""
+              width={16}
+              height={16}
+              className="h-3.5 w-3.5 object-contain"
+            />
           </span>
           <p className="text-[13.5px] font-semibold text-[#16233f] dark:text-white">
             {NAMA_BULAN[tampil.bulan]} {tampil.tahun}

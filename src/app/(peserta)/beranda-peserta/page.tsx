@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/Badge"
 import { Button } from "@/components/ui/Button"
 import { CalendarCard } from "@/components/ui/CalendarCard"
 import { getSubjectIconSrc } from "@/lib/subject-icons"
-import { IconChevronRight, IconSend } from "@/components/ui/Icons"
+import { IconBook, IconChevronRight, IconClock, IconLightbulb, IconSend } from "@/components/ui/Icons"
 
 export const dynamic = "force-dynamic"
 
@@ -82,53 +82,69 @@ export default async function BerandaPesertaPage() {
   return (
     <div className="flex flex-col gap-6">
       {/* ===================== HERO / SAMBUTAN ===================== */}
-      {/* Tata letak & ukuran teks meniru referensi banner-peserta-beranda-desain.png persis:
-          baris pertama tipis ("Selamat datang,"), baris kedua besar & tebal (nama + 👋), lalu
-          deskripsi, lalu tombol putih — semua ditempel LANGSUNG di atas foto tanpa gradient
-          tambahan (area kiri foto sudah biru gelap dengan sendirinya).
+      {/* Foto banner (banner-peserta-beranda.jpg) di area kiri-atas SUDAH biru gelap dengan
+          sendirinya (sisa desain asli setelah teks bahasa Inggris & tombolnya dihapus dari
+          gambar), jadi teks sambutan kita bisa langsung ditempel di atasnya TANPA gradient/
+          overlay tambahan — persis seperti referensi banner-peserta-beranda-desain.png.
 
-          Supaya banner TETAP 100% utuh/tidak terpotong di semua ukuran layar (termasuk HP)
-          TAPI ukuran tulisan tetap proporsional & tidak mengecil berlebihan seperti sebelumnya,
-          foto dipasang dengan object-contain (dijamin tidak pernah ke-crop sedikit pun) di
-          dalam kotak yang tingginya diatur manual per breakpoint (bukan mengikuti rasio asli
-          foto secara ketat). Warna latar kotak disamakan dengan warna biru dominan foto, jadi
-          kalau ada sedikit ruang kosong di atas/bawah foto (karena boks lebih tinggi dari
-          rasio foto), ruang itu menyatu mulus—tidak terlihat seperti bar/letterbox. */}
-      <div className="relative w-full overflow-hidden rounded-[18px] bg-[#0c4bbe] min-h-[190px] sm:min-h-[260px] md:min-h-[320px] lg:min-h-[370px] xl:min-h-[410px]">
+          Rasio gambar asli (1769:592) dipakai apa adanya di SEMUA ukuran layar (bukan cuma
+          mobile), jadi banner tidak pernah dipotong sedikit pun, di HP maupun desktop. Supaya
+          teks tetap muat rapi walau banner jadi pendek di layar sempit, semua ukuran teks &
+          padding memakai satuan vw (persentase lebar layar) via clamp() — jadi teks ikut
+          mengecil/membesar proporsional mengikuti lebar banner, sama seperti kalau teks itu
+          betulan bagian dari gambar. */}
+      <div
+        className="relative w-full overflow-hidden rounded-[18px] min-h-[108px]"
+        style={{ aspectRatio: "1769 / 592" }}
+      >
         <Image
           src="/image/banner/banner-peserta-beranda.jpg"
           alt=""
           fill
           priority
           sizes="100vw"
-          className="object-contain"
+          className="object-cover"
         />
 
-        <div className="absolute inset-0 z-10 flex flex-col justify-center gap-1.5 px-4 py-4 sm:gap-2.5 sm:px-8 sm:py-6 sm:max-w-[55%] lg:max-w-[46%]">
-          <h1 className="leading-[1.15] text-white">
-            <span className="block text-[13px] font-normal sm:text-[17px] md:text-[19px] lg:text-[21px]">
-              Selamat datang,
+        <div
+          className="absolute inset-0 z-10 flex flex-col justify-center gap-[0.6vw] px-[4vw] py-[1.5vw] sm:max-w-[55%] lg:max-w-[46%]"
+        >
+          <h1 className="leading-[1.15] text-white drop-shadow-[0_1px_4px_rgba(10,42,99,0.45)]">
+            <span
+              className="block font-normal"
+              style={{ fontSize: "clamp(10px, 2.3vw, 22px)" }}
+            >
+              Selamat datang, <span aria-hidden="true">👋</span>
             </span>
-            <span className="block text-[23px] font-bold leading-[1.1] sm:text-[30px] md:text-[34px] lg:text-[38px]">
-              {namaDepan} <span aria-hidden="true">👋</span>
+            <span
+              className="block font-bold text-[#8fd0ff]"
+              style={{ fontSize: "clamp(15px, 4.2vw, 40px)", lineHeight: 1.1 }}
+            >
+              {namaDepan}
             </span>
           </h1>
 
-          <p className="max-w-[92%] text-[11.5px] text-white/85 sm:max-w-[300px] sm:text-[13.5px] md:text-[14.5px]">
+          <p
+            className="max-w-[92%] text-white/85 drop-shadow-[0_1px_3px_rgba(10,42,99,0.4)]"
+            style={{ fontSize: "clamp(8.5px, 1.5vw, 15px)" }}
+          >
             Siap menguji kemampuan Anda? Mulai ujian dan pantau perkembangan belajar Anda.
           </p>
 
           <Link
             href="/ujian-tersedia"
-            className="mt-1 inline-flex w-fit items-center gap-2 rounded-full bg-white px-4 py-2 text-[11.5px] font-semibold text-[#123a8f] shadow-[0_10px_20px_-6px_rgba(10,42,99,0.55)] transition-all active:scale-[0.98] sm:mt-2 sm:px-5 sm:py-2.5 sm:text-[13px] sm:hover:-translate-y-0.5 sm:hover:shadow-[0_14px_26px_-6px_rgba(10,42,99,0.6)]"
+            className="mt-[0.4vw] inline-flex w-fit items-center gap-[0.5em] rounded-full bg-white font-semibold text-[#123a8f] shadow-[0_10px_20px_-6px_rgba(10,42,99,0.55)] transition-all active:scale-[0.98] sm:hover:-translate-y-0.5 sm:hover:shadow-[0_14px_26px_-6px_rgba(10,42,99,0.6)]"
+            style={{
+              fontSize: "clamp(8.5px, 1.5vw, 14px)",
+              padding: "clamp(6px, 1.2vw, 11px) clamp(12px, 2.4vw, 22px)",
+            }}
           >
-            <IconSend className="h-4 w-4" />
+            <IconSend className="h-[1.3em] w-[1.3em]" />
             Mulai Ujian Baru
-            <IconChevronRight className="h-4 w-4" />
+            <IconChevronRight className="h-[1.3em] w-[1.3em]" />
           </Link>
         </div>
       </div>
-
 
       {/* ===================== STAT CARDS ===================== */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -209,15 +225,7 @@ export default async function BerandaPesertaPage() {
           <section className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <h2 className="flex items-center gap-2 text-[15px] font-semibold text-[#16233f] dark:text-white">
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f0efe8] dark:bg-white/10">
-                  <Image
-                    src="/image/icon/ujian-tersedia-icon.png"
-                    alt=""
-                    width={18}
-                    height={18}
-                    className="h-[18px] w-[18px] object-contain"
-                  />
-                </span>
+                <IconBook className="h-[18px] w-[18px] text-[#3457c9] dark:text-blue-300" />
                 Ujian Tersedia
               </h2>
               {tersedia.length > 0 && <Badge tone="blue">{tersedia.length} aktif</Badge>}
@@ -285,15 +293,7 @@ export default async function BerandaPesertaPage() {
           <section className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <h2 className="flex items-center gap-2 text-[15px] font-semibold text-[#16233f] dark:text-white">
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f0efe8] dark:bg-white/10">
-                  <Image
-                    src="/image/icon/riwayat-ujian-icon.png"
-                    alt=""
-                    width={18}
-                    height={18}
-                    className="h-[18px] w-[18px] object-contain"
-                  />
-                </span>
+                <IconClock className="h-[18px] w-[18px] text-[#8b93a6] dark:text-white/50" />
                 Riwayat Ujian
               </h2>
               {selesai.length > 0 && (
@@ -351,15 +351,7 @@ export default async function BerandaPesertaPage() {
           <Card className="flex flex-col gap-3 p-4">
             <div className="flex items-center justify-between">
               <p className="flex items-center gap-2 text-[13.5px] font-semibold text-[#16233f] dark:text-white">
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#fff8ec] dark:bg-amber-400/10">
-                  <Image
-                    src="/image/icon/sorotan-icon.png"
-                    alt=""
-                    width={16}
-                    height={16}
-                    className="h-4 w-4 object-contain"
-                  />
-                </span>
+                <IconLightbulb className="h-4 w-4 text-[#e8a33d]" />
                 Sorotan Ujian
               </p>
               {tersedia.length > 0 ? (

@@ -74,7 +74,6 @@ export default async function BerandaPesertaPage() {
       : null
 
   // Nama lengkap peserta sesuai akun yang login.
-  // Fallback ke "Peserta" jika session.user.name kosong/null.
   const namaLengkap = (session.user.name ?? "Peserta").trim() || "Peserta"
 
   // Tanggal yang ditandai di kalender: rentang aktif ujian yang sedang berjalan.
@@ -88,10 +87,12 @@ export default async function BerandaPesertaPage() {
   return (
     <div className="flex flex-col gap-6">
       {/* ===================== HERO / SAMBUTAN ===================== */}
-      {/* Banner tetap memakai rasio asli 1769:592 di semua ukuran layar.
-          Teks & tombol ditempel pada area kiri-bawah banner (area yang
-          ditandai hijau di referensi), memakai satuan vw via clamp()
-          supaya ikut mengecil/membesar proporsional dengan banner. */}
+      {/* Banner memakai rasio asli 1769:592. Semua teks & tombol memakai
+          satuan vw via clamp() supaya proporsional di semua ukuran layar.
+          Posisi teks mengikuti tata letak banner-peserta-beranda-desain.png:
+            - "Selamat datang," + nama peserta + deskripsi  → kiri-atas
+            - Tombol "Mulai Ujian Baru"                     → di bawah deskripsi,
+              tepat menimpa tombol "Start New Exam" bawaan banner */}
       <div
         className="relative w-full overflow-hidden rounded-[18px] min-h-[108px]"
         style={{ aspectRatio: "1769 / 592" }}
@@ -105,48 +106,72 @@ export default async function BerandaPesertaPage() {
           className="object-cover"
         />
 
-        {/* Area teks & tombol — diposisikan di kiri-bawah banner,
-            sesuai area yang sudah ditandai. */}
+        {/* Blok teks — diposisikan meniru layout desain:
+            kiri ~3.5vw, blok mulai dari atas ~20% tinggi banner,
+            dengan lebar ~42vw supaya tidak menabrak area ilustrasi. */}
         <div
-          className="absolute z-10 flex flex-col justify-end gap-[0.5vw]"
+          className="absolute z-10 flex flex-col"
           style={{
-            left: "3.5vw",
-            bottom: "6vw",
-            width: "34vw",
+            left: "4vw",
+            top: "20%",
+            width: "44vw",
           }}
         >
-          <h1 className="leading-[1.1] text-white drop-shadow-[0_1px_4px_rgba(10,42,99,0.55)]">
+          <h1 className="leading-[1.1] text-white drop-shadow-[0_2px_6px_rgba(10,42,99,0.55)]">
+            {/* Baris 1: "Selamat datang, 👋" — sejajar dengan "Welcome Back," di desain */}
             <span
-              className="block font-normal"
-              style={{ fontSize: "clamp(9px, 1.6vw, 16px)" }}
+              className="block font-medium"
+              style={{ fontSize: "clamp(10px, 1.6vw, 20px)" }}
             >
               Selamat datang, <span aria-hidden="true">👋</span>
             </span>
+
+            {/* Baris 2: Nama lengkap peserta — sejajar dengan "Aryan Sharma!" di desain */}
             <span
-              className="block font-bold text-white"
+              className="mt-[0.3vw] block font-extrabold text-white"
               style={{
-                fontSize: "clamp(13px, 2.4vw, 26px)",
-                lineHeight: 1.1,
-                textShadow: "0 2px 6px rgba(10,42,99,0.6)",
+                fontSize: "clamp(18px, 3.4vw, 44px)",
+                lineHeight: 1.05,
+                letterSpacing: "-0.01em",
+                textShadow: "0 3px 10px rgba(10,42,99,0.6)",
               }}
             >
-              {namaLengkap}
+              {namaLengkap}!
             </span>
           </h1>
 
-          <Link
-            href="/ujian-tersedia"
-            className="mt-[0.3vw] inline-flex w-fit items-center gap-[0.5em] rounded-full bg-white font-semibold text-[#123a8f] shadow-[0_10px_20px_-6px_rgba(10,42,99,0.55)] transition-all active:scale-[0.98] sm:hover:-translate-y-0.5 sm:hover:shadow-[0_14px_26px_-6px_rgba(10,42,99,0.6)]"
+          {/* Baris 3 & 4: deskripsi dua baris, sama persis dengan desain. */}
+          <p
+            className="mt-[1vw] font-normal text-white/95"
             style={{
-              fontSize: "clamp(8px, 1.15vw, 13px)",
-              padding: "clamp(5px, 0.9vw, 9px) clamp(10px, 1.8vw, 18px)",
+              fontSize: "clamp(9px, 1.35vw, 17px)",
+              lineHeight: 1.35,
+              textShadow: "0 1px 4px rgba(10,42,99,0.5)",
             }}
           >
-            <IconSend className="h-[1.25em] w-[1.25em]" />
-            Mulai Ujian Baru
-            <IconChevronRight className="h-[1.25em] w-[1.25em]" />
-          </Link>
+            Ready to test your knowledge?
+            <br />
+            Start your exam and track your performance.
+          </p>
         </div>
+
+        {/* Tombol — diletakkan tepat di atas tombol "Start New Exam" bawaan
+            banner. Ukuran & posisi disesuaikan supaya tombol overlay
+            menimpa tombol asli banner. */}
+        <Link
+          href="/ujian-tersedia"
+          className="absolute z-10 inline-flex items-center gap-[0.6em] rounded-full bg-white font-bold text-[#123a8f] shadow-[0_10px_22px_-6px_rgba(10,42,99,0.55)] transition-all active:scale-[0.98] sm:hover:-translate-y-0.5 sm:hover:shadow-[0_14px_28px_-6px_rgba(10,42,99,0.65)]"
+          style={{
+            left: "4vw",
+            top: "72%",
+            fontSize: "clamp(9px, 1.4vw, 17px)",
+            padding: "clamp(6px, 1vw, 12px) clamp(14px, 2vw, 24px)",
+          }}
+        >
+          <IconSend className="h-[1.2em] w-[1.2em]" />
+          Mulai Ujian Baru
+          <IconChevronRight className="h-[1.2em] w-[1.2em]" />
+        </Link>
       </div>
 
       {/* ===================== STAT CARDS ===================== */}

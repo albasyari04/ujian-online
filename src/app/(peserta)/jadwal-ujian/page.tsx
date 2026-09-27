@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth"
 
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { RingkasanCard } from "@/components/ui/Card"
+import { StatCard } from "@/components/ui/Card"
 import { CalendarCard } from "@/components/ui/CalendarCard"
 import { JadwalUjianList, type JadwalItemDTO } from "@/components/ui/JadwalUjianList"
 
@@ -120,28 +120,33 @@ export default async function JadwalUjianPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* ===================== RINGKASAN ===================== */}
-      <div className="grid grid-cols-3 gap-3 sm:gap-4">
-        <RingkasanCard
+      {/* =========================================================
+          RINGKASAN
+          Sekarang memakai StatCard (sama seperti halaman Hasil &
+          Nilai) — SELALU 3 kolom berjejer ke samping dari mobile
+          sampai desktop, dengan gap yang mengecil di layar sempit.
+      ========================================================= */}
+      <div className="grid grid-cols-3 gap-2 sm:gap-4">
+        <StatCard
           label="Sedang Berlangsung"
           value={jumlahBerlangsung}
-          tone="navy"
+          description="ujian yang sedang berjalan"
           iconImageSrc="/image/icon/ujian-sedang-dikerjakan.png"
-          icon={null}
+          tone="slate"
         />
-        <RingkasanCard
+        <StatCard
           label="Akan Datang"
           value={jumlahAkanDatang}
-          tone="blue"
+          description="ujian yang belum dimulai"
           iconImageSrc="/image/icon/akan-datang-icon.png"
-          icon={null}
+          tone="blue"
         />
-        <RingkasanCard
+        <StatCard
           label="Sudah Berakhir"
           value={jumlahBerakhir}
-          tone="violet"
+          description="ujian yang telah selesai"
           iconImageSrc="/image/icon/sudah-berkhir-icon.png"
-          icon={null}
+          tone="violet"
         />
       </div>
 

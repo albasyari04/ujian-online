@@ -102,9 +102,13 @@ export default async function StatistikPage() {
   return (
     <div className="flex flex-col gap-6">
       <header>
-        <p className="text-[12.5px] font-medium text-[#b45309]">{formatTanggalPanjang(sekarang)}</p>
-        <h1 className="mt-1 text-[26px] font-semibold text-[#16233f]">Statistik Belajar</h1>
-        <p className="mt-1 text-[13px] text-[#5b6a86]">Ringkasan performa Anda dari seluruh ujian yang telah diselesaikan.</p>
+        <p className="text-[12.5px] font-medium text-[#b45309] dark:text-amber-300">
+          {formatTanggalPanjang(sekarang)}
+        </p>
+        <h1 className="mt-1 text-[26px] font-semibold text-[#16233f] dark:text-white">Statistik Belajar</h1>
+        <p className="mt-1 text-[13px] text-[#5b6a86] dark:text-white/50">
+          Ringkasan performa Anda dari seluruh ujian yang telah diselesaikan.
+        </p>
       </header>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -135,9 +139,9 @@ export default async function StatistikPage() {
       </div>
 
       {totalSelesai === 0 ? (
-        <div className="rounded-[16px] border border-dashed border-[#e7e4dc] bg-white/60 px-4 py-14 text-center">
-          <p className="text-[14px] font-medium text-[#16233f]">Belum ada data statistik</p>
-          <p className="mt-1 text-[13px] text-[#8b93a6]">
+        <div className="rounded-[16px] border border-dashed border-[#e7e4dc] bg-white/60 px-4 py-14 text-center dark:border-white/10 dark:bg-white/[0.02]">
+          <p className="text-[14px] font-medium text-[#16233f] dark:text-white">Belum ada data statistik</p>
+          <p className="mt-1 text-[13px] text-[#8b93a6] dark:text-white/40">
             Statistik akan muncul di sini setelah Anda menyelesaikan ujian pertama.
           </p>
         </div>
@@ -146,30 +150,59 @@ export default async function StatistikPage() {
           {/* ===================== TREN SKOR ===================== */}
           <Card className="flex flex-col gap-4 p-4 lg:col-span-2">
             <div className="flex items-center justify-between">
-              <p className="text-[13.5px] font-semibold text-[#16233f]">Tren skor</p>
+              <p className="text-[13.5px] font-semibold text-[#16233f] dark:text-white">Tren skor</p>
               <Badge tone="slate">{totalSelesai} ujian</Badge>
             </div>
 
             {titik.length < 2 ? (
-              <div className="flex flex-1 items-center justify-center rounded-[12px] border border-dashed border-[#e7e4dc] py-10">
-                <p className="text-[12.5px] text-[#8b93a6]">
+              <div className="flex flex-1 items-center justify-center rounded-[12px] border border-dashed border-[#e7e4dc] py-10 dark:border-white/10">
+                <p className="text-[12.5px] text-[#8b93a6] dark:text-white/40">
                   Selesaikan minimal 2 ujian untuk melihat tren skor.
                 </p>
               </div>
             ) : (
               <>
                 <svg viewBox={`0 0 ${width} ${height}`} className="h-44 w-full">
-                  <line x1="0" y1={height - 18} x2={width} y2={height - 18} stroke="#efece4" strokeWidth="1" />
-                  <line x1="0" y1="18" x2={width} y2="18" stroke="#efece4" strokeWidth="1" strokeDasharray="4 4" />
+                  <line
+                    x1="0"
+                    y1={height - 18}
+                    x2={width}
+                    y2={height - 18}
+                    className="stroke-[#efece4] dark:stroke-white/10"
+                    strokeWidth="1"
+                  />
+                  <line
+                    x1="0"
+                    y1="18"
+                    x2={width}
+                    y2="18"
+                    className="stroke-[#efece4] dark:stroke-white/10"
+                    strokeWidth="1"
+                    strokeDasharray="4 4"
+                  />
 
-                  <path d={pathGaris} fill="none" stroke="#16233f" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                  <path
+                    d={pathGaris}
+                    fill="none"
+                    className="stroke-[#16233f] dark:stroke-white"
+                    strokeWidth="2.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
 
                   {titik.map((t, i) => (
-                    <circle key={i} cx={t.x} cy={t.y} r="3.8" fill="#e8a33d" stroke="#ffffff" strokeWidth="1.5" />
+                    <circle
+                      key={i}
+                      cx={t.x}
+                      cy={t.y}
+                      r="3.8"
+                      className="fill-[#e8a33d] stroke-white dark:stroke-[#101a30]"
+                      strokeWidth="1.5"
+                    />
                   ))}
                 </svg>
 
-                <div className="flex items-center justify-between text-[11px] text-[#8b93a6]">
+                <div className="flex items-center justify-between text-[11px] text-[#8b93a6] dark:text-white/40">
                   <span>{formatTanggalSingkat(titik[0].tanggal)}</span>
                   <span>{formatTanggalSingkat(titik[titik.length - 1].tanggal)}</span>
                 </div>
@@ -179,9 +212,9 @@ export default async function StatistikPage() {
 
           {/* ===================== PERBANDINGAN RATA-RATA KELAS ===================== */}
           <Card className="flex flex-col gap-1 p-4">
-            <p className="mb-2 text-[13.5px] font-semibold text-[#16233f]">Vs rata-rata kelas</p>
+            <p className="mb-2 text-[13.5px] font-semibold text-[#16233f] dark:text-white">Vs rata-rata kelas</p>
 
-            <div className="flex flex-col divide-y divide-[#efece4]">
+            <div className="flex flex-col divide-y divide-[#efece4] dark:divide-white/10">
               {hasilSelesai
                 .slice()
                 .reverse()
@@ -203,8 +236,12 @@ export default async function StatistikPage() {
                           className="h-7 w-7 shrink-0 object-contain"
                         />
                         <div className="min-w-0">
-                          <p className="truncate text-[12.5px] font-medium text-[#16233f]">{hasil.ujian.judul}</p>
-                          <p className="text-[11px] text-[#8b93a6]">Rata-rata kelas {rataKelas.toFixed(1)}</p>
+                          <p className="truncate text-[12.5px] font-medium text-[#16233f] dark:text-white">
+                            {hasil.ujian.judul}
+                          </p>
+                          <p className="text-[11px] text-[#8b93a6] dark:text-white/40">
+                            Rata-rata kelas {rataKelas.toFixed(1)}
+                          </p>
                         </div>
                       </div>
                       <Badge tone={diAtas ? "emerald" : "red"} className="shrink-0">

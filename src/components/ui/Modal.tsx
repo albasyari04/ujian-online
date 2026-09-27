@@ -122,7 +122,7 @@ export function ConfirmModal({
     <Modal open={open} onClose={onClose} title={title} maxWidth="max-w-sm">
       {description && <p className="text-[13px] text-[#5b657d] dark:text-white/60">{description}</p>}
       {errorMessage && (
-        <p className="mt-2 rounded-[10px] bg-[#fdf1f1] px-3.5 py-2.5 text-[12.5px] text-[#d23b3b]">
+        <p className="mt-2 rounded-[10px] bg-[#fdf1f1] px-3.5 py-2.5 text-[12.5px] text-[#d23b3b] dark:bg-red-400/10 dark:text-red-300">
           {errorMessage}
         </p>
       )}

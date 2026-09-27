@@ -4,7 +4,7 @@ import { getServerSession } from "next-auth"
 
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { Card, RingkasanCard } from "@/components/ui/Card"
+import { Card, StatCard } from "@/components/ui/Card"
 import { Badge } from "@/components/ui/Badge"
 import { Button } from "@/components/ui/Button"
 // NOTE: sesuaikan path import ini dengan lokasi file subject-icons.ts di proyek Anda
@@ -115,27 +115,34 @@ export default async function HasilNilaiPage({
         </div>
       </header>
 
-      <div className="grid grid-cols-3 gap-3 sm:gap-4">
-        <RingkasanCard
+      {/* =========================================================
+          RINGKASAN NILAI
+          Sekarang memakai StatCard — komponen & style yang SAMA
+          persis dengan card "Ujian Tersedia" dkk. di Beranda
+          (label kiri-atas, angka besar, icon polos kanan-atas,
+          efek gradient/shadow 3D yang sama).
+      ========================================================= */}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
+        <StatCard
           label="Nilai tertinggi"
           value={nilaiTertinggi !== null ? nilaiTertinggi.toFixed(1) : "-"}
-          tone="emerald"
+          description="dari semua ujian yang diikuti"
           iconImageSrc="/image/icon/nilai-tertinggi-icon.png"
-          icon={null}
+          tone="emerald"
         />
-        <RingkasanCard
+        <StatCard
           label="Rata-rata nilai"
           value={rataRata !== null ? rataRata.toFixed(1) : "-"}
-          tone="blue"
+          description="dari semua ujian yang diikuti"
           iconImageSrc="/image/icon/rata-rata-score.png"
-          icon={null}
+          tone="blue"
         />
-        <RingkasanCard
+        <StatCard
           label="Nilai terendah"
           value={nilaiTerendah !== null ? nilaiTerendah.toFixed(1) : "-"}
-          tone="red"
+          description="dari semua ujian yang diikuti"
           iconImageSrc="/image/icon/nilai-terendah-icon.png"
-          icon={null}
+          tone="red"
         />
       </div>
 

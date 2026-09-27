@@ -9,6 +9,7 @@ import { Card, toneGradients, toneIconShadow } from "@/components/ui/Card"
 import { Badge } from "@/components/ui/Badge"
 import { IconArrowLeft, IconX, IconCheckCircle, IconAlertTriangle } from "@/components/ui/Icons"
 import { getSubjectIconSrc } from "@/lib/subject-icons"
+import { splitBacaanDanSoal } from "@/lib/bacaan"
 
 export const dynamic = "force-dynamic"
 
@@ -35,7 +36,6 @@ function formatDurasi(menit: number) {
   return sisa > 0 ? `${jam} jam ${sisa} menit` : `${jam} jam`
 }
 
-/** Warna skor hanya indikator visual relatif — sesuaikan ambang batas sesuai kebutuhan. */
 function toneSkor(skor: number | null): "emerald" | "amber" | "red" | "slate" {
   if (skor === null) return "slate"
   if (skor >= 80) return "emerald"
@@ -52,7 +52,6 @@ const labelPelanggaran: Record<string, string> = {
   DEVTOOLS: "Membuka developer tools",
 }
 
-/** Status jawaban per soal — dipetakan ke icon 3D + tone badge/aksen yang konsisten. */
 type StatusJawaban = "benar" | "salah" | "belum" | "kosong"
 
 const statusInfo: Record<
@@ -117,6 +116,10 @@ export default async function HasilDetailPage({ params }: Params) {
         select: {
           judul: true,
           deskripsi: true,
+          mataPelajaran: true,
+          namaGuru: true,
+          mulai: true,
+          selesai: true,
           soal: {
             orderBy: { urutan: "asc" },
             include: { opsi: { orderBy: { urutan: "asc" }, select: { id: true, teks: true, urutan: true } } },
@@ -130,7 +133,6 @@ export default async function HasilDetailPage({ params }: Params) {
 
   if (!hasil || hasil.userId !== userId) notFound()
 
-  // Ujian yang belum diselesaikan seharusnya dilanjutkan, bukan dilihat hasilnya.
   if (hasil.status === "SEDANG_DIKERJAKAN") {
     redirect(`/ujian/${hasil.ujianId}`)
   }
@@ -146,6 +148,10 @@ export default async function HasilDetailPage({ params }: Params) {
 
   const kunciSkor = toneSkor(hasil.skor)
 
+  // Amankan fallback jika tone tidak ada di map
+  const gradientSkor = toneGradients[kunciSkor] ?? toneGradients.slate ?? ""
+  const shadowSkor = toneIconShadow[kunciSkor] ?? toneIconShadow.slate ?? ""
+
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -160,7 +166,6 @@ export default async function HasilDetailPage({ params }: Params) {
 
       {/* ==================== RINGKASAN HASIL ==================== */}
       <Card className="relative flex flex-col gap-5 overflow-hidden border-[#e9ecf2] p-6 shadow-[0_6px_0_#eef0f4,0_20px_34px_-18px_rgba(22,35,63,0.3)] dark:border-white/10 dark:shadow-[0_6px_0_#0f1830,0_22px_36px_-18px_rgba(0,0,0,0.6)] sm:flex-row sm:items-center sm:justify-between sm:p-7">
-        {/* Highlight glossy tipis di atas card, kesan permukaan 3D */}
         <span
           className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/70 to-transparent dark:from-white/[0.06]"
           aria-hidden="true"
@@ -178,6 +183,13 @@ export default async function HasilDetailPage({ params }: Params) {
             />
             <h1 className="text-[22px] font-semibold text-[#16233f] dark:text-white">{hasil.ujian.judul}</h1>
           </div>
+          {(hasil.ujian.mataPelajaran || hasil.ujian.namaGuru) && (
+            <p className="mt-0.5 text-[12.5px] text-[#5b6a86] dark:text-white/50">
+              {[hasil.ujian.mataPelajaran, hasil.ujian.namaGuru && `Guru: ${hasil.ujian.namaGuru}`]
+                .filter(Boolean)
+                .join(" • ")}
+            </p>
+          )}
           {hasil.ujian.deskripsi && (
             <p className="mt-1.5 max-w-xl text-[13px] text-[#5b6a86] dark:text-white/50">{hasil.ujian.deskripsi}</p>
           )}
@@ -186,20 +198,22 @@ export default async function HasilDetailPage({ params }: Params) {
             <Badge tone="slate">{totalSoal} soal</Badge>
             <Badge tone="slate">Dikerjakan {formatDurasi(durasiPengerjaan)}</Badge>
             <Badge tone="slate">Selesai {formatJam(waktuSelesai)}</Badge>
+            <Badge tone="slate">
+              Jadwal {formatTanggalPanjang(hasil.ujian.mulai)}, {formatJam(hasil.ujian.mulai)}–{formatJam(hasil.ujian.selesai)}
+            </Badge>
             {hasil.jumlahPelanggaran > 0 && <Badge tone="red">{hasil.jumlahPelanggaran} pelanggaran</Badge>}
           </div>
         </div>
 
-        {/* Skor akhir — badge gradient 3D senada dengan tone (emerald/amber/red/slate) */}
         <div
-          className={`relative flex shrink-0 flex-col items-center gap-1 rounded-2xl bg-gradient-to-br px-8 py-5 text-white ${toneGradients[kunciSkor]} ${toneIconShadow[kunciSkor]}`}
+          className={`relative flex shrink-0 flex-col items-center gap-1 rounded-2xl bg-gradient-to-br px-8 py-5 text-white ${gradientSkor} ${shadowSkor}`}
         >
           <p className="text-[11px] font-medium uppercase tracking-wide text-white/75">Skor akhir</p>
           <p className="text-[36px] font-bold leading-none">{hasil.skor !== null ? hasil.skor : "-"}</p>
         </div>
       </Card>
 
-      {/* ==================== RINGKASAN JAWABAN — icon 3D menonjol, tanpa card ==================== */}
+      {/* ==================== RINGKASAN JAWABAN ==================== */}
       <div className="grid grid-cols-3 gap-3">
         <IkonRingkasan label="Jawaban benar" value={jumlahBenar} iconSrc="/image/icon/jawaban-benar-icon.png" garisWarna="#10b981" />
         <IkonRingkasan label="Jawaban salah" value={jumlahSalah} iconSrc="/image/icon/jawaban-salah-icon.png" garisWarna="#e0625c" />
@@ -249,7 +263,7 @@ export default async function HasilDetailPage({ params }: Params) {
 }
 
 /* =========================================================
-   RINGKASAN JAWABAN — icon 3D besar tanpa card pembungkus
+   RINGKASAN JAWABAN
 ========================================================= */
 
 function IkonRingkasan({
@@ -284,7 +298,7 @@ function IkonRingkasan({
 }
 
 /* =========================================================
-   BADGE STATUS JAWABAN — dengan icon 3D
+   BADGE STATUS JAWABAN
 ========================================================= */
 
 function StatusJawabanBadge({ status }: { status: StatusJawaban }) {
@@ -304,6 +318,8 @@ function StatusJawabanBadge({ status }: { status: StatusJawaban }) {
 
 /* =========================================================
    PEMBAHASAN SATU SOAL
+   ★ Perubahan utama: pakai splitBacaanDanSoal untuk
+     memisahkan bacaan dan soal dari marker [BACAAN]/[SOAL].
 ========================================================= */
 
 function SoalReview({
@@ -316,16 +332,34 @@ function SoalReview({
   jawaban: JawabanPeserta | null
 }) {
   const status = hitungStatus(jawaban)
+  const { bacaan, soal: teksSoal } = splitBacaanDanSoal(soal.pertanyaan)
 
   return (
     <Card className="group relative overflow-hidden border-[#e9ecf2] p-4 shadow-[0_4px_0_#eef0f4,0_14px_24px_-16px_rgba(22,35,63,0.22)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_6px_0_#e7eaf1,0_18px_30px_-16px_rgba(22,35,63,0.28)] dark:border-white/10 dark:shadow-[0_4px_0_#0f1830,0_14px_24px_-16px_rgba(0,0,0,0.5)] dark:hover:shadow-[0_6px_0_#0f1830,0_18px_30px_-16px_rgba(0,0,0,0.6)] sm:p-5">
       <div>
         <div className="flex items-start justify-between gap-3">
           <p className="text-[13.5px] font-semibold text-[#16233f] dark:text-white">
-            <span className="text-[#8b93a6]">Soal {nomor}.</span> {soal.pertanyaan}
+            <span className="text-[#8b93a6]">Soal {nomor}.</span> {teksSoal}
           </p>
           <StatusJawabanBadge status={status} />
         </div>
+
+        {/* Card Bacaan (jika ada) */}
+        {bacaan && (
+          <div className="mt-3 rounded-[10px] border border-amber-200 bg-gradient-to-br from-amber-50/80 to-amber-100/40 p-3.5 dark:border-amber-500/20 dark:from-amber-500/10 dark:to-amber-500/5">
+            <div className="mb-1.5 flex items-center gap-1.5">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold text-white">
+                B
+              </span>
+              <p className="text-[11px] font-bold uppercase tracking-wide text-amber-700 dark:text-amber-400">
+                Bacaan / Stimulus
+              </p>
+            </div>
+            <p className="whitespace-pre-wrap text-[12.5px] leading-relaxed text-amber-900 dark:text-amber-100">
+              {bacaan}
+            </p>
+          </div>
+        )}
 
         {soal.tipe === "PILIHAN_GANDA" ? (
           <div className="mt-3 flex flex-col gap-2">

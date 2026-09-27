@@ -53,15 +53,37 @@ function extractAnswer(lines: string[]) {
   return ""
 }
 
-/** Ekstrak semua pasangan nomor-jawaban dari teks (misal "1. A 2. B 3. D") */
+/**
+ * Ekstrak semua pasangan nomor-jawaban dari teks (misal "1. A 2. B 3. D").
+ * Mendukung format:
+ *  - "1. A 2. B 3. D 4. E 5. B"       (satu baris banyak pasangan)
+ *  - "1. A"                             (satu baris satu pasangan)
+ *  - "1 A" / "1) A" / "1: A" / "1-A"   (variasi tanda baca)
+ *  - "A. 1" / "A 1"                     (huruf dulu, baru nomor)
+ */
 function extractGlobalAnswers(lines: string[]) {
   const answers = new Map<number, string>()
   for (const line of lines) {
-    // Format: "1. A 2. B 3. D" atau "1. A, 2. B, 3. D"
-    const numberFirst = [...line.matchAll(/(?:^|[\s,;])(\d{1,3})\s*[.):=\-]?\s*(?:jawaban\s*[:=\-]?\s*)?(?:opsi\s*)?\(?([A-E]|[1-5])\)?(?=\s|,|;|$)/gi)]
+    // Lewati baris header yang bukan daftar jawaban
+    if (/^(?:[A-Z]\.\s*)?(?:pilihan\s+ganda|essay|uraian|isian|kunci|pedoman|penilaian)\b/i.test(line)) continue
+
+    // Pola 1: nomor dulu, lalu huruf jawaban
+    // Contoh: "1. A", "1 A", "1) A", "1: A", "1-A", "1 . A"
+    const numberFirst = [...line.matchAll(/(?:^|[\s,;])(\d{1,3})\s*[.):=\-]?\s*(?:jawaban\s*[:=\-]?\s*)?(?:opsi\s*)?\(?([A-E])\)?(?=\s|,|;|$)/gi)]
+    for (const match of numberFirst) {
+      const num = Number(match[1])
+      const ans = parseAnswer(match[2])
+      if (num >= 1 && num <= 200 && ans) answers.set(num, ans)
+    }
+
+    // Pola 2: huruf dulu, lalu nomor
+    // Contoh: "A. 1", "A 1", "A) 1"
     const letterFirst = [...line.matchAll(/(?:^|[\s,;])([A-E])\s*(\d{1,3})\s*[.):=\-]?(?=\s|,|;|$)/gi)]
-    for (const match of numberFirst) answers.set(Number(match[1]), parseAnswer(match[2]))
-    for (const match of letterFirst) answers.set(Number(match[2]), parseAnswer(match[1]))
+    for (const match of letterFirst) {
+      const num = Number(match[2])
+      const ans = parseAnswer(match[1])
+      if (num >= 1 && num <= 200 && ans) answers.set(num, ans)
+    }
   }
   return answers
 }
@@ -156,38 +178,67 @@ function parseText(text: string): Question[] {
   }
 
   // --- Tahap 4: Bangun Question dari setiap blok ---
-  return blocks.flatMap((lines, index): Question[] => {
-    const questionLine = lines[0]
+  const questions: Question[] = []
+  let soalCounter = 0
+
+  for (let index = 0; index < blocks.length; index += 1) {
+    const blockLines = blocks[index]
+    const questionLine = blockLines[0]
     const question = questionLine.replace(/^(\d+[.)]|soal\s*\d*[:.)]?)\s*/i, "").trim()
     const questionNumber = Number(questionLine.match(/^(\d+)/)?.[1])
-    const options = extractOptions(lines)
+
+    // Lewati baris header (nama, kelas, mata pelajaran, dll)
+    if (/^(ujian|pilihan ganda|nama\s*:|petunjuk\s*:|kelas\s*:|tanggal\s*:|mata pelajaran|kelas\s*\/|hari\s*\/|waktu\s*:|nomor ujian)/i.test(question)) {
+      continue
+    }
+
+    if (!question) continue
+
+    soalCounter += 1
+    const options = extractOptions(blockLines)
     const markedAnswer =
       options.find((option) =>
-        /(?:\[x\]|\(benar\)|\*)/i.test(lines.find((line) => line.includes(option.teks)) ?? "")
+        /(?:\[x\]|\(benar\)|\*)/i.test(blockLines.find((line) => line.includes(option.teks)) ?? "")
       )?.label ?? ""
-    const answer =
-      extractAnswer(lines) ||
-      (questionNumber ? globalAnswers.get(questionNumber) : "") ||
-      markedAnswer
 
-    if (!question) throw new Error(`Blok soal ke-${index + 1} kosong.`)
-    if (/^(ujian|pilihan ganda|nama\s*:|petunjuk\s*:|kelas\s*:|tanggal\s*:|mata pelajaran|kelas\s*\/|hari\s*\/)/i.test(question)) return []
+    // --- Prioritas pencarian kunci jawaban ---
+    // 1. Cari di dalam blok soal (misal "Jawaban: A")
+    // 2. Cari di global answers berdasarkan nomor soal asli
+    // 3. Fallback: cari di global answers berdasarkan urutan (soalCounter)
+    // 4. Cari dari opsi yang ditandai (markedAnswer)
+    const answer =
+      extractAnswer(blockLines) ||
+      (questionNumber ? globalAnswers.get(questionNumber) : "") ||
+      globalAnswers.get(soalCounter) ||
+      markedAnswer
 
     // Essay (tidak ada opsi A-E)
     if (options.length === 0) {
-      return [{ pertanyaan: question, tipe: "ESSAY", poin: 1, opsi: [] }]
+      questions.push({ pertanyaan: question, tipe: "ESSAY", poin: 1, opsi: [] })
+      continue
     }
 
-    if (options.length < 2) throw new Error(`Blok soal ke-${index + 1}: hanya ${options.length} opsi terbaca. Pastikan opsi memakai format A. teks, B. teks, dan seterusnya.`)
-    if (!answer) throw new Error(`Blok soal ke-${index + 1}: kunci jawaban tidak ditemukan. Isi kunci dengan A-E, misalnya "Jawaban: A" atau "Kunci: (A)".`)
+    if (options.length < 2) {
+      throw new Error(`Blok soal ke-${soalCounter} ("${question.slice(0, 50)}..."): hanya ${options.length} opsi terbaca. Pastikan opsi memakai format A. teks, B. teks, dan seterusnya.`)
+    }
 
-    return [{
+    if (!answer) {
+      throw new Error(
+        `Blok soal ke-${soalCounter} ("${question.slice(0, 50)}..."): kunci jawaban tidak ditemukan. ` +
+        `Pastikan ada bagian "KUNCI JAWABAN" di akhir dokumen dengan format seperti "1. A 2. B 3. C ...", ` +
+        `atau tulis kunci di dalam soal dengan format "Jawaban: A".`
+      )
+    }
+
+    questions.push({
       pertanyaan: question,
       tipe: "PILIHAN_GANDA",
       poin: 1,
       opsi: options.map((option) => ({ teks: option.teks, benar: option.label === answer })),
-    }]
-  })
+    })
+  }
+
+  return questions
 }
 
 async function parseFile(file: File, ujianId: string): Promise<Question[]> {

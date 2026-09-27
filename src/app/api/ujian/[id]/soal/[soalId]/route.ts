@@ -12,12 +12,10 @@ type OpsiInput = { teks: string; benar: boolean }
 /* =========================================================
    PUT /api/ujian/:id/soal/:soalId
    Body: { pertanyaan, tipe, poin, opsi?: [{ teks, benar }] }
-   Strategi opsi: hapus semua opsi lama lalu buat ulang (lebih sederhana
-   & aman daripada mencocokkan id opsi satu per satu).
+   Strategi opsi: hapus semua opsi lama lalu buat ulang.
 ========================================================= */
 export async function PUT(request: NextRequest, { params }: Params) {
   const { soalId } = await params
-  // Coba autentikasi sebagai guru dulu, jika gagal coba admin
   let guard = await requireGuru()
   if (guard.error) {
     guard = await requireAdmin()
@@ -100,10 +98,14 @@ export async function PUT(request: NextRequest, { params }: Params) {
 
 /* =========================================================
    DELETE /api/ujian/:id/soal/:soalId
+   Hapus SATU soal.
+   Urutan hapus:
+     1. Jawaban peserta (agar tidak ada FK constraint dari Jawaban → Soal)
+     2. Opsi (opsional, karena sudah onDelete: Cascade, tapi kita hapus manual untuk aman)
+     3. Soal itu sendiri
 ========================================================= */
 export async function DELETE(_request: NextRequest, { params }: Params) {
   const { soalId } = await params
-  // Coba autentikasi sebagai guru dulu, jika gagal coba admin
   let guard = await requireGuru()
   if (guard.error) {
     guard = await requireAdmin()
@@ -111,20 +113,40 @@ export async function DELETE(_request: NextRequest, { params }: Params) {
   }
 
   try {
-    await prisma.soal.delete({ where: { id: soalId } })
+    // Cek dulu apakah soal ini ada
+    const soal = await prisma.soal.findUnique({
+      where: { id: soalId },
+      select: { id: true },
+    })
+
+    if (!soal) {
+      return NextResponse.json({ message: "Soal tidak ditemukan." }, { status: 404 })
+    }
+
+    await prisma.$transaction(async (tx) => {
+      // 1. Hapus jawaban peserta yang mengacu ke soal ini
+      await tx.jawaban.deleteMany({ where: { soalId } })
+
+      // 2. Hapus opsi (meskipun onDelete: Cascade sudah ada, kita hapus manual untuk kejelasan)
+      await tx.opsi.deleteMany({ where: { soalId } })
+
+      // 3. Hapus soal
+      await tx.soal.delete({ where: { id: soalId } })
+    })
+
     return NextResponse.json({ message: "Soal berhasil dihapus." })
   } catch (error) {
+    console.error("DELETE /api/ujian/[id]/soal/[soalId] error:", error)
+
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === "P2025") {
         return NextResponse.json({ message: "Soal tidak ditemukan." }, { status: 404 })
       }
-      if (error.code === "P2003") {
-        return NextResponse.json(
-          { message: "Soal tidak dapat dihapus karena sudah ada peserta yang menjawabnya." },
-          { status: 409 }
-        )
-      }
     }
-    throw error
+
+    return NextResponse.json(
+      { message: "Gagal menghapus soal. Silakan coba lagi." },
+      { status: 500 }
+    )
   }
 }

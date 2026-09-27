@@ -6,14 +6,13 @@ import { prisma } from "@/lib/prisma"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 
-
 /* =========================================================
    GET /api/ujian/:id
    Detail ujian lengkap dengan soal & opsi (untuk halaman edit/soal).
 ========================================================= */
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = await params;
+    const { id } = await params
     const session = await getServerSession(authOptions)
     if (!session?.user) {
       return NextResponse.json({ message: "Anda harus login terlebih dahulu." }, { status: 401 })
@@ -146,6 +145,16 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
 /* =========================================================
    DELETE /api/ujian/:id
+   Hapus ujian BESERTA semua soal, jawaban peserta, log pelanggaran,
+   dan hasil ujiannya. Meskipun sudah ada peserta yang mengerjakan.
+
+   Urutan hapus (dalam 1 transaksi):
+     1. Jawaban peserta (mengacu ke Soal)
+     2. Opsi soal (mengacu ke Soal)
+     3. Soal
+     4. LogPelanggaran (mengacu ke HasilUjian)
+     5. HasilUjian
+     6. Ujian
 ========================================================= */
 export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -157,7 +166,7 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
 
     const ujian = await prisma.ujian.findUnique({
       where: { id },
-      select: { pembuatId: true },
+      select: { id: true, pembuatId: true },
     })
 
     if (!ujian) {
@@ -172,20 +181,44 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
       return NextResponse.json({ message: "Anda tidak memiliki akses untuk menghapus resource ini." }, { status: 403 })
     }
 
-    await prisma.ujian.delete({ where: { id } })
+    await prisma.$transaction(async (tx) => {
+      // 1. Ambil ID soal & hasil ujian yang terkait
+      const [daftarSoal, daftarHasil] = await Promise.all([
+        tx.soal.findMany({ where: { ujianId: id }, select: { id: true } }),
+        tx.hasilUjian.findMany({ where: { ujianId: id }, select: { id: true } }),
+      ])
+
+      const soalIds = daftarSoal.map((s) => s.id)
+      const hasilIds = daftarHasil.map((h) => h.id)
+
+      // 2. Hapus jawaban peserta yang mengacu ke soal-soal ini
+      if (soalIds.length > 0) {
+        await tx.jawaban.deleteMany({ where: { soalId: { in: soalIds } } })
+      }
+
+      // 3. Hapus opsi soal
+      if (soalIds.length > 0) {
+        await tx.opsi.deleteMany({ where: { soalId: { in: soalIds } } })
+      }
+
+      // 4. Hapus soal
+      await tx.soal.deleteMany({ where: { ujianId: id } })
+
+      // 5. Hapus log pelanggaran
+      if (hasilIds.length > 0) {
+        await tx.logPelanggaran.deleteMany({ where: { hasilUjianId: { in: hasilIds } } })
+      }
+
+      // 6. Hapus hasil ujian
+      await tx.hasilUjian.deleteMany({ where: { ujianId: id } })
+
+      // 7. Hapus ujian
+      await tx.ujian.delete({ where: { id } })
+    })
+
     return NextResponse.json({ message: "Ujian berhasil dihapus." })
   } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === "P2025") {
-        return NextResponse.json({ message: "Ujian tidak ditemukan." }, { status: 404 })
-      }
-      if (error.code === "P2003") {
-        return NextResponse.json(
-          { message: "Ujian tidak dapat dihapus karena sudah memiliki peserta yang mengerjakan." },
-          { status: 409 }
-        )
-      }
-    }
-    throw error
+    console.error("DELETE /api/ujian/[id] error:", error)
+    return NextResponse.json({ message: "Terjadi kesalahan internal." }, { status: 500 })
   }
 }

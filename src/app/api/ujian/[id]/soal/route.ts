@@ -5,7 +5,6 @@ import { prisma } from "@/lib/prisma"
 import { requireAdmin, requireGuru } from "@/lib/api-auth"
 
 type Params = { params: Promise<{ id: string }> }
-
 type OpsiInput = { teks: string; benar: boolean }
 
 /* =========================================================
@@ -116,10 +115,7 @@ export async function POST(request: NextRequest, { params }: Params) {
 /* =========================================================
    DELETE /api/ujian/:id/soal
    Hapus SEMUA soal dalam satu ujian.
-   Urutan hapus:
-     1. Jawaban peserta (agar tidak ada FK constraint dari Jawaban → Soal)
-     2. Opsi (agar tidak ada FK constraint dari Opsi → Soal)
-     3. Soal itu sendiri
+   Urutan: Jawaban → Opsi → Soal (dalam 1 transaksi).
 ========================================================= */
 export async function DELETE(_request: NextRequest, { params }: Params) {
   const { id } = await params
@@ -139,7 +135,6 @@ export async function DELETE(_request: NextRequest, { params }: Params) {
   }
 
   try {
-    // Ambil semua ID soal dalam ujian ini
     const daftarSoal = await prisma.soal.findMany({
       where: { ujianId: id },
       select: { id: true },
@@ -151,17 +146,13 @@ export async function DELETE(_request: NextRequest, { params }: Params) {
       return NextResponse.json({ message: "Tidak ada soal untuk dihapus.", count: 0 })
     }
 
-    // Jalankan dalam transaksi agar konsisten
     const hasil = await prisma.$transaction(async (tx) => {
-      // 1. Hapus jawaban peserta yang mengacu ke soal-soal ini
+      // 1. Hapus jawaban peserta
       await tx.jawaban.deleteMany({ where: { soalId: { in: soalIds } } })
-
       // 2. Hapus opsi
       await tx.opsi.deleteMany({ where: { soalId: { in: soalIds } } })
-
       // 3. Hapus soal
-      const deleted = await tx.soal.deleteMany({ where: { ujianId: id } })
-      return deleted
+      return tx.soal.deleteMany({ where: { ujianId: id } })
     })
 
     return NextResponse.json({

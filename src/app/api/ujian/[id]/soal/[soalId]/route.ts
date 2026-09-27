@@ -6,13 +6,10 @@ import { prisma } from "@/lib/prisma"
 import { requireAdmin, requireGuru } from "@/lib/api-auth"
 
 type Params = { params: Promise<{ id: string; soalId: string }> }
-
 type OpsiInput = { teks: string; benar: boolean }
 
 /* =========================================================
    PUT /api/ujian/:id/soal/:soalId
-   Body: { pertanyaan, tipe, poin, opsi?: [{ teks, benar }] }
-   Strategi opsi: hapus semua opsi lama lalu buat ulang.
 ========================================================= */
 export async function PUT(request: NextRequest, { params }: Params) {
   const { soalId } = await params
@@ -98,11 +95,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
 
 /* =========================================================
    DELETE /api/ujian/:id/soal/:soalId
-   Hapus SATU soal.
-   Urutan hapus:
-     1. Jawaban peserta (agar tidak ada FK constraint dari Jawaban → Soal)
-     2. Opsi (opsional, karena sudah onDelete: Cascade, tapi kita hapus manual untuk aman)
-     3. Soal itu sendiri
+   Hapus SATU soal. Urutan: Jawaban → Opsi → Soal.
 ========================================================= */
 export async function DELETE(_request: NextRequest, { params }: Params) {
   const { soalId } = await params
@@ -113,7 +106,6 @@ export async function DELETE(_request: NextRequest, { params }: Params) {
   }
 
   try {
-    // Cek dulu apakah soal ini ada
     const soal = await prisma.soal.findUnique({
       where: { id: soalId },
       select: { id: true },
@@ -126,10 +118,8 @@ export async function DELETE(_request: NextRequest, { params }: Params) {
     await prisma.$transaction(async (tx) => {
       // 1. Hapus jawaban peserta yang mengacu ke soal ini
       await tx.jawaban.deleteMany({ where: { soalId } })
-
-      // 2. Hapus opsi (meskipun onDelete: Cascade sudah ada, kita hapus manual untuk kejelasan)
+      // 2. Hapus opsi
       await tx.opsi.deleteMany({ where: { soalId } })
-
       // 3. Hapus soal
       await tx.soal.delete({ where: { id: soalId } })
     })
@@ -138,10 +128,8 @@ export async function DELETE(_request: NextRequest, { params }: Params) {
   } catch (error) {
     console.error("DELETE /api/ujian/[id]/soal/[soalId] error:", error)
 
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === "P2025") {
-        return NextResponse.json({ message: "Soal tidak ditemukan." }, { status: 404 })
-      }
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
+      return NextResponse.json({ message: "Soal tidak ditemukan." }, { status: 404 })
     }
 
     return NextResponse.json(

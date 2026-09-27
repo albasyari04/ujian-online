@@ -90,6 +90,29 @@ export function BankSoalClient({ data }: { data: UjianRingkas[] }) {
     }
   }
 
+  /* ---------- Hapus ujian (beserta seluruh isinya) ---------- */
+  async function hapusUjian(ujianId: string, judul: string, jumlahSoal: number) {
+    if (
+      !confirm(
+        `Hapus UJIAN "${judul}" beserta ${jumlahSoal} soal, semua jawaban peserta, dan hasil ujiannya?\n\nTindakan ini TIDAK BISA dibatalkan.`,
+      )
+    )
+      return
+    if (!confirm(`Konfirmasi terakhir: Anda yakin menghapus ujian "${judul}"?`)) return
+
+    setLoadingId(`ujian-${ujianId}`)
+    try {
+      const res = await fetch(`/api/ujian/${ujianId}`, { method: "DELETE" })
+      const json = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(json.message ?? "Gagal menghapus ujian.")
+      router.refresh()
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Gagal menghapus ujian.")
+    } finally {
+      setLoadingId(null)
+    }
+  }
+
   return (
     <div className="space-y-5">
       {/* ============ HERO ============ */}
@@ -185,6 +208,7 @@ export function BankSoalClient({ data }: { data: UjianRingkas[] }) {
           const jumlahPg = u.soal.filter((s) => s.tipe === "PILIHAN_GANDA").length
           const jumlahEssay = u.soal.length - jumlahPg
           const isDeletingAll = loadingId === `all-${u.id}`
+          const isDeletingUjian = loadingId === `ujian-${u.id}`
 
           return (
             <Card
@@ -233,21 +257,37 @@ export function BankSoalClient({ data }: { data: UjianRingkas[] }) {
                       Kelola Ujian →
                     </Link>
 
-                    {u.soal.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-2">
+                      {u.soal.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => void hapusSemuaSoal(u.id, u.judul, u.soal.length)}
+                          disabled={isDeletingAll || isDeletingUjian}
+                          className="inline-flex items-center gap-1.5 rounded-[10px] border border-[#fbbf24] bg-[#fffbeb] px-3 py-1.5 text-[12px] font-semibold text-[#b45309] shadow-[0_4px_10px_-4px_rgba(217,119,6,0.4)] transition-all hover:-translate-y-0.5 hover:bg-[#fef3c7] disabled:cursor-not-allowed disabled:opacity-60 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-400"
+                        >
+                          {isDeletingAll ? (
+                            <IconSpinner className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <IconTrash className="h-3.5 w-3.5" />
+                          )}
+                          Hapus Semua Soal
+                        </button>
+                      )}
+
                       <button
                         type="button"
-                        onClick={() => void hapusSemuaSoal(u.id, u.judul, u.soal.length)}
-                        disabled={isDeletingAll}
+                        onClick={() => void hapusUjian(u.id, u.judul, u.soal.length)}
+                        disabled={isDeletingAll || isDeletingUjian}
                         className="inline-flex items-center gap-1.5 rounded-[10px] bg-gradient-to-br from-[#f87171] to-[#dc2626] px-3 py-1.5 text-[12px] font-semibold text-white shadow-[0_6px_16px_-6px_rgba(220,38,38,0.6)] transition-all hover:-translate-y-0.5 hover:shadow-[0_8px_20px_-6px_rgba(220,38,38,0.7)] disabled:cursor-not-allowed disabled:opacity-60"
                       >
-                        {isDeletingAll ? (
+                        {isDeletingUjian ? (
                           <IconSpinner className="h-3.5 w-3.5 animate-spin" />
                         ) : (
                           <IconTrash className="h-3.5 w-3.5" />
                         )}
-                        Hapus Semua Soal
+                        Hapus Ujian
                       </button>
-                    )}
+                    </div>
                   </div>
 
                   {u.soal.length === 0 ? (
@@ -273,7 +313,6 @@ export function BankSoalClient({ data }: { data: UjianRingkas[] }) {
                                 {s.tipe === "PILIHAN_GANDA" ? "PG" : "Essay"} · {s.poin} poin
                               </Badge>
 
-                              {/* Tombol Edit */}
                               <Link
                                 href={`/ujian-guru/${u.id}/soal/${s.id}/edit`}
                                 className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-[#5b657d] shadow-sm transition-all hover:-translate-y-0.5 hover:bg-[#eef2ff] hover:text-[#4338ca] dark:bg-white/10 dark:text-white/50 dark:hover:bg-white/20 dark:hover:text-[#818cf8]"
@@ -283,7 +322,6 @@ export function BankSoalClient({ data }: { data: UjianRingkas[] }) {
                                 <IconPencil className="h-3.5 w-3.5" />
                               </Link>
 
-                              {/* Tombol Hapus */}
                               <button
                                 type="button"
                                 onClick={() => void hapusSoal(u.id, s.id, idx + 1)}

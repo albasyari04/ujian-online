@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { usePathname } from "next/navigation"
 import type { ReactNode } from "react"
 
 import { BottomNavPeserta } from "./BottomNavPeserta"
@@ -13,6 +14,15 @@ type PesertaUser = {
   email: string
 }
 
+/**
+ * Cek apakah path saat ini adalah halaman "mengerjakan ujian".
+ * Match: /ujian/cmxxxx atau /ujian/cmxxxx/
+ * TIDAK match: /ujian-tersedia, /ujian-berlangsung, /ujian-guru
+ */
+function isHalamanMengerjakanUjian(pathname: string): boolean {
+  return /^\/ujian\/[^/]+\/?$/.test(pathname)
+}
+
 export function PesertaShell({
   children,
   user,
@@ -22,7 +32,13 @@ export function PesertaShell({
   user: PesertaUser
   jumlahNotifikasiBelumDibaca?: number
 }) {
+  const pathname = usePathname()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+
+  // Halaman mengerjakan ujian: full-screen, tanpa sidebar, navbar, footer, dan bottom nav
+  if (isHalamanMengerjakanUjian(pathname)) {
+    return <>{children}</>
+  }
 
   return (
     <div className="flex h-[100dvh] w-full overflow-hidden bg-[#fbfaf7] dark:bg-[#0b1120]">
@@ -35,12 +51,6 @@ export function PesertaShell({
           jumlahNotifikasiBelumDibaca={jumlahNotifikasiBelumDibaca}
         />
 
-        {/* 
-          pb dibuat dinamis: 8rem dasar + env(safe-area-inset-bottom) supaya 
-          konten paling bawah tidak ketutup BottomNavPeserta di layar mobile, 
-          termasuk tombol "Ujian" yang mengambang naik di atas garis nav dan 
-          HP dengan home-indicator (notch bawah).
-        */}
         <main className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pt-6 pb-[calc(8rem+env(safe-area-inset-bottom,0px))] sm:px-6 sm:py-8 lg:px-8 lg:pb-8">
           {children}
         </main>

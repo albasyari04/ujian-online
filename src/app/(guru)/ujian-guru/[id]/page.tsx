@@ -81,7 +81,7 @@ export default async function DetailUjianGuruPage({ params }: { params: Promise<
                   {ujian.deskripsi}
                 </p>
               )}
-              
+
               {/* Info Pills */}
               <div className="flex flex-wrap items-center gap-2 pt-1">
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-[#eef2ff] px-3 py-1 text-[11.5px] font-medium text-[#4338ca] dark:bg-[#818cf8]/10 dark:text-[#818cf8]">

@@ -38,9 +38,11 @@ function formatSisaWaktu(msTersisa: number) {
 ========================================================= */
 
 const ringkasanTone: Record<"amber" | "red" | "slate", string> = {
-  amber: "border-[#f0d9ad] bg-[#fdf6e7] text-[#8a6a2f]",
-  red: "border-[#f5cccc] bg-[#fdf1f1] text-[#b52f2f]",
-  slate: "border-[#e2e5eb] bg-[#f4f5f7] text-[#5b657d]",
+  amber:
+    "border-[#f0d9ad] bg-[#fdf6e7] text-[#8a6a2f] dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-300",
+  red: "border-[#f5cccc] bg-[#fdf1f1] text-[#b52f2f] dark:border-red-400/30 dark:bg-red-400/10 dark:text-red-300",
+  slate:
+    "border-[#e2e5eb] bg-[#f4f5f7] text-[#5b657d] dark:border-white/10 dark:bg-white/5 dark:text-white/60",
 }
 
 function RingkasanPill({
@@ -88,14 +90,17 @@ export function DaftarUjianBerlangsung({ data }: { data: UjianBerlangsungData[] 
   if (data.length === 0) {
     return (
       <Card className="flex flex-col items-center gap-3 px-6 py-14 text-center">
-        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#fdf6e7] text-[#b45309]">
+        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#fdf6e7] text-[#b45309] dark:bg-amber-400/10 dark:text-amber-300">
           <IconClock className="h-6 w-6" />
         </span>
         <div>
-          <p className="text-[14.5px] font-semibold text-[#16233f]">Tidak ada ujian yang sedang berlangsung</p>
-          <p className="mt-1 max-w-sm text-[13px] text-[#8b93a6]">
+          <p className="text-[14.5px] font-semibold text-[#16233f] dark:text-white">
+            Tidak ada ujian yang sedang berlangsung
+          </p>
+          <p className="mt-1 max-w-sm text-[13px] text-[#8b93a6] dark:text-white/40">
             Anda belum memulai ujian apa pun. Buka menu{" "}
-            <span className="font-medium text-[#34435f]">Ujian Tersedia</span> untuk mulai mengerjakan.
+            <span className="font-medium text-[#34435f] dark:text-white/70">Ujian Tersedia</span> untuk mulai
+            mengerjakan.
           </p>
         </div>
       </Card>
@@ -137,23 +142,29 @@ function KartuUjianBerlangsung({ item, sekarang }: { item: UjianBerlangsungData;
   return (
     <Card
       className={`flex flex-col gap-3.5 p-4 sm:flex-row sm:items-center sm:justify-between ${
-        mendesak ? "border-[#f5cccc] bg-[#fffaf9]" : ""
+        mendesak
+          ? "border-[#f5cccc] bg-[#fffaf9] dark:border-red-400/30 dark:bg-red-400/[0.06]"
+          : ""
       }`}
     >
       <div className="flex items-start gap-3">
         <span
           className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] ${
-            mendesak ? "bg-[#fdf1f1] text-[#d23b3b]" : "bg-[#fdf6e7] text-[#b45309]"
+            mendesak
+              ? "bg-[#fdf1f1] text-[#d23b3b] dark:bg-red-400/10 dark:text-red-300"
+              : "bg-[#fdf6e7] text-[#b45309] dark:bg-amber-400/10 dark:text-amber-300"
           }`}
         >
           <IconClock className="h-5 w-5" />
         </span>
 
         <div className="min-w-0">
-          <p className="text-[14px] font-semibold text-[#16233f]">{item.judul}</p>
+          <p className="text-[14px] font-semibold text-[#16233f] dark:text-white">{item.judul}</p>
 
           {item.deskripsi && (
-            <p className="mt-0.5 line-clamp-2 max-w-md text-[12.5px] text-[#8b93a6]">{item.deskripsi}</p>
+            <p className="mt-0.5 line-clamp-2 max-w-md text-[12.5px] text-[#8b93a6] dark:text-white/40">
+              {item.deskripsi}
+            </p>
           )}
 
           <div className="mt-2 flex flex-wrap gap-1.5">
@@ -174,7 +185,7 @@ function KartuUjianBerlangsung({ item, sekarang }: { item: UjianBerlangsungData;
             )}
           </div>
 
-          <div className="mt-2.5 h-1.5 w-40 max-w-full overflow-hidden rounded-full bg-[#efece4]">
+          <div className="mt-2.5 h-1.5 w-40 max-w-full overflow-hidden rounded-full bg-[#efece4] dark:bg-white/10">
             <div
               className="h-full rounded-full bg-[#e8a33d] transition-[width] duration-500"
               style={{ width: `${progres}%` }}

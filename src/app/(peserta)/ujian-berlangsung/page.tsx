@@ -99,9 +99,13 @@ export default async function UjianBerlangsungPage() {
   return (
     <div className="flex flex-col gap-6">
       <header>
-        <p className="text-[12.5px] font-medium text-[#b45309]">{formatTanggalPanjang(sekarang)}</p>
-        <h1 className="mt-1 text-[26px] font-semibold text-[#16233f]">Ujian Sedang Berlangsung</h1>
-        <p className="mt-1 text-[13px] text-[#5b6a86]">
+        <p className="text-[12.5px] font-medium text-[#b45309] dark:text-amber-400">
+          {formatTanggalPanjang(sekarang)}
+        </p>
+        <h1 className="mt-1 text-[26px] font-semibold text-[#16233f] dark:text-white">
+          Ujian Sedang Berlangsung
+        </h1>
+        <p className="mt-1 text-[13px] text-[#5b6a86] dark:text-white/50">
           Ujian yang sudah Anda mulai dan belum diselesaikan. Segera lanjutkan sebelum waktu habis.
         </p>
       </header>

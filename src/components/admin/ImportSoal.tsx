@@ -42,7 +42,6 @@ function parseAnswer(value: string) {
   return Number.isInteger(number) ? String.fromCharCode(64 + number) : ""
 }
 
-/** Cari kunci jawaban di dalam blok soal (misal "Jawaban: A") — dipakai sebagai fallback */
 function extractAnswer(lines: string[]) {
   for (let index = 0; index < lines.length; index += 1) {
     const line = lines[index]
@@ -147,9 +146,27 @@ function isLastOptionLine(line: string): boolean {
   return /^\(?E\)?\s*[.)]\s+/i.test(line)
 }
 
-/** Deteksi baris header umum yang harus dibuang */
+/**
+ * Deteksi baris HEADER DOKUMEN yang harus dibuang.
+ * PENTING: keyword di-anchor dengan \b supaya "Bacalah" tidak match "baca".
+ */
 function isHeaderLine(line: string): boolean {
-  return /^(penilaian|ujian|sma|tahun\s+pelajaran|mata\s+pelajaran|kelas\s*\/|hari\s*\/|waktu\s*:|nama\s+siswa|nomor\s+ujian|nama\s*:|kelas\s*:|tanggal\s*:|petunjuk|pilihlah|jawablah|baca|bacaan\s+utama)/i.test(line)
+  return /^(?:\d+\s*[.)]\s*)?(?:soal\s+ujian|naskah\s+soal|penilaian|ujian|sma\b|smk\b|ma\b|tahun\s+pelajaran|mata\s+pelajaran|kelas\s*\/|hari\s*\/|waktu\s*:|nama\s+siswa|nomor\s+ujian|nama\s*:|kelas\s*:|tanggal\s*:|petunjuk|pilihlah|jawablah|bacaan\s+utama|pilihan\s+ganda)/i.test(line)
+}
+
+/**
+ * Deteksi baris BACAAN.
+ * Baris bacaan = bukan header, bukan opsi, bukan soal ber-nomor.
+ * Termasuk: "Bacalah paragraf cerita...", "Pak Seno menatap...", dsb.
+ */
+function isBacaanLine(line: string): boolean {
+  if (!line) return false
+  if (isHeaderLine(line)) return false
+  if (isOptionLine(line)) return false
+  if (/^\d+[.)]\s*/.test(line)) return false
+  if (isAnswerSectionHeader(line)) return false
+  if (isAnswerSubHeader(line)) return false
+  return true
 }
 
 function parseText(rawText: string): Question[] {
@@ -189,7 +206,6 @@ function parseText(rawText: string): Question[] {
       return
     }
 
-    // Cari baris pertama yang bukan opsi (baris pertanyaan)
     let questionLine = blockLines[0]
     let questionIdx = 0
     for (let i = 0; i < blockLines.length; i += 1) {
@@ -204,12 +220,11 @@ function parseText(rawText: string): Question[] {
     const questionNumber = nomorMatch ? Number(nomorMatch[1]) : null
     const pertanyaan = questionLine.replace(/^(\d+[.)]|soal\s*\d*[:.)]?)\s*/i, "").trim()
 
-    // Ekstrak opsi dari seluruh blockLines
     const opsi = extractOptions(blockLines.slice(questionIdx))
 
-    // Ambil bacaan yang tertunda (dari antara blok sebelumnya)
+    // Filter bacaan: hanya baris yang benar-benar bacaan (bukan header/opsi)
     const bacaanTeks = pendingBacaan
-      .filter((l) => !isHeaderLine(l) && !isOptionLine(l))
+      .filter((l) => isBacaanLine(l))
       .join("\n")
       .trim()
 
@@ -226,7 +241,7 @@ function parseText(rawText: string): Question[] {
   }
 
   for (const line of soalLines) {
-    if (isHeaderLine(line) && !sudahPernahKetemuSoal) continue
+    if (!sudahPernahKetemuSoal && isHeaderLine(line)) continue
 
     if (isOptionLine(line)) {
       if (!currentBlock) currentBlock = { lines: [] }
@@ -253,7 +268,7 @@ function parseText(rawText: string): Question[] {
     if (diawaliAngka) {
       currentBlock = { lines: [line] }
     } else {
-      pendingBacaan.push(line)
+      if (isBacaanLine(line)) pendingBacaan.push(line)
     }
   }
 
@@ -268,22 +283,16 @@ function parseText(rawText: string): Question[] {
 
     soalCounter += 1
 
-    // Prioritas kunci jawaban:
-    // 1. Section KUNCI JAWABAN global (berdasarkan nomor soal asli)
-    // 2. Section KUNCI JAWABAN global (berdasarkan urutan soal)
-    // 3. Di dalam blok soal itu sendiri (mis. "Jawaban: A")
     const answer =
       (blok.questionNumber ? globalAnswers.get(blok.questionNumber) : "") ||
       globalAnswers.get(soalCounter) ||
       extractAnswer(blok.blockLines) ||
       ""
 
-    // Gabungkan bacaan (jika ada) dengan pertanyaan
     const finalQuestion = blok.bacaan
       ? `${BACAAN_START}\n${blok.bacaan}\n${BACAAN_END}\n${SOAL_START}\n${blok.soal}`
       : blok.soal
 
-    // Essay (tanpa opsi)
     if (blok.opsi.length === 0) {
       questions.push({ pertanyaan: finalQuestion, tipe: "ESSAY", poin: 1, opsi: [] })
       continue

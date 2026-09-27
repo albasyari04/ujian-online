@@ -12,24 +12,11 @@ import type { PengaturanPelanggaranAktif } from "@/lib/pengaturan"
 
 type JawabanAwal = { soalId: string; jawabanTeks: string | null; opsiPilihan: string | null }
 
-/* Ikon lokal untuk panel bacaan */
 function IconBookOpen({ className = "h-4 w-4" }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" className={className}>
-      <path
-        d="M12 6.5C10.5 5.2 8.3 4.5 5.5 4.5V17.5C8.3 17.5 10.5 18.2 12 19.5"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M12 6.5C13.5 5.2 15.7 4.5 18.5 4.5V17.5C15.7 17.5 13.5 18.2 12 19.5"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+      <path d="M12 6.5C10.5 5.2 8.3 4.5 5.5 4.5V17.5C8.3 17.5 10.5 18.2 12 19.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M12 6.5C13.5 5.2 15.7 4.5 18.5 4.5V17.5C15.7 17.5 13.5 18.2 12 19.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
       <path d="M12 6.5V19.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
     </svg>
   )
@@ -75,14 +62,21 @@ export function RuangUjian({
 
   const soal = ujian.soal[indexAktif]
 
-  /* --- Ambil bacaan dari soal PERTAMA (tempat bacaan disimpan) --- */
+  /**
+   * Ambil bacaan dari SOAL AKTIF.
+   * - Kalau soal aktif punya bacaan sendiri → pakai itu.
+   * - Kalau tidak, cari soal TERDEKAT sebelumnya yang punya bacaan.
+   *   (supaya soal 2, 4, 6, ... yang berbagi bacaan dengan soal ganjilnya tetap menampilkan bacaan)
+   */
   const bacaan = useMemo(() => {
-    const soalPertama = ujian.soal[0]
-    if (!soalPertama) return null
-    return splitBacaanDanSoal(soalPertama.pertanyaan).bacaan
-  }, [ujian.soal])
+    // Cari ke belakang dari indexAktif
+    for (let i = indexAktif; i >= 0; i -= 1) {
+      const b = splitBacaanDanSoal(ujian.soal[i].pertanyaan).bacaan
+      if (b && b.trim().length > 0) return b
+    }
+    return null
+  }, [ujian.soal, indexAktif])
 
-  /* --- Soal yang ditampilkan sudah dibersihkan dari marker bacaan --- */
   const soalBersih: SoalPeserta = useMemo(
     () => ({ ...soal, pertanyaan: splitBacaanDanSoal(soal.pertanyaan).soal }),
     [soal],

@@ -1,12 +1,16 @@
+import Image from "next/image"
 import Link from "next/link"
 import { getServerSession } from "next-auth"
 
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { Card, RingkasanCard } from "@/components/ui/Card"
+import { RingkasanCard } from "@/components/ui/Card"
 import { Badge } from "@/components/ui/Badge"
 import { Button } from "@/components/ui/Button"
-import { IconAlertTriangle, IconCheckCircle, IconClock } from "@/components/ui/Icons"
+import { IconAlertTriangle, IconDocument } from "@/components/ui/Icons"
+// NOTE: sesuaikan path import ini dengan lokasi file subject-icons.ts di proyek Anda
+// (mis. "@/lib/subject-icons" atau "@/utils/subject-icons").
+import { getSubjectIconSrc } from "@/lib/subject-icons"
 
 export const dynamic = "force-dynamic"
 
@@ -114,12 +118,19 @@ export default async function UjianTersediaPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <header>
-        <p className="text-[12.5px] font-medium text-[#b45309]">{formatTanggalPanjang(sekarang)}</p>
-        <h1 className="mt-1 text-[26px] font-semibold text-[#16233f]">Ujian Tersedia</h1>
-        <p className="mt-1 text-[13px] text-[#5b6a86]">
-          Daftar ujian yang sedang dibuka dan dapat Anda kerjakan saat ini.
-        </p>
+      <header className="flex items-start gap-3">
+        <span className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] bg-gradient-to-br from-white to-[#eef0f4] text-[#3457c9] shadow-[inset_0_1px_1px_rgba(255,255,255,0.9),0_6px_12px_-6px_rgba(22,35,63,0.3)] dark:from-white/10 dark:to-white/[0.02] dark:text-[#8fb1ff]">
+          <IconDocument className="h-5 w-5" />
+        </span>
+        <div>
+          <p className="text-[12.5px] font-medium text-[#b45309] dark:text-amber-400">
+            {formatTanggalPanjang(sekarang)}
+          </p>
+          <h1 className="mt-1 text-[26px] font-semibold text-[#16233f] dark:text-white">Ujian Tersedia</h1>
+          <p className="mt-1 text-[13px] text-[#5b6a86] dark:text-white/50">
+            Daftar ujian yang sedang dibuka dan dapat Anda kerjakan saat ini.
+          </p>
+        </div>
       </header>
 
       <div className="grid grid-cols-3 gap-3 sm:gap-4">
@@ -147,18 +158,21 @@ export default async function UjianTersediaPage() {
       </div>
 
       {daftar.length === 0 ? (
-        <Card className="flex flex-col items-center gap-3 px-6 py-14 text-center">
-          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#eef4ff] text-[#3457c9]">
-            <IconClock className="h-6 w-6" />
+        <div className="flex flex-col items-center gap-3 rounded-[18px] border border-[#e7e4dc] bg-white px-6 py-14 text-center shadow-[0_1px_2px_rgba(22,35,63,0.04),0_10px_24px_-12px_rgba(49,46,129,0.18)] dark:border-white/10 dark:bg-[#101a30]">
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#eef4ff] text-[#3457c9] dark:bg-blue-400/10 dark:text-blue-300">
+            <IconDocument className="h-6 w-6" />
           </span>
           <div>
-            <p className="text-[14.5px] font-semibold text-[#16233f]">Belum ada ujian yang tersedia</p>
-            <p className="mt-1 max-w-sm text-[13px] text-[#8b93a6]">
+            <p className="text-[14.5px] font-semibold text-[#16233f] dark:text-white">
+              Belum ada ujian yang tersedia
+            </p>
+            <p className="mt-1 max-w-sm text-[13px] text-[#8b93a6] dark:text-white/40">
               Ujian akan muncul di sini secara otomatis saat jadwalnya dibuka. Cek menu{" "}
-              <span className="font-medium text-[#34435f]">Jadwal Ujian</span> untuk melihat jadwal mendatang.
+              <span className="font-medium text-[#34435f] dark:text-white/70">Jadwal Ujian</span> untuk melihat
+              jadwal mendatang.
             </p>
           </div>
-        </Card>
+        </div>
       ) : (
         <div className="flex flex-col gap-3">
           {daftar.map((item) => (
@@ -172,41 +186,50 @@ export default async function UjianTersediaPage() {
 
 /* =========================================================
    KARTU PER-UJIAN
+   Gaya 3D: gradient permukaan + glare atas + shadow bertingkat +
+   hover-lift, konsisten dengan ItemJadwalCard di JadwalUjianList.
+   Icon di kiri sekarang icon mata pelajaran (bukan icon status),
+   status tetap terbaca lewat Badge di bawah judul.
 ========================================================= */
-
-const ikonBg: Record<"selesai" | "dikerjakan" | "belum", string> = {
-  selesai: "bg-[#ecfdf5] text-[#047857]",
-  dikerjakan: "bg-[#fdf6e7] text-[#b45309]",
-  belum: "bg-[#eef4ff] text-[#3457c9]",
-}
-
-function statusKunci(hasil: HasilRingkas | null): "selesai" | "dikerjakan" | "belum" {
-  if (hasil?.status === "SELESAI") return "selesai"
-  if (hasil?.status === "SEDANG_DIKERJAKAN") return "dikerjakan"
-  return "belum"
-}
 
 function UjianTersediaCard({ item, sekarang }: { item: ItemUjianTersedia; sekarang: Date }) {
   const { ujian, hasil } = item
-  const kunci = statusKunci(hasil)
   const sisaWaktu = formatSisaWaktu(ujian.selesai, sekarang)
   const akanDitutupSegera = ujian.selesai.getTime() - sekarang.getTime() <= 60 * 60 * 1000
 
   return (
-    <Card className="flex flex-col gap-3.5 p-4 sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex items-start gap-3">
-        <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] ${ikonBg[kunci]}`}>
-          {kunci === "selesai" ? <IconCheckCircle className="h-5 w-5" /> : <IconClock className="h-5 w-5" />}
-        </span>
+    <div className="group relative flex flex-col gap-3.5 overflow-hidden rounded-[16px] border border-[#e7e4dc] bg-gradient-to-br from-white via-[#fcfbf8] to-[#f6f5f1] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_5px_0_#eef0f4,0_16px_28px_-16px_rgba(22,35,63,0.32)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_7px_0_#e3e7ee,0_22px_34px_-16px_rgba(22,35,63,0.4)] dark:border-white/10 dark:from-[#182137] dark:via-[#141c30] dark:to-[#111a2c] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_5px_0_#0d1424,0_18px_30px_-16px_rgba(0,0,0,0.6)] dark:hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_7px_0_#0d1424,0_24px_36px_-16px_rgba(0,0,0,0.68)] sm:flex-row sm:items-center sm:justify-between">
+      {/* glare atas — dekorasi permukaan 3D */}
+      <span
+        className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/75 to-transparent dark:from-white/[0.05]"
+        aria-hidden="true"
+      />
+      <span
+        className="pointer-events-none absolute -right-10 -top-12 h-28 w-28 rounded-full bg-[#16233f]/[0.04] blur-2xl dark:bg-white/[0.04]"
+        aria-hidden="true"
+      />
 
-        <div>
-          <p className="text-[14px] font-semibold text-[#16233f]">{ujian.judul}</p>
+      <div className="relative flex items-start gap-3">
+        <Image
+          src={getSubjectIconSrc(ujian.judul)}
+          alt=""
+          width={48}
+          height={48}
+          className="h-11 w-11 shrink-0 object-contain drop-shadow-[0_6px_10px_rgba(22,35,63,0.25)] transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:-rotate-3 sm:h-12 sm:w-12"
+        />
+
+        <div className="relative min-w-0">
+          <p className="text-[14px] font-semibold text-[#16233f] dark:text-white">{ujian.judul}</p>
 
           {ujian.deskripsi && (
-            <p className="mt-0.5 line-clamp-2 max-w-md text-[12.5px] text-[#8b93a6]">{ujian.deskripsi}</p>
+            <p className="mt-0.5 line-clamp-2 max-w-md text-[12.5px] text-[#8b93a6] dark:text-white/40">
+              {ujian.deskripsi}
+            </p>
           )}
 
-          <p className="mt-1.5 text-[12px] text-[#8b93a6]">Ditutup pukul {formatJam(ujian.selesai)}</p>
+          <p className="mt-1.5 text-[12px] text-[#8b93a6] dark:text-white/40">
+            Ditutup pukul {formatJam(ujian.selesai)}
+          </p>
 
           <div className="mt-2 flex flex-wrap gap-1.5">
             <Badge tone="slate">{formatDurasi(ujian.durasiMenit)}</Badge>
@@ -221,8 +244,10 @@ function UjianTersediaCard({ item, sekarang }: { item: ItemUjianTersedia; sekara
         </div>
       </div>
 
-      <AksiUjian ujianId={ujian.id} hasil={hasil} />
-    </Card>
+      <div className="relative">
+        <AksiUjian ujianId={ujian.id} hasil={hasil} />
+      </div>
+    </div>
   )
 }
 

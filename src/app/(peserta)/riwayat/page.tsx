@@ -207,9 +207,9 @@ export default async function RiwayatUjianPage({
 
       <form
         method="GET"
-        className="flex flex-col gap-2.5 rounded-[16px] border border-[#e7e4dc] bg-white p-2.5 shadow-[0_1px_2px_rgba(22,35,63,0.04),0_10px_20px_-12px_rgba(49,46,129,0.16)] dark:border-white/10 dark:bg-[#101a30] sm:flex-row sm:items-center"
+        className="flex items-center gap-2 rounded-[16px] border border-[#e7e4dc] bg-white p-2.5 shadow-[0_1px_2px_rgba(22,35,63,0.04),0_10px_20px_-12px_rgba(49,46,129,0.16)] dark:border-white/10 dark:bg-[#101a30]"
       >
-        <div className="relative flex-1 sm:max-w-sm">
+        <div className="relative min-w-0 flex-1 sm:max-w-sm">
           <IconSearch className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#94a3b8] dark:text-white/30" />
           <Input
             type="search"
@@ -220,7 +220,7 @@ export default async function RiwayatUjianPage({
             className="border-transparent bg-[#f6f5f1] pl-9 focus:border-[#6ee7b7] dark:bg-white/5 dark:text-white dark:placeholder:text-white/30"
           />
         </div>
-        <Button type="submit" size="md" className="sm:w-auto">
+        <Button type="submit" size="md" className="shrink-0">
           <IconSearch className="h-4 w-4" />
           Cari
         </Button>
@@ -304,9 +304,9 @@ function ItemRiwayatCard({ item }: { item: ItemRiwayat }) {
         </div>
       </div>
 
-      <div className="relative flex border-t border-dashed border-[#e7e4dc] pt-3 dark:border-white/10 sm:border-0 sm:pt-0">
-        <Link href={`/hasil/${item.hasilId}`} className="w-full sm:w-auto">
-          <Button variant="outline" size="sm" className="w-full sm:w-auto">
+      <div className="relative flex justify-end border-t border-dashed border-[#e7e4dc] pt-3 dark:border-white/10 sm:border-0 sm:pt-0">
+        <Link href={`/hasil/${item.hasilId}`}>
+          <Button variant="outline" size="sm">
             Lihat hasil
           </Button>
         </Link>

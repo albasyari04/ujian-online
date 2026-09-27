@@ -49,18 +49,25 @@ function StatusBadge({ status, hasilStatus }: { status: StatusJadwal; hasilStatu
   return <Badge tone="red">Terlewat</Badge>
 }
 
+/* =========================================================
+   AKSI JADWAL
+   Tombol/keterangan aksi kanan kartu — TIDAK full-width,
+   supaya rata dengan gaya tombol "Lihat hasil" di kartu
+   Riwayat Ujian.
+========================================================= */
+
 function AksiJadwal({ item }: { item: JadwalItemDTO }) {
   const { status, hasilStatus, hasilId, id } = item
 
   if (status === "akan_datang") {
-    return <p className="shrink-0 text-[11.5px] text-[#8b93a6] dark:text-white/40">Menunggu jadwal dibuka</p>
+    return <p className="text-[11.5px] text-[#8b93a6] dark:text-white/40">Menunggu jadwal dibuka</p>
   }
 
   if (status === "berlangsung") {
     if (hasilStatus === "SEDANG_DIKERJAKAN") {
       return (
-        <Link href={`/ujian/${id}`} className="shrink-0">
-          <Button variant="secondary" size="sm" className="w-full sm:w-auto">
+        <Link href={`/ujian/${id}`}>
+          <Button variant="secondary" size="sm">
             Lanjutkan ujian
           </Button>
         </Link>
@@ -68,18 +75,16 @@ function AksiJadwal({ item }: { item: JadwalItemDTO }) {
     }
     if (hasilStatus === "SELESAI") {
       return (
-        <Link href={`/hasil/${hasilId}`} className="shrink-0">
-          <Button variant="outline" size="sm" className="w-full sm:w-auto">
+        <Link href={`/hasil/${hasilId}`}>
+          <Button variant="outline" size="sm">
             Lihat hasil
           </Button>
         </Link>
       )
     }
     return (
-      <Link href={`/ujian/${id}`} className="shrink-0">
-        <Button size="sm" className="w-full sm:w-auto">
-          Mulai ujian
-        </Button>
+      <Link href={`/ujian/${id}`}>
+        <Button size="sm">Mulai ujian</Button>
       </Link>
     )
   }
@@ -87,16 +92,23 @@ function AksiJadwal({ item }: { item: JadwalItemDTO }) {
   // berakhir
   if (hasilStatus === "SELESAI") {
     return (
-      <Link href={`/hasil/${hasilId}`} className="shrink-0">
-        <Button variant="outline" size="sm" className="w-full sm:w-auto">
+      <Link href={`/hasil/${hasilId}`}>
+        <Button variant="outline" size="sm">
           Lihat hasil
         </Button>
       </Link>
     )
   }
 
-  return <p className="shrink-0 text-[11.5px] font-medium text-[#d23b3b]">Tidak dikerjakan</p>
+  return <p className="text-[11.5px] font-medium text-[#d23b3b]">Tidak dikerjakan</p>
 }
+
+/* =========================================================
+   KARTU ITEM JADWAL
+   Icon tampil di dalam lingkaran gradient (bukan polos) dan
+   area aksi diberi border-top putus-putus di mobile — sama
+   gaya dengan ItemRiwayatCard di halaman Riwayat Ujian.
+========================================================= */
 
 function ItemJadwalCard({ item }: { item: JadwalItemDTO }) {
   return (
@@ -105,22 +117,22 @@ function ItemJadwalCard({ item }: { item: JadwalItemDTO }) {
       <span className="pointer-events-none absolute -right-10 -top-12 h-28 w-28 rounded-full bg-[#16233f]/[0.04] blur-2xl dark:bg-white/[0.04]" aria-hidden="true" />
 
       <div className="relative flex items-start gap-3">
-        <Image
-          src={getSubjectIconSrc(item.judul)}
-          alt=""
-          width={44}
-          height={44}
-          className="h-11 w-11 shrink-0 object-contain drop-shadow-[0_3px_5px_rgba(22,35,63,0.22)] transition-transform duration-300 group-hover:-translate-y-0.5"
-        />
+        <span className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-white to-[#eef0f4] shadow-[inset_0_1px_1px_rgba(255,255,255,0.9),0_6px_14px_-6px_rgba(22,35,63,0.3)] transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:rotate-3 dark:from-white/10 dark:to-white/[0.02] sm:h-[54px] sm:w-[54px]">
+          <Image
+            src={getSubjectIconSrc(item.judul)}
+            alt=""
+            width={30}
+            height={30}
+            className="h-7 w-7 object-contain sm:h-8 sm:w-8"
+          />
+        </span>
 
         <div className="relative min-w-0">
           <p className="text-[14px] font-semibold text-[#16233f] dark:text-white">{item.judul}</p>
 
-          <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-[#8b93a6] dark:text-white/40">
-            <span>
-              {item.tanggalLabel} · {item.jamLabel}
-            </span>
-          </div>
+          <p className="mt-1.5 text-[12px] text-[#8b93a6] dark:text-white/40">
+            {item.tanggalLabel} · {item.jamLabel}
+          </p>
 
           <div className="mt-2 flex flex-wrap gap-1.5">
             <Badge tone="slate">{item.durasiLabel}</Badge>
@@ -130,7 +142,9 @@ function ItemJadwalCard({ item }: { item: JadwalItemDTO }) {
         </div>
       </div>
 
-      <AksiJadwal item={item} />
+      <div className="relative flex justify-end border-t border-dashed border-[#e7e4dc] pt-3 dark:border-white/10 sm:border-0 sm:pt-0">
+        <AksiJadwal item={item} />
+      </div>
     </Card>
   )
 }

@@ -5,7 +5,7 @@ import { Prisma } from "@prisma/client"
 
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { Card, RingkasanCard } from "@/components/ui/Card"
+import { Card, StatCard } from "@/components/ui/Card"
 import { Badge } from "@/components/ui/Badge"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
@@ -181,27 +181,35 @@ export default async function RiwayatUjianPage({
         </p>
       </header>
 
-      <div className="grid grid-cols-3 gap-3 sm:gap-4">
-        <RingkasanCard
+      {/* =========================================================
+          RINGKASAN
+          Sekarang memakai StatCard — komponen & style yang SAMA
+          persis dengan card ringkasan di halaman Jadwal Ujian
+          (icon polos kanan-atas, angka besar, efek gradient/
+          shadow 3D, grid 3 kolom dengan gap yang mengecil di
+          layar sempit).
+      ========================================================= */}
+      <div className="grid grid-cols-3 gap-2 sm:gap-4">
+        <StatCard
           label="Ujian selesai"
           value={totalData}
-          tone="emerald"
+          description="ujian yang telah diselesaikan"
           iconImageSrc="/image/icon/ujian-selesai.png"
-          icon={null}
+          tone="emerald"
         />
-        <RingkasanCard
+        <StatCard
           label="Rata-rata skor"
           value={rataRataSkor !== null ? rataRataSkor.toFixed(1) : "-"}
-          tone="blue"
+          description="dari semua ujian yang diikuti"
           iconImageSrc="/image/icon/rata-rata-score.png"
-          icon={null}
+          tone="blue"
         />
-        <RingkasanCard
+        <StatCard
           label="Total pelanggaran"
           value={totalPelanggaran}
-          tone="red"
+          description="tercatat selama ujian"
           iconImageSrc="/image/icon/total-pelanggaran.png"
-          icon={null}
+          tone="red"
         />
       </div>
 

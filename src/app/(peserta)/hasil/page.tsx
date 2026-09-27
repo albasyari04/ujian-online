@@ -117,12 +117,13 @@ export default async function HasilNilaiPage({
 
       {/* =========================================================
           RINGKASAN NILAI
-          Sekarang memakai StatCard — komponen & style yang SAMA
-          persis dengan card "Ujian Tersedia" dkk. di Beranda
-          (label kiri-atas, angka besar, icon polos kanan-atas,
-          efek gradient/shadow 3D yang sama).
+          SELALU 3 kolom berjejer ke samping (mobile s/d desktop),
+          persis seperti susunan "Ujian Tersedia" dkk. di Beranda.
+          StatCard (dari Card.tsx) sudah punya class responsive
+          bawaan (icon & teks mengecil otomatis di layar sempit),
+          jadi tinggal grid-nya yang dipaksa 3 kolom terus-menerus.
       ========================================================= */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
+      <div className="grid grid-cols-3 gap-2 sm:gap-4">
         <StatCard
           label="Nilai tertinggi"
           value={nilaiTertinggi !== null ? nilaiTertinggi.toFixed(1) : "-"}

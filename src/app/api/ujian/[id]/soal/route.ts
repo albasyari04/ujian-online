@@ -115,3 +115,61 @@ export async function POST(request: NextRequest, { params }: Params) {
 
   return NextResponse.json(soalBaru, { status: 201 })
 }
+
+/* =========================================================
+   DELETE /api/ujian/:id/soal
+   Menghapus SEMUA soal dalam satu ujian.
+   - Ambil dulu semua ID soal
+   - Hapus opsi terkait (jika tidak ada onDelete: Cascade)
+   - Hapus semua soal
+========================================================= */
+export async function DELETE(_request: NextRequest, { params }: Params) {
+  const { id } = await params
+  // Coba autentikasi sebagai guru dulu, jika gagal coba admin
+  let guard = await requireGuru()
+  if (guard.error) {
+    guard = await requireAdmin()
+    if (guard.error) return guard.error
+  }
+
+  const ujian = await prisma.ujian.findUnique({
+    where: { id },
+    select: { id: true },
+  })
+
+  if (!ujian) {
+    return NextResponse.json({ message: "Ujian tidak ditemukan." }, { status: 404 })
+  }
+
+  try {
+    // Ambil semua ID soal dalam ujian ini
+    const daftarSoal = await prisma.soal.findMany({
+      where: { ujianId: id },
+      select: { id: true },
+    })
+
+    const soalIds = daftarSoal.map((s) => s.id)
+
+    // Hapus opsi terkait dulu (jaga-jaga jika tidak ada onDelete: Cascade)
+    if (soalIds.length > 0) {
+      await prisma.opsi.deleteMany({ where: { soalId: { in: soalIds } } })
+    }
+
+    // Hapus semua soal
+    const hasil = await prisma.soal.deleteMany({ where: { ujianId: id } })
+
+    return NextResponse.json({
+      message: `${hasil.count} soal berhasil dihapus.`,
+      count: hasil.count,
+    })
+  } catch (error) {
+    console.error("DELETE /api/ujian/[id]/soal error:", error)
+    return NextResponse.json(
+      {
+        message:
+          "Gagal menghapus semua soal. Pastikan tidak ada data peserta yang bergantung pada soal ini.",
+      },
+      { status: 500 }
+    )
+  }
+}

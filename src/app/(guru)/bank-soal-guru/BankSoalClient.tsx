@@ -3,15 +3,22 @@
 import { useMemo, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 import { Badge } from "@/components/ui/Badge"
 import { Card } from "@/components/ui/Card"
 import { getSubjectIconSrc } from "@/lib/subject-icons"
-import { IconChevronDown, IconSearch, IconDocument } from "@/components/ui/Icons"
+import {
+  IconChevronDown,
+  IconSearch,
+  IconDocument,
+  IconPencil,
+  IconTrash,
+  IconSpinner,
+} from "@/components/ui/Icons"
 
 /* =========================================================
    IKON TAMBAHAN LOKAL
-   Belum ada padanannya di components/ui/Icons.tsx.
 ========================================================= */
 function IconGrid({ className = "h-4 w-4" }: { className?: string }) {
   return (
@@ -27,18 +34,15 @@ function IconGrid({ className = "h-4 w-4" }: { className?: string }) {
 type SoalRingkas = { id: string; pertanyaan: string; tipe: "PILIHAN_GANDA" | "ESSAY"; poin: number }
 type UjianRingkas = { id: string; judul: string; soal: SoalRingkas[] }
 
-/* =========================================================
-   STYLE KARTU UJIAN
-   Satu gaya indigo yang konsisten untuk tombol chevron —
-   tidak lagi warna-warni bergantian, supaya lebih profesional.
-========================================================= */
 const ARROW_STYLE =
   "bg-gradient-to-br from-[#818cf8] to-[#4338ca] shadow-[0_8px_16px_-6px_rgba(67,56,202,0.5)]"
 
 export function BankSoalClient({ data }: { data: UjianRingkas[] }) {
+  const router = useRouter()
   const [cari, setCari] = useState("")
   const [subjek, setSubjek] = useState<string | null>(null)
   const [terbuka, setTerbuka] = useState<string | null>(data[0]?.id ?? null)
+  const [loadingId, setLoadingId] = useState<string | null>(null)
 
   const subjekList = useMemo(() => Array.from(new Set(data.map((u) => u.judul))), [data])
 
@@ -51,6 +55,40 @@ export function BankSoalClient({ data }: { data: UjianRingkas[] }) {
   }, [data, cari, subjek])
 
   const totalSoal = data.reduce((sum, u) => sum + u.soal.length, 0)
+
+  /* ---------- Hapus 1 soal ---------- */
+  async function hapusSoal(ujianId: string, soalId: string, nomor: number) {
+    if (!confirm(`Hapus soal nomor ${nomor}? Tindakan ini tidak bisa dibatalkan.`)) return
+    setLoadingId(soalId)
+    try {
+      const res = await fetch(`/api/ujian/${ujianId}/soal/${soalId}`, { method: "DELETE" })
+      const json = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(json.message ?? "Gagal menghapus soal.")
+      router.refresh()
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Gagal menghapus soal.")
+    } finally {
+      setLoadingId(null)
+    }
+  }
+
+  /* ---------- Hapus semua soal ---------- */
+  async function hapusSemuaSoal(ujianId: string, judul: string, jumlah: number) {
+    if (!confirm(`Hapus SEMUA (${jumlah}) soal di ujian "${judul}"? Tindakan ini tidak bisa dibatalkan.`)) return
+    if (!confirm(`Konfirmasi terakhir: Anda yakin ingin menghapus semua soal di "${judul}"?`)) return
+
+    setLoadingId(`all-${ujianId}`)
+    try {
+      const res = await fetch(`/api/ujian/${ujianId}/soal`, { method: "DELETE" })
+      const json = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(json.message ?? "Gagal menghapus semua soal.")
+      router.refresh()
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Gagal menghapus semua soal.")
+    } finally {
+      setLoadingId(null)
+    }
+  }
 
   return (
     <div className="space-y-5">
@@ -146,6 +184,7 @@ export function BankSoalClient({ data }: { data: UjianRingkas[] }) {
           const buka = terbuka === u.id
           const jumlahPg = u.soal.filter((s) => s.tipe === "PILIHAN_GANDA").length
           const jumlahEssay = u.soal.length - jumlahPg
+          const isDeletingAll = loadingId === `all-${u.id}`
 
           return (
             <Card
@@ -185,34 +224,86 @@ export function BankSoalClient({ data }: { data: UjianRingkas[] }) {
 
               {buka && (
                 <div className="border-t border-[#edf0ef] px-4.5 py-3.5 dark:border-white/10">
+                  {/* Toolbar aksi ujian */}
+                  <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                    <Link
+                      href={`/ujian-guru/${u.id}`}
+                      className="inline-flex items-center gap-1.5 rounded-[10px] border border-[#e7e4dc] bg-white px-3 py-1.5 text-[12px] font-medium text-[#4338ca] transition-all hover:-translate-y-0.5 hover:bg-[#eef2ff] dark:border-white/10 dark:bg-white/5 dark:text-[#818cf8] dark:hover:bg-white/10"
+                    >
+                      Kelola Ujian →
+                    </Link>
+
+                    {u.soal.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => void hapusSemuaSoal(u.id, u.judul, u.soal.length)}
+                        disabled={isDeletingAll}
+                        className="inline-flex items-center gap-1.5 rounded-[10px] bg-gradient-to-br from-[#f87171] to-[#dc2626] px-3 py-1.5 text-[12px] font-semibold text-white shadow-[0_6px_16px_-6px_rgba(220,38,38,0.6)] transition-all hover:-translate-y-0.5 hover:shadow-[0_8px_20px_-6px_rgba(220,38,38,0.7)] disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {isDeletingAll ? (
+                          <IconSpinner className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <IconTrash className="h-3.5 w-3.5" />
+                        )}
+                        Hapus Semua Soal
+                      </button>
+                    )}
+                  </div>
+
                   {u.soal.length === 0 ? (
                     <p className="py-3 text-center text-[12.5px] text-[#8b93a6] dark:text-white/40">
                       Belum ada soal di ujian ini.
                     </p>
                   ) : (
                     <div className="space-y-2">
-                      {u.soal.map((s, idx) => (
-                        <div
-                          key={s.id}
-                          className="flex items-center justify-between gap-3 rounded-[10px] bg-[#f7f9f8] px-3 py-2 dark:bg-white/5"
-                        >
-                          <p className="min-w-0 truncate text-[12.5px] text-[#34435f] dark:text-white/70">
-                            <span className="mr-1.5 text-[#8b93a6] dark:text-white/40">{idx + 1}.</span>
-                            {s.pertanyaan}
-                          </p>
-                          <Badge tone={s.tipe === "PILIHAN_GANDA" ? "blue" : "amber"}>
-                            {s.tipe === "PILIHAN_GANDA" ? "PG" : "Essay"} · {s.poin} poin
-                          </Badge>
-                        </div>
-                      ))}
+                      {u.soal.map((s, idx) => {
+                        const isDeleting = loadingId === s.id
+                        return (
+                          <div
+                            key={s.id}
+                            className="flex items-center justify-between gap-3 rounded-[10px] bg-[#f7f9f8] px-3 py-2 transition-colors hover:bg-[#eef2ff]/60 dark:bg-white/5 dark:hover:bg-white/10"
+                          >
+                            <p className="min-w-0 flex-1 truncate text-[12.5px] text-[#34435f] dark:text-white/70">
+                              <span className="mr-1.5 text-[#8b93a6] dark:text-white/40">{idx + 1}.</span>
+                              {s.pertanyaan}
+                            </p>
+
+                            <div className="flex shrink-0 items-center gap-1.5">
+                              <Badge tone={s.tipe === "PILIHAN_GANDA" ? "blue" : "amber"}>
+                                {s.tipe === "PILIHAN_GANDA" ? "PG" : "Essay"} · {s.poin} poin
+                              </Badge>
+
+                              {/* Tombol Edit */}
+                              <Link
+                                href={`/ujian-guru/${u.id}/soal/${s.id}/edit`}
+                                className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-[#5b657d] shadow-sm transition-all hover:-translate-y-0.5 hover:bg-[#eef2ff] hover:text-[#4338ca] dark:bg-white/10 dark:text-white/50 dark:hover:bg-white/20 dark:hover:text-[#818cf8]"
+                                aria-label="Edit soal"
+                                title="Edit soal"
+                              >
+                                <IconPencil className="h-3.5 w-3.5" />
+                              </Link>
+
+                              {/* Tombol Hapus */}
+                              <button
+                                type="button"
+                                onClick={() => void hapusSoal(u.id, s.id, idx + 1)}
+                                disabled={isDeleting}
+                                className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-[#d23b3b] shadow-sm transition-all hover:-translate-y-0.5 hover:bg-[#fdf1f1] disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white/10 dark:hover:bg-red-500/20"
+                                aria-label="Hapus soal"
+                                title="Hapus soal"
+                              >
+                                {isDeleting ? (
+                                  <IconSpinner className="h-3.5 w-3.5 animate-spin" />
+                                ) : (
+                                  <IconTrash className="h-3.5 w-3.5" />
+                                )}
+                              </button>
+                            </div>
+                          </div>
+                        )
+                      })}
                     </div>
                   )}
-                  <Link
-                    href={`/ujian-guru/${u.id}`}
-                    className="mt-3 inline-flex items-center gap-1 text-[12.5px] font-medium text-[#4338ca] hover:underline dark:text-[#818cf8]"
-                  >
-                    Kelola soal ujian ini →
-                  </Link>
                 </div>
               )}
             </Card>

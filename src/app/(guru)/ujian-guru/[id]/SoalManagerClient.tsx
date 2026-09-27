@@ -5,10 +5,29 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 
 import type { Soal, Opsi } from "@prisma/client"
-import { ImportSoal } from "@/components/admin/ImportSoal"
+import { ImportSoal, BACAAN_START, BACAAN_END, SOAL_START } from "@/components/admin/ImportSoal"
 import { Badge } from "@/components/ui/Badge"
 import { Card } from "@/components/ui/Card"
 import { IconDocument, IconPencil, IconPlus, IconTrash } from "@/components/ui/Icons"
+
+/** Pisahkan bacaan & soal dari field "pertanyaan" */
+function splitBacaanDanSoal(pertanyaan: string): { bacaan: string | null; soal: string } {
+  if (!pertanyaan.includes(BACAAN_START)) return { bacaan: null, soal: pertanyaan }
+
+  const startIdx = pertanyaan.indexOf(BACAAN_START)
+  const endIdx = pertanyaan.indexOf(BACAAN_END)
+  const soalIdx = pertanyaan.indexOf(SOAL_START)
+
+  if (endIdx === -1) return { bacaan: null, soal: pertanyaan }
+
+  const bacaan = pertanyaan.slice(startIdx + BACAAN_START.length, endIdx).trim()
+  const soal =
+    soalIdx !== -1
+      ? pertanyaan.slice(soalIdx + SOAL_START.length).trim()
+      : pertanyaan.slice(endIdx + BACAAN_END.length).trim()
+
+  return { bacaan: bacaan || null, soal }
+}
 
 export function SoalManagerClient({
   ujianId,
@@ -61,10 +80,7 @@ export function SoalManagerClient({
 
       {/* Daftar Soal */}
       {daftarSoal.length === 0 ? (
-        <Card
-          variant="glass"
-          className="flex flex-col items-center justify-center gap-3 px-6 py-16 text-center"
-        >
+        <Card variant="glass" className="flex flex-col items-center justify-center gap-3 px-6 py-16 text-center">
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#f1f5f9] dark:bg-white/5">
             <IconDocument className="h-7 w-7 text-[#94a3b8]" />
           </div>
@@ -84,52 +100,71 @@ export function SoalManagerClient({
         </Card>
       ) : (
         <div className="space-y-4">
-          {daftarSoal.map((soal, i) => (
-            <Card
-              key={soal.id}
-              variant="glass"
-              className="group relative flex flex-col gap-3 overflow-hidden rounded-[16px] border border-[#e7e4dc]/60 bg-gradient-to-br from-white via-[#f8fafc] to-[#f1f5f9] p-5 shadow-[0_4px_16px_-8px_rgba(22,35,63,0.1)] transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_12px_32px_-12px_rgba(49,46,129,0.3)] dark:border-white/10 dark:from-[#0d1526] dark:via-[#0d1526] dark:to-[#131b30]"
-            >
-              {/* Dekorasi background card */}
-              <div className="pointer-events-none absolute -right-12 -top-12 h-32 w-32 rounded-full bg-[radial-gradient(circle,rgba(129,140,248,0.12),transparent_65%)]" />
+          {daftarSoal.map((soal, i) => {
+            const { bacaan, soal: teksSoal } = splitBacaanDanSoal(soal.pertanyaan)
+            return (
+              <Card
+                key={soal.id}
+                variant="glass"
+                className="group relative flex flex-col gap-3 overflow-hidden rounded-[16px] border border-[#e7e4dc]/60 bg-gradient-to-br from-white via-[#f8fafc] to-[#f1f5f9] p-5 shadow-[0_4px_16px_-8px_rgba(22,35,63,0.1)] transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_12px_32px_-12px_rgba(49,46,129,0.3)] dark:border-white/10 dark:from-[#0d1526] dark:via-[#0d1526] dark:to-[#131b30]"
+              >
+                <div className="pointer-events-none absolute -right-12 -top-12 h-32 w-32 rounded-full bg-[radial-gradient(circle,rgba(129,140,248,0.12),transparent_65%)]" />
 
-              <div className="relative flex items-start justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <Badge
-                    tone="indigo"
-                    className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-[#818cf8] to-[#4338ca] text-[12px] font-bold text-white shadow-[0_4px_12px_-4px_rgba(67,56,202,0.5)]"
-                  >
-                    {i + 1}
-                  </Badge>
-                  <span className="rounded-full bg-[#eef2ff] px-2.5 py-1 text-[11.5px] font-medium text-[#4338ca] dark:bg-[#818cf8]/10 dark:text-[#818cf8]">
-                    {soal.poin} Poin
-                  </span>
+                <div className="relative flex items-start justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <Badge
+                      tone="indigo"
+                      className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-[#818cf8] to-[#4338ca] text-[12px] font-bold text-white shadow-[0_4px_12px_-4px_rgba(67,56,202,0.5)]"
+                    >
+                      {i + 1}
+                    </Badge>
+                    <span className="rounded-full bg-[#eef2ff] px-2.5 py-1 text-[11.5px] font-medium text-[#4338ca] dark:bg-[#818cf8]/10 dark:text-[#818cf8]">
+                      {soal.poin} Poin
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-1 opacity-100 transition-opacity duration-200 sm:opacity-0 sm:group-hover:opacity-100">
+                    <Link
+                      href={`/ujian-guru/${ujianId}/soal/${soal.id}/edit`}
+                      className="flex h-8 w-8 items-center justify-center rounded-full bg-white/70 text-[#5b657d] shadow-sm backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:bg-[#eef2ff] hover:text-[#4338ca] dark:bg-white/5 dark:text-white/40 dark:hover:bg-white/10 dark:hover:text-[#818cf8]"
+                      aria-label="Edit soal"
+                    >
+                      <IconPencil className="h-3.5 w-3.5" />
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(soal.id)}
+                      className="flex h-8 w-8 items-center justify-center rounded-full bg-white/70 text-[#d23b3b] shadow-sm backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:bg-[#fdf1f1] dark:bg-white/5 dark:hover:bg-red-500/10"
+                      aria-label="Hapus soal"
+                    >
+                      <IconTrash className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
                 </div>
 
-                <div className="flex items-center gap-1 opacity-100 transition-opacity duration-200 sm:opacity-0 sm:group-hover:opacity-100">
-                  <Link
-                    href={`/ujian-guru/${ujianId}/soal/${soal.id}/edit`}
-                    className="flex h-8 w-8 items-center justify-center rounded-full bg-white/70 text-[#5b657d] shadow-sm backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:bg-[#eef2ff] hover:text-[#4338ca] dark:bg-white/5 dark:text-white/40 dark:hover:bg-white/10 dark:hover:text-[#818cf8]"
-                    aria-label="Edit soal"
-                  >
-                    <IconPencil className="h-3.5 w-3.5" />
-                  </Link>
-                  <button
-                    type="button"
-                    onClick={() => handleDelete(soal.id)}
-                    className="flex h-8 w-8 items-center justify-center rounded-full bg-white/70 text-[#d23b3b] shadow-sm backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:bg-[#fdf1f1] dark:bg-white/5 dark:hover:bg-red-500/10"
-                    aria-label="Hapus soal"
-                  >
-                    <IconTrash className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              </div>
+                {/* Card Bacaan (jika ada) */}
+                {bacaan && (
+                  <div className="relative rounded-[12px] border border-amber-200 bg-gradient-to-br from-amber-50/80 to-amber-100/40 p-3.5 dark:border-amber-500/20 dark:from-amber-500/10 dark:to-amber-500/5">
+                    <div className="mb-1.5 flex items-center gap-1.5">
+                      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold text-white">
+                        B
+                      </span>
+                      <p className="text-[11px] font-bold uppercase tracking-wide text-amber-700 dark:text-amber-400">
+                        Bacaan / Stimulus
+                      </p>
+                    </div>
+                    <p className="whitespace-pre-wrap text-[12.5px] leading-relaxed text-amber-900 dark:text-amber-100">
+                      {bacaan}
+                    </p>
+                  </div>
+                )}
 
-              <p className="relative text-[14.5px] leading-relaxed text-[#16233f] dark:text-white/90">
-                {soal.pertanyaan}
-              </p>
-            </Card>
-          ))}
+                <p className="relative text-[14.5px] leading-relaxed text-[#16233f] dark:text-white/90">
+                  {teksSoal}
+                </p>
+              </Card>
+            )
+          })}
         </div>
       )}
     </>

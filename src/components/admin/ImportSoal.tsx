@@ -4,6 +4,9 @@ import { useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/Button"
 import { Modal } from "@/components/ui/Modal"
+import { BACAAN_START, BACAAN_END, SOAL_START, splitBacaanDanSoal } from "@/lib/bacaan"
+
+export { BACAAN_START, BACAAN_END, SOAL_START, splitBacaanDanSoal }
 
 type Option = { teks: string; benar: boolean }
 type Question = { pertanyaan: string; tipe: "PILIHAN_GANDA" | "ESSAY"; poin: number; opsi?: Option[] }
@@ -39,7 +42,6 @@ function parseAnswer(value: string) {
   return Number.isInteger(number) ? String.fromCharCode(64 + number) : ""
 }
 
-/** Cari kunci jawaban di dalam blok soal (misal "Jawaban: A") */
 function extractAnswer(lines: string[]) {
   for (let index = 0; index < lines.length; index += 1) {
     const line = lines[index]
@@ -53,22 +55,11 @@ function extractAnswer(lines: string[]) {
   return ""
 }
 
-/**
- * Ekstrak semua pasangan nomor-jawaban dari teks (misal "1. A 2. B 3. D").
- * Mendukung format:
- *  - "1. A 2. B 3. D 4. E 5. B"       (satu baris banyak pasangan)
- *  - "1. A"                             (satu baris satu pasangan)
- *  - "1 A" / "1) A" / "1: A" / "1-A"   (variasi tanda baca)
- *  - "A. 1" / "A 1"                     (huruf dulu, baru nomor)
- */
 function extractGlobalAnswers(lines: string[]) {
   const answers = new Map<number, string>()
   for (const line of lines) {
-    // Lewati baris header yang bukan daftar jawaban
     if (/^(?:[A-Z]\.\s*)?(?:pilihan\s+ganda|essay|uraian|isian|kunci|pedoman|penilaian)\b/i.test(line)) continue
 
-    // Pola 1: nomor dulu, lalu huruf jawaban
-    // Contoh: "1. A", "1 A", "1) A", "1: A", "1-A", "1 . A"
     const numberFirst = [...line.matchAll(/(?:^|[\s,;])(\d{1,3})\s*[.):=\-]?\s*(?:jawaban\s*[:=\-]?\s*)?(?:opsi\s*)?\(?([A-E])\)?(?=\s|,|;|$)/gi)]
     for (const match of numberFirst) {
       const num = Number(match[1])
@@ -76,8 +67,6 @@ function extractGlobalAnswers(lines: string[]) {
       if (num >= 1 && num <= 200 && ans) answers.set(num, ans)
     }
 
-    // Pola 2: huruf dulu, lalu nomor
-    // Contoh: "A. 1", "A 1", "A) 1"
     const letterFirst = [...line.matchAll(/(?:^|[\s,;])([A-E])\s*(\d{1,3})\s*[.):=\-]?(?=\s|,|;|$)/gi)]
     for (const match of letterFirst) {
       const num = Number(match[2])
@@ -88,14 +77,27 @@ function extractGlobalAnswers(lines: string[]) {
   return answers
 }
 
-/** Deteksi awal section kunci jawaban global */
 function isAnswerSectionHeader(line: string) {
   return /^(?:kunci\s+jawaban|kunci|daftar\s+jawaban|jawaban|answer\s+key|pedoman\s+penilaian)\b/i.test(line)
 }
 
-/** Deteksi sub-header dalam section kunci jawaban (misal "A. PILIHAN GANDA (20 Soal)") */
 function isAnswerSubHeader(line: string) {
   return /^(?:[A-Z]\.\s*)?(?:pilihan\s+ganda|essay|uraian|isian)\b/i.test(line)
+}
+
+function sanitizeRawText(text: string): string {
+  return text
+    .replace(/\r/g, "")
+    .replace(/\u00a0|\u200b/g, " ")
+    .replace(/^=+\s*Page\s*\d+\s*=+$/gim, "")
+    .replace(/^[-_]{3,}$/gm, "")
+    .replace(/^#{1,6}\s*/gm, "")
+    .replace(/\*{1,3}([^*]+)\*{1,3}/g, "$1")
+    .replace(/_{2,}([^_]+)_{2,}/g, "$1")
+    .replace(/^>\s?/gm, "")
+    .replace(/\\\s*$/gm, "")
+    .replace(/\t+/g, " ")
+    .replace(/[ ]{2,}/g, " ")
 }
 
 function extractOptions(lines: string[]) {
@@ -134,16 +136,19 @@ function parseRows(rows: Record<string, unknown>[]): Question[] {
   })
 }
 
-function parseText(text: string): Question[] {
-  const lines = text
-    .replace(/\r/g, "")
-    .replace(/[\u00a0\u200b]/g, " ")
-    .replace(/[\t]+/g, " ")
-    .split("\n")
-    .map((line) => line.trim())
-    .filter(Boolean)
+function isBacaanLine(line: string): boolean {
+  if (/^[A-E][.)]\s*/i.test(line)) return false
+  if (/^\d+[.)]\s*/i.test(line)) return false
+  if (isAnswerSectionHeader(line)) return false
+  if (isAnswerSubHeader(line)) return false
+  if (/^(penilaian|ujian|sma|tahun\s+pelajaran|mata\s+pelajaran|kelas\s*\/|hari\s*\/|waktu\s*:|nama\s+siswa|nomor\s+ujian|nama\s*:|kelas\s*:|tanggal\s*:)/i.test(line)) return false
+  return true
+}
 
-  // --- Tahap 1: Pisahkan section soal dan section kunci jawaban ---
+function parseText(rawText: string): Question[] {
+  const sanitized = sanitizeRawText(rawText)
+  const lines = sanitized.split("\n").map((line) => line.trim()).filter(Boolean)
+
   const soalLines: string[] = []
   const answerLines: string[] = []
   let inAnswerSection = false
@@ -153,31 +158,33 @@ function parseText(text: string): Question[] {
       inAnswerSection = true
       continue
     }
-    if (inAnswerSection && isAnswerSubHeader(line)) {
-      // Sub-header dalam section kunci jawaban, skip
-      continue
-    }
-    if (inAnswerSection) {
-      answerLines.push(line)
-    } else {
-      soalLines.push(line)
+    if (inAnswerSection && isAnswerSubHeader(line)) continue
+    if (inAnswerSection) answerLines.push(line)
+    else soalLines.push(line)
+  }
+
+  const globalAnswers = extractGlobalAnswers(answerLines)
+
+  let firstQuestionIdx = -1
+  for (let i = 0; i < soalLines.length; i += 1) {
+    if (/^\d+[.)]\s*/i.test(soalLines[i])) {
+      firstQuestionIdx = i
+      break
     }
   }
 
-  // --- Tahap 2: Ekstrak kunci jawaban global dari section kunci jawaban ---
-  const globalAnswers = extractGlobalAnswers(answerLines)
+  let bacaan = ""
+  if (firstQuestionIdx > 0) {
+    bacaan = soalLines.slice(0, firstQuestionIdx).filter(isBacaanLine).join("\n").trim()
+  }
 
-  // --- Tahap 3: Parse blok soal dari soalLines ---
   const blocks: string[][] = []
-  for (const line of soalLines) {
-    // Deteksi awal soal baru: diawali angka + tanda baca
-    if (/^(\d+[.)]|soal\s*\d*[:.)]?)/i.test(line)) {
-      blocks.push([])
-    }
+  const linesToParse = firstQuestionIdx >= 0 ? soalLines.slice(firstQuestionIdx) : soalLines
+  for (const line of linesToParse) {
+    if (/^(\d+[.)]|soal\s*\d*[:.)]?)/i.test(line)) blocks.push([])
     if (blocks.length > 0) blocks[blocks.length - 1].push(line)
   }
 
-  // --- Tahap 4: Bangun Question dari setiap blok ---
   const questions: Question[] = []
   let soalCounter = 0
 
@@ -187,11 +194,7 @@ function parseText(text: string): Question[] {
     const question = questionLine.replace(/^(\d+[.)]|soal\s*\d*[:.)]?)\s*/i, "").trim()
     const questionNumber = Number(questionLine.match(/^(\d+)/)?.[1])
 
-    // Lewati baris header (nama, kelas, mata pelajaran, dll)
-    if (/^(ujian|pilihan ganda|nama\s*:|petunjuk\s*:|kelas\s*:|tanggal\s*:|mata pelajaran|kelas\s*\/|hari\s*\/|waktu\s*:|nomor ujian)/i.test(question)) {
-      continue
-    }
-
+    if (/^(ujian|pilihan ganda|nama\s*:|petunjuk\s*:|kelas\s*:|tanggal\s*:|mata pelajaran|kelas\s*\/|hari\s*\/|waktu\s*:|nomor ujian)/i.test(question)) continue
     if (!question) continue
 
     soalCounter += 1
@@ -201,37 +204,36 @@ function parseText(text: string): Question[] {
         /(?:\[x\]|\(benar\)|\*)/i.test(blockLines.find((line) => line.includes(option.teks)) ?? "")
       )?.label ?? ""
 
-    // --- Prioritas pencarian kunci jawaban ---
-    // 1. Cari di dalam blok soal (misal "Jawaban: A")
-    // 2. Cari di global answers berdasarkan nomor soal asli
-    // 3. Fallback: cari di global answers berdasarkan urutan (soalCounter)
-    // 4. Cari dari opsi yang ditandai (markedAnswer)
     const answer =
       extractAnswer(blockLines) ||
       (questionNumber ? globalAnswers.get(questionNumber) : "") ||
       globalAnswers.get(soalCounter) ||
       markedAnswer
 
-    // Essay (tidak ada opsi A-E)
     if (options.length === 0) {
-      questions.push({ pertanyaan: question, tipe: "ESSAY", poin: 1, opsi: [] })
+      const finalQuestion =
+        soalCounter === 1 && bacaan
+          ? `${BACAAN_START}\n${bacaan}\n${BACAAN_END}\n${SOAL_START}\n${question}`
+          : question
+      questions.push({ pertanyaan: finalQuestion, tipe: "ESSAY", poin: 1, opsi: [] })
       continue
     }
 
     if (options.length < 2) {
-      throw new Error(`Blok soal ke-${soalCounter} ("${question.slice(0, 50)}..."): hanya ${options.length} opsi terbaca. Pastikan opsi memakai format A. teks, B. teks, dan seterusnya.`)
+      throw new Error(`Blok soal ke-${soalCounter} ("${question.slice(0, 50)}..."): hanya ${options.length} opsi terbaca.`)
     }
 
     if (!answer) {
-      throw new Error(
-        `Blok soal ke-${soalCounter} ("${question.slice(0, 50)}..."): kunci jawaban tidak ditemukan. ` +
-        `Pastikan ada bagian "KUNCI JAWABAN" di akhir dokumen dengan format seperti "1. A 2. B 3. C ...", ` +
-        `atau tulis kunci di dalam soal dengan format "Jawaban: A".`
-      )
+      throw new Error(`Blok soal ke-${soalCounter} ("${question.slice(0, 50)}..."): kunci jawaban tidak ditemukan.`)
     }
 
+    const finalQuestion =
+      soalCounter === 1 && bacaan
+        ? `${BACAAN_START}\n${bacaan}\n${BACAAN_END}\n${SOAL_START}\n${question}`
+        : question
+
     questions.push({
-      pertanyaan: question,
+      pertanyaan: finalQuestion,
       tipe: "PILIHAN_GANDA",
       poin: 1,
       opsi: options.map((option) => ({ teks: option.teks, benar: option.label === answer })),
@@ -334,7 +336,6 @@ export function ImportSoal({ ujianId, onSuccess }: { ujianId: string; onSuccess?
       </Button>
       <Modal open={open} onClose={close} title="Import Soal" maxWidth="760px">
         <div className="flex flex-col gap-5">
-          {/* Dropzone Card 3D */}
           <div className="relative overflow-hidden rounded-[18px] border border-dashed border-[#b8c8c0] bg-gradient-to-br from-white via-[#f8fafc] to-[#eef2ff] p-6 text-center shadow-[0_8px_24px_-12px_rgba(49,46,129,0.25)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_32px_-12px_rgba(49,46,129,0.35)] dark:border-white/10 dark:from-[#0d1526] dark:via-[#0d1526] dark:to-[#131b30]">
             <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-[radial-gradient(circle,rgba(129,140,248,0.18),transparent_65%)]" />
             <div className="relative flex flex-col items-center gap-3">
@@ -394,20 +395,33 @@ export function ImportSoal({ ujianId, onSuccess }: { ujianId: string; onSuccess?
               <p className="mb-2 text-[13px] font-semibold text-[#16233f] dark:text-white">
                 Pratinjau {questions.length} soal
               </p>
-              <div className="max-h-60 overflow-y-auto rounded-[12px] border border-[#edf0ef] dark:border-white/10">
-                {questions.slice(0, 10).map((question, index) => (
-                  <div
-                    key={`${question.pertanyaan}-${index}`}
-                    className="border-b border-[#f0f2f1] px-3.5 py-2.5 last:border-0 dark:border-white/5"
-                  >
-                    <p className="text-[12.5px] font-medium text-[#34435f] dark:text-white/80">
-                      {index + 1}. {question.pertanyaan}
-                    </p>
-                    <p className="mt-1 text-[11.5px] text-[#8b93a6] dark:text-white/40">
-                      {question.tipe === "ESSAY" ? "Essay" : `${question.opsi?.length ?? 0} opsi`} · {question.poin} poin
-                    </p>
-                  </div>
-                ))}
+              <div className="max-h-72 overflow-y-auto rounded-[12px] border border-[#edf0ef] dark:border-white/10">
+                {questions.slice(0, 10).map((question, index) => {
+                  const { bacaan, soal } = splitBacaanDanSoal(question.pertanyaan)
+                  return (
+                    <div
+                      key={`${question.pertanyaan}-${index}`}
+                      className="border-b border-[#f0f2f1] px-3.5 py-2.5 last:border-0 dark:border-white/5"
+                    >
+                      {bacaan && (
+                        <div className="mb-2 rounded-[8px] border border-amber-200 bg-amber-50/60 px-2.5 py-2 dark:border-amber-500/20 dark:bg-amber-500/10">
+                          <p className="text-[10.5px] font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-400">
+                            Bacaan
+                          </p>
+                          <p className="mt-1 whitespace-pre-wrap text-[11.5px] leading-relaxed text-amber-900 dark:text-amber-100">
+                            {bacaan.length > 300 ? `${bacaan.slice(0, 300)}...` : bacaan}
+                          </p>
+                        </div>
+                      )}
+                      <p className="text-[12.5px] font-medium text-[#34435f] dark:text-white/80">
+                        {index + 1}. {soal.length > 150 ? `${soal.slice(0, 150)}...` : soal}
+                      </p>
+                      <p className="mt-1 text-[11.5px] text-[#8b93a6] dark:text-white/40">
+                        {question.tipe === "ESSAY" ? "Essay" : `${question.opsi?.length ?? 0} opsi`} · {question.poin} poin
+                      </p>
+                    </div>
+                  )
+                })}
               </div>
               {questions.length > 10 && (
                 <p className="mt-1 text-[11.5px] text-[#8b93a6] dark:text-white/40">Menampilkan 10 soal pertama.</p>

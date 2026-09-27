@@ -110,14 +110,14 @@ const daftarFaq: FaqItem[] = [
     kategori: "Mengerjakan Ujian",
     pertanyaan: "Saya belum selesai mengerjakan, apakah bisa dilanjutkan?",
     jawaban:
-      "Ya. Selama waktu pengerjaan belum habis, ujian dengan status 'Sedang Dikerjakan' akan tetap muncul di Beranda maupun Ujian Sedang Berlangsung — klik 'Lanjutkan Ujian' untuk melanjutkan dari posisi terakhir.",
+      "Ya. Selama waktu pengerjaan belum habis, ujian dengan status Sedang Dikerjakan akan tetap muncul di Beranda maupun Ujian Sedang Berlangsung. Klik Lanjutkan Ujian untuk melanjutkan dari posisi terakhir.",
   },
   {
     id: "pelanggaran",
     kategori: "Mengerjakan Ujian",
     pertanyaan: "Tindakan apa saja yang dianggap sebagai pelanggaran saat ujian?",
     jawaban:
-      "Sistem mencatat beberapa tindakan sebagai pelanggaran, di antaranya berpindah tab, keluar dari mode layar penuh, kehilangan fokus jendela, copy-paste, klik kanan, dan membuka developer tools. Setiap ujian punya batas jumlah pelanggaran yang ditentukan admin — jika terlampaui, ujian bisa berakhir otomatis.",
+      "Sistem mencatat beberapa tindakan sebagai pelanggaran, di antaranya berpindah tab, keluar dari mode layar penuh, kehilangan fokus jendela, copy-paste, klik kanan, dan membuka developer tools. Setiap ujian punya batas jumlah pelanggaran yang ditentukan admin. Jika terlampaui, ujian bisa berakhir otomatis.",
   },
   {
     id: "koneksi-putus",
@@ -131,14 +131,14 @@ const daftarFaq: FaqItem[] = [
     kategori: "Nilai & Hasil",
     pertanyaan: "Kapan saya bisa melihat nilai ujian saya?",
     jawaban:
-      "Untuk soal pilihan ganda, skor biasanya langsung tersedia setelah ujian selesai. Untuk soal esai yang perlu dinilai manual oleh admin, skor akan muncul di halaman Hasil & Nilai setelah proses penilaian selesai — Anda akan menerima notifikasi saat hasil sudah tersedia.",
+      "Untuk soal pilihan ganda, skor biasanya langsung tersedia setelah ujian selesai. Untuk soal esai yang perlu dinilai manual oleh admin, skor akan muncul di halaman Hasil dan Nilai setelah proses penilaian selesai. Anda akan menerima notifikasi saat hasil sudah tersedia.",
   },
   {
     id: "nilai-belum-keluar",
     kategori: "Nilai & Hasil",
-    pertanyaan: "Nilai saya masih menunjukkan 'menunggu penilaian', apa artinya?",
+    pertanyaan: "Nilai saya masih menunjukkan menunggu penilaian, apa artinya?",
     jawaban:
-      "Artinya ujian tersebut berisi soal esai yang belum selesai diperiksa oleh admin. Tunggu notifikasi 'Hasil Tersedia' atau cek kembali secara berkala di halaman Riwayat Ujian.",
+      "Artinya ujian tersebut berisi soal esai yang belum selesai diperiksa oleh admin. Tunggu notifikasi Hasil Tersedia atau cek kembali secara berkala di halaman Riwayat Ujian.",
   },
   {
     id: "notifikasi",
@@ -177,44 +177,41 @@ export default async function BantuanPage() {
   return (
     <div className="flex flex-col gap-6">
       <header>
-        <p className="text-[12.5px] font-medium text-[#b45309]">Pusat bantuan</p>
-        <h1 className="mt-1 text-[26px] font-semibold text-[#16233f]">Bantuan</h1>
-        <p className="mt-1 text-[13px] text-[#5b6a86]">
-          Temukan jawaban seputar akun, cara mengerjakan ujian, dan nilai. Belum menemukan
-          jawabannya? Hubungi tim dukungan kami.
+        <p className="text-[12.5px] font-medium text-[#b45309] dark:text-amber-400">Pusat bantuan</p>
+        <h1 className="mt-1 text-[26px] font-semibold text-[#16233f] dark:text-white">Bantuan</h1>
+        <p className="mt-1 max-w-2xl text-[13px] leading-relaxed text-[#5b6a86] dark:text-white/60">
+          Temukan jawaban seputar akun, cara mengerjakan ujian, dan nilai. Belum menemukan jawabannya? Hubungi tim
+          dukungan kami.
         </p>
       </header>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* ===================== KOLOM UTAMA — FAQ ===================== */}
         <div className="lg:col-span-2">
           <Card className="p-4 sm:p-5">
             <FaqAccordion items={daftarFaq} />
           </Card>
         </div>
 
-        {/* ===================== PANEL KANAN ===================== */}
         <div className="flex flex-col gap-6">
           <Card className="flex flex-col gap-4 p-5">
             <div>
-              <p className="text-[13.5px] font-semibold text-[#16233f]">Masih butuh bantuan?</p>
-              <p className="mt-1 text-[12.5px] text-[#8b93a6]">
+              <p className="text-[13.5px] font-semibold text-[#16233f] dark:text-white">Masih butuh bantuan?</p>
+              <p className="mt-1 text-[12.5px] leading-relaxed text-[#8b93a6] dark:text-white/40">
                 Tim kami siap membantu kendala akun maupun teknis seputar ujian.
               </p>
             </div>
 
             <div className="flex flex-col gap-3">
-              {/* Sesuaikan alamat email dan nomor WhatsApp di bawah dengan kontak tim Anda */}
               <a
                 href="mailto:dukungan@ujianonline.id"
-                className="flex items-center gap-3 rounded-[12px] border border-[#e7e4dc] px-3.5 py-3 transition-colors hover:bg-[#f6f4ec]"
+                className="flex items-center gap-3 rounded-[12px] border border-[#e7e4dc] px-3.5 py-3 transition-colors hover:bg-[#f6f4ec] dark:border-white/10 dark:hover:bg-white/5"
               >
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-gradient-to-br from-[#059669] to-[#10b981] text-white shadow-[0_3px_8px_rgba(5,150,105,0.3)]">
                   <IconMail className="h-4 w-4" />
                 </span>
                 <div className="min-w-0">
-                  <p className="text-[12.5px] font-semibold text-[#16233f]">Email</p>
-                  <p className="truncate text-[12px] text-[#8b93a6]">dukungan@ujianonline.id</p>
+                  <p className="text-[12.5px] font-semibold text-[#16233f] dark:text-white">Email</p>
+                  <p className="truncate text-[12px] text-[#8b93a6] dark:text-white/40">dukungan@ujianonline.id</p>
                 </div>
               </a>
 
@@ -222,24 +219,24 @@ export default async function BantuanPage() {
                 href="https://wa.me/6281234567890"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-3 rounded-[12px] border border-[#e7e4dc] px-3.5 py-3 transition-colors hover:bg-[#f6f4ec]"
+                className="flex items-center gap-3 rounded-[12px] border border-[#e7e4dc] px-3.5 py-3 transition-colors hover:bg-[#f6f4ec] dark:border-white/10 dark:hover:bg-white/5"
               >
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-gradient-to-br from-[#3457c9] to-[#5b7ce0] text-white shadow-[0_3px_8px_rgba(52,87,201,0.3)]">
                   <IconWhatsapp className="h-4 w-4" />
                 </span>
                 <div className="min-w-0">
-                  <p className="text-[12.5px] font-semibold text-[#16233f]">WhatsApp</p>
-                  <p className="truncate text-[12px] text-[#8b93a6]">+62 812-3456-7890</p>
+                  <p className="text-[12.5px] font-semibold text-[#16233f] dark:text-white">WhatsApp</p>
+                  <p className="truncate text-[12px] text-[#8b93a6] dark:text-white/40">+62 812-3456-7890</p>
                 </div>
               </a>
 
-              <div className="flex items-center gap-3 rounded-[12px] border border-[#e7e4dc] px-3.5 py-3">
+              <div className="flex items-center gap-3 rounded-[12px] border border-[#e7e4dc] px-3.5 py-3 dark:border-white/10">
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-gradient-to-br from-[#b8863b] to-[#d3a25c] text-white shadow-[0_3px_8px_rgba(184,134,59,0.3)]">
                   <IconClockOperasional className="h-4 w-4" />
                 </span>
                 <div className="min-w-0">
-                  <p className="text-[12.5px] font-semibold text-[#16233f]">Jam layanan</p>
-                  <p className="text-[12px] text-[#8b93a6]">Senin–Jumat, 08.00–16.00 WIB</p>
+                  <p className="text-[12.5px] font-semibold text-[#16233f] dark:text-white">Jam layanan</p>
+                  <p className="text-[12px] text-[#8b93a6] dark:text-white/40">Senin sampai Jumat, 08.00 - 16.00 WIB</p>
                 </div>
               </div>
             </div>
@@ -247,16 +244,16 @@ export default async function BantuanPage() {
 
           <Card className="flex flex-col gap-3 p-5">
             <div className="flex items-center gap-2.5">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[12px] bg-[#fdf6e7] text-[#b45309]">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[12px] bg-[#fdf6e7] text-[#b45309] dark:bg-amber-400/10 dark:text-amber-300">
                 <IconShield className="h-4 w-4" />
               </span>
-              <p className="text-[13.5px] font-semibold text-[#16233f]">Tips agar ujian lancar</p>
+              <p className="text-[13.5px] font-semibold text-[#16233f] dark:text-white">Tips agar ujian lancar</p>
             </div>
 
             <ul className="flex flex-col gap-2.5">
               {tipsUjian.map((tips, index) => (
-                <li key={tips} className="flex items-start gap-2.5 text-[12.5px] text-[#5b6a86]">
-                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#fdf6e7] text-[10px] font-semibold text-[#b45309]">
+                <li key={tips} className="flex items-start gap-2.5 text-[12.5px] text-[#5b6a86] dark:text-white/60">
+                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#fdf6e7] text-[10px] font-semibold text-[#b45309] dark:bg-amber-400/10 dark:text-amber-300">
                     {index + 1}
                   </span>
                   <span className="leading-5">{tips}</span>

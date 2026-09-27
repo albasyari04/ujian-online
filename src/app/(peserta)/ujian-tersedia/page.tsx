@@ -4,7 +4,7 @@ import { getServerSession } from "next-auth"
 
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { RingkasanCard } from "@/components/ui/Card"
+import { StatCard } from "@/components/ui/Card"
 import { Badge } from "@/components/ui/Badge"
 import { Button } from "@/components/ui/Button"
 import { IconAlertTriangle, IconDocument } from "@/components/ui/Icons"
@@ -128,27 +128,35 @@ export default async function UjianTersediaPage() {
         </p>
       </header>
 
-      <div className="grid grid-cols-3 gap-3 sm:gap-4">
-        <RingkasanCard
+      {/* =========================================================
+          RINGKASAN
+          Memakai StatCard — komponen & style yang SAMA persis
+          dengan halaman Jadwal Ujian / Riwayat / Hasil & Nilai
+          (icon polos kanan-atas, angka besar, efek gradient/
+          shadow 3D, grid 3 kolom dengan gap yang mengecil di
+          layar sempit).
+      ========================================================= */}
+      <div className="grid grid-cols-3 gap-2 sm:gap-4">
+        <StatCard
           label="Belum dikerjakan"
           value={belumDikerjakan.length}
-          tone="blue"
+          description="ujian yang belum dimulai"
           iconImageSrc="/image/icon/belum-dikerjakan-icon.png"
-          icon={null}
+          tone="blue"
         />
-        <RingkasanCard
+        <StatCard
           label="Sedang dikerjakan"
           value={sedangDikerjakan.length}
-          tone="amber"
+          description="ujian yang sedang berjalan"
           iconImageSrc="/image/icon/sedang-mengerjakan-icon.png"
-          icon={null}
+          tone="amber"
         />
-        <RingkasanCard
+        <StatCard
           label="Sudah selesai"
           value={sudahSelesai.length}
-          tone="emerald"
+          description="ujian yang telah diselesaikan"
           iconImageSrc="/image/icon/ujian-selesai.png"
-          icon={null}
+          tone="emerald"
         />
       </div>
 

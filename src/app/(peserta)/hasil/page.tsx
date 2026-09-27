@@ -1,44 +1,41 @@
-import Link from "next/link"
 import Image from "next/image"
+import Link from "next/link"
+import { notFound, redirect } from "next/navigation"
 import { getServerSession } from "next-auth"
 
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { Card, StatCard } from "@/components/ui/Card"
+import { Card, toneGradients, toneIconShadow } from "@/components/ui/Card"
 import { Badge } from "@/components/ui/Badge"
-import { Button } from "@/components/ui/Button"
-// NOTE: sesuaikan path import ini dengan lokasi file subject-icons.ts di proyek Anda
-// (mis. "@/lib/subject-icons" atau "@/utils/subject-icons").
+import { IconArrowLeft, IconX, IconCheckCircle, IconAlertTriangle } from "@/components/ui/Icons"
 import { getSubjectIconSrc } from "@/lib/subject-icons"
 
 export const dynamic = "force-dynamic"
 
 /* =========================================================
-   IKON LOKAL
-   IconHasil belum ada di components/ui/Icons.tsx (sebelumnya hanya
-   didefinisikan lokal di SidebarPeserta.tsx).
-========================================================= */
-
-function IconHasil({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} fill="none" aria-hidden="true">
-      <path d="M4.5 20V4.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-      <path d="M4.5 20H20" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-      <rect x="7.5" y="13" width="3" height="7" rx="0.8" stroke="currentColor" strokeWidth="1.5" />
-      <rect x="12.7" y="9.5" width="3" height="10.5" rx="0.8" stroke="currentColor" strokeWidth="1.5" />
-      <rect x="17.9" y="6" width="2.6" height="14" rx="0.8" stroke="currentColor" strokeWidth="1.5" />
-    </svg>
-  )
-}
-
-/* =========================================================
    FORMAT & HELPER
 ========================================================= */
 
-const formatTanggalSingkat = (value: Date) =>
-  new Intl.DateTimeFormat("id-ID", { day: "numeric", month: "short", year: "numeric" }).format(value)
+const formatTanggalPanjang = (value: Date) =>
+  new Intl.DateTimeFormat("id-ID", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(value)
 
-/** Warna badge skor hanya indikator visual relatif — sesuaikan ambang batas sesuai kebutuhan. */
+const formatJam = (value: Date) =>
+  `${new Intl.DateTimeFormat("id-ID", { hour: "2-digit", minute: "2-digit" }).format(value)} WIB`
+
+function formatDurasi(menit: number) {
+  if (menit < 1) return "< 1 menit"
+  if (menit < 60) return `${menit} menit`
+  const jam = Math.floor(menit / 60)
+  const sisa = menit % 60
+  return sisa > 0 ? `${jam} jam ${sisa} menit` : `${jam} jam`
+}
+
+/** Warna skor hanya indikator visual relatif — sesuaikan ambang batas sesuai kebutuhan. */
 function toneSkor(skor: number | null): "emerald" | "amber" | "red" | "slate" {
   if (skor === null) return "slate"
   if (skor >= 80) return "emerald"
@@ -46,189 +43,345 @@ function toneSkor(skor: number | null): "emerald" | "amber" | "red" | "slate" {
   return "red"
 }
 
+const labelPelanggaran: Record<string, string> = {
+  PINDAH_TAB: "Berpindah tab browser",
+  KELUAR_FULLSCREEN: "Keluar dari mode layar penuh",
+  KEHILANGAN_FOKUS: "Kehilangan fokus jendela",
+  COPY_PASTE: "Melakukan copy-paste",
+  KLIK_KANAN: "Klik kanan pada halaman",
+  DEVTOOLS: "Membuka developer tools",
+}
+
+/** Status jawaban per soal — dipetakan ke icon 3D + tone badge/aksen yang konsisten. */
+type StatusJawaban = "benar" | "salah" | "belum" | "kosong"
+
+const statusInfo: Record<
+  StatusJawaban,
+  { src?: string; label: string; tone: "emerald" | "red" | "amber" | "slate"; aksen: string }
+> = {
+  benar: { src: "/image/icon/jawaban-benar-icon.png", label: "Benar", tone: "emerald", aksen: "#10b981" },
+  salah: { src: "/image/icon/jawaban-salah-icon.png", label: "Salah", tone: "red", aksen: "#e0625c" },
+  belum: { src: "/image/icon/belum-dinilai-icon.png", label: "Menunggu penilaian", tone: "amber", aksen: "#d9a441" },
+  kosong: { label: "Tidak dijawab", tone: "slate", aksen: "#c3c9d6" },
+}
+
+function hitungStatus(jawaban: JawabanPeserta | null): StatusJawaban {
+  const sudahDijawab = jawaban !== null && (jawaban.opsiPilihan !== null || (jawaban.jawabanTeks?.trim().length ?? 0) > 0)
+  if (!sudahDijawab) return "kosong"
+  if (jawaban!.benar === true) return "benar"
+  if (jawaban!.benar === false) return "salah"
+  return "belum"
+}
+
 /* =========================================================
    TIPE
 ========================================================= */
 
-type UrutanHasil = "nilai" | "terbaru"
-
-type ItemHasil = {
-  hasilId: string
-  judul: string
-  totalSoal: number
-  skor: number | null
-  waktuSelesai: Date
+type OpsiSoal = {
+  id: string
+  teks: string
+  urutan: number
 }
+
+type SoalUjian = {
+  id: string
+  pertanyaan: string
+  tipe: "PILIHAN_GANDA" | "ESSAY"
+  poin: number
+  opsi: OpsiSoal[]
+}
+
+type JawabanPeserta = {
+  jawabanTeks: string | null
+  opsiPilihan: string | null
+  benar: boolean | null
+}
+
+type Params = { params: Promise<{ id: string }> }
 
 /* =========================================================
    HALAMAN
 ========================================================= */
 
-export default async function HasilNilaiPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ urut?: string }>
-}) {
+export default async function HasilDetailPage({ params }: Params) {
+  const { id } = await params
+
   const session = await getServerSession(authOptions)
   const userId = session?.user.id
-
   if (!userId) return null
 
-  const { urut } = await searchParams
-  const urutan: UrutanHasil = urut === "terbaru" ? "terbaru" : "nilai"
-
-  const hasilSelesai = await prisma.hasilUjian.findMany({
-    where: { userId, status: "SELESAI" },
+  const hasil = await prisma.hasilUjian.findUnique({
+    where: { id },
     include: {
-      ujian: { select: { judul: true, soal: { select: { id: true } } } },
+      ujian: {
+        select: {
+          judul: true,
+          deskripsi: true,
+          mataPelajaran: true,
+          namaGuru: true,
+          mulai: true,
+          selesai: true,
+          soal: {
+            orderBy: { urutan: "asc" },
+            include: { opsi: { orderBy: { urutan: "asc" }, select: { id: true, teks: true, urutan: true } } },
+          },
+        },
+      },
+      jawaban: true,
+      logPelanggaran: { orderBy: { waktu: "asc" } },
     },
-    orderBy: urutan === "nilai" ? [{ skor: "desc" }, { waktuSelesai: "desc" }] : { waktuSelesai: "desc" },
   })
 
-  const daftar: ItemHasil[] = hasilSelesai.map((hasil) => ({
-    hasilId: hasil.id,
-    judul: hasil.ujian.judul,
-    totalSoal: hasil.ujian.soal.length,
-    skor: hasil.skor,
-    waktuSelesai: hasil.waktuSelesai ?? hasil.waktuMulai,
-  }))
+  if (!hasil || hasil.userId !== userId) notFound()
 
-  const skorValid = daftar.map((item) => item.skor).filter((skor): skor is number => skor !== null)
-  const nilaiTertinggi = skorValid.length > 0 ? Math.max(...skorValid) : null
-  const nilaiTerendah = skorValid.length > 0 ? Math.min(...skorValid) : null
-  const rataRata = skorValid.length > 0 ? skorValid.reduce((total, skor) => total + skor, 0) / skorValid.length : null
+  // Ujian yang belum diselesaikan seharusnya dilanjutkan, bukan dilihat hasilnya.
+  if (hasil.status === "SEDANG_DIKERJAKAN") {
+    redirect(`/ujian/${hasil.ujianId}`)
+  }
+
+  const jawabanMap = new Map(hasil.jawaban.map((jawaban) => [jawaban.soalId, jawaban]))
+  const waktuSelesai = hasil.waktuSelesai ?? hasil.waktuMulai
+  const durasiPengerjaan = Math.max(0, Math.round((waktuSelesai.getTime() - hasil.waktuMulai.getTime()) / 60_000))
+
+  const totalSoal = hasil.ujian.soal.length
+  const jumlahBenar = hasil.ujian.soal.filter((soal) => jawabanMap.get(soal.id)?.benar === true).length
+  const jumlahSalah = hasil.ujian.soal.filter((soal) => jawabanMap.get(soal.id)?.benar === false).length
+  const jumlahBelumDinilai = totalSoal - jumlahBenar - jumlahSalah
+
+  const kunciSkor = toneSkor(hasil.skor)
 
   return (
     <div className="flex flex-col gap-6">
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="text-[12.5px] font-medium text-[#b45309] dark:text-[#e8a33d]">Rekap penilaian</p>
-          <h1 className="mt-1 text-[26px] font-semibold text-[#16233f] dark:text-white">Hasil &amp; Nilai</h1>
-          <p className="mt-1 text-[13px] text-[#5b6a86] dark:text-white/60">
-            Ringkasan skor dari setiap ujian yang telah Anda selesaikan.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-1.5 self-start rounded-[12px] border border-[#e7e4dc] bg-white p-1 dark:border-white/10 dark:bg-[#141c30]">
-          <UrutanTab label="Nilai tertinggi" aktif={urutan === "nilai"} href="/hasil?urut=nilai" />
-          <UrutanTab label="Terbaru" aktif={urutan === "terbaru"} href="/hasil?urut=terbaru" />
-        </div>
-      </header>
-
-      {/* =========================================================
-          RINGKASAN NILAI
-          SELALU 3 kolom berjejer ke samping (mobile s/d desktop),
-          persis seperti susunan "Ujian Tersedia" dkk. di Beranda.
-          StatCard (dari Card.tsx) sudah punya class responsive
-          bawaan (icon & teks mengecil otomatis di layar sempit),
-          jadi tinggal grid-nya yang dipaksa 3 kolom terus-menerus.
-      ========================================================= */}
-      <div className="grid grid-cols-3 gap-2 sm:gap-4">
-        <StatCard
-          label="Nilai tertinggi"
-          value={nilaiTertinggi !== null ? nilaiTertinggi.toFixed(1) : "-"}
-          description="dari semua ujian yang diikuti"
-          iconImageSrc="/image/icon/nilai-tertinggi-icon.png"
-          tone="emerald"
-        />
-        <StatCard
-          label="Rata-rata nilai"
-          value={rataRata !== null ? rataRata.toFixed(1) : "-"}
-          description="dari semua ujian yang diikuti"
-          iconImageSrc="/image/icon/rata-rata-score.png"
-          tone="blue"
-        />
-        <StatCard
-          label="Nilai terendah"
-          value={nilaiTerendah !== null ? nilaiTerendah.toFixed(1) : "-"}
-          description="dari semua ujian yang diikuti"
-          iconImageSrc="/image/icon/nilai-terendah-icon.png"
-          tone="red"
-        />
+      <div>
+        <Link
+          href="/riwayat"
+          className="inline-flex items-center gap-1.5 text-[12.5px] font-medium text-[#5b657d] hover:text-[#16233f]"
+        >
+          <IconArrowLeft className="h-4 w-4" />
+          Kembali ke riwayat
+        </Link>
       </div>
 
-      {daftar.length === 0 ? (
-        <Card className="flex flex-col items-center gap-3 px-6 py-14 text-center">
-          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#f4f5f7] text-[#5b657d] dark:bg-white/10 dark:text-white/50">
-            <IconHasil className="h-6 w-6" />
-          </span>
-          <div>
-            <p className="text-[14.5px] font-semibold text-[#16233f] dark:text-white">Belum ada nilai untuk ditampilkan</p>
-            <p className="mt-1 max-w-sm text-[13px] text-[#8b93a6] dark:text-white/50">
-              Nilai akan muncul di sini setelah Anda menyelesaikan sebuah ujian.
+      {/* ==================== RINGKASAN HASIL ==================== */}
+      <Card className="relative flex flex-col gap-5 overflow-hidden border-[#e9ecf2] p-6 shadow-[0_6px_0_#eef0f4,0_20px_34px_-18px_rgba(22,35,63,0.3)] dark:border-white/10 dark:shadow-[0_6px_0_#0f1830,0_22px_36px_-18px_rgba(0,0,0,0.6)] sm:flex-row sm:items-center sm:justify-between sm:p-7">
+        {/* Highlight glossy tipis di atas card, kesan permukaan 3D */}
+        <span
+          className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/70 to-transparent dark:from-white/[0.06]"
+          aria-hidden="true"
+        />
+
+        <div className="relative">
+          <p className="text-[12.5px] font-medium text-[#b45309]">{formatTanggalPanjang(waktuSelesai)}</p>
+          <div className="mt-1 flex items-center gap-2.5">
+            <Image
+              src={getSubjectIconSrc(hasil.ujian.judul)}
+              alt=""
+              width={40}
+              height={40}
+              className="h-9 w-9 shrink-0 object-contain drop-shadow-[0_5px_7px_rgba(22,35,63,0.2)] sm:h-10 sm:w-10"
+            />
+            <h1 className="text-[22px] font-semibold text-[#16233f] dark:text-white">{hasil.ujian.judul}</h1>
+          </div>
+          {(hasil.ujian.mataPelajaran || hasil.ujian.namaGuru) && (
+            <p className="mt-0.5 text-[12.5px] text-[#5b6a86] dark:text-white/50">
+              {[hasil.ujian.mataPelajaran, hasil.ujian.namaGuru && `Guru: ${hasil.ujian.namaGuru}`]
+                .filter(Boolean)
+                .join(" • ")}
             </p>
+          )}
+          {hasil.ujian.deskripsi && (
+            <p className="mt-1.5 max-w-xl text-[13px] text-[#5b6a86] dark:text-white/50">{hasil.ujian.deskripsi}</p>
+          )}
+
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            <Badge tone="slate">{totalSoal} soal</Badge>
+            <Badge tone="slate">Dikerjakan {formatDurasi(durasiPengerjaan)}</Badge>
+            <Badge tone="slate">Selesai {formatJam(waktuSelesai)}</Badge>
+            <Badge tone="slate">
+              Jadwal {formatTanggalPanjang(hasil.ujian.mulai)}, {formatJam(hasil.ujian.mulai)}–{formatJam(hasil.ujian.selesai)}
+            </Badge>
+            {hasil.jumlahPelanggaran > 0 && <Badge tone="red">{hasil.jumlahPelanggaran} pelanggaran</Badge>}
+          </div>
+        </div>
+
+        {/* Skor akhir — badge gradient 3D senada dengan tone (emerald/amber/red/slate) */}
+        <div
+          className={`relative flex shrink-0 flex-col items-center gap-1 rounded-2xl bg-gradient-to-br px-8 py-5 text-white ${toneGradients[kunciSkor]} ${toneIconShadow[kunciSkor]}`}
+        >
+          <p className="text-[11px] font-medium uppercase tracking-wide text-white/75">Skor akhir</p>
+          <p className="text-[36px] font-bold leading-none">{hasil.skor !== null ? hasil.skor : "-"}</p>
+        </div>
+      </Card>
+
+      {/* ==================== RINGKASAN JAWABAN — icon 3D menonjol, tanpa card ==================== */}
+      <div className="grid grid-cols-3 gap-3">
+        <IkonRingkasan label="Jawaban benar" value={jumlahBenar} iconSrc="/image/icon/jawaban-benar-icon.png" garisWarna="#10b981" />
+        <IkonRingkasan label="Jawaban salah" value={jumlahSalah} iconSrc="/image/icon/jawaban-salah-icon.png" garisWarna="#e0625c" />
+        <IkonRingkasan label="Belum dinilai" value={jumlahBelumDinilai} iconSrc="/image/icon/belum-dinilai-icon.png" garisWarna="#d9a441" />
+      </div>
+
+      {/* ==================== CATATAN PELANGGARAN ==================== */}
+      {hasil.logPelanggaran.length > 0 && (
+        <Card className="border-[#e9ecf2] p-4 shadow-[0_4px_0_#eef0f4,0_14px_24px_-16px_rgba(22,35,63,0.22)] dark:border-white/10 sm:p-5">
+          <div className="flex items-center gap-2.5">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#fdf1f1] text-[#c53030] dark:bg-white/5 dark:text-[#f29a9a]">
+              <IconAlertTriangle className="h-4 w-4" />
+            </span>
+            <p className="text-[13.5px] font-semibold text-[#16233f] dark:text-white">Catatan Pelanggaran</p>
+          </div>
+          <div className="mt-3 flex flex-col gap-2">
+            {hasil.logPelanggaran.map((log) => (
+              <div
+                key={log.id}
+                className="flex items-center justify-between rounded-[10px] bg-[#fdf1f1] px-3.5 py-2.5 dark:bg-white/[0.04]"
+              >
+                <span className="text-[12.5px] font-medium text-[#b52f2f] dark:text-[#f29a9a]">
+                  {labelPelanggaran[log.tipe] ?? log.tipe}
+                </span>
+                <span className="text-[11.5px] text-[#8b93a6]">{formatJam(log.waktu)}</span>
+              </div>
+            ))}
           </div>
         </Card>
-      ) : (
-        <div className="flex flex-col gap-3">
-          {daftar.map((item, index) => (
-            <ItemHasilCard key={item.hasilId} item={item} peringkat={urutan === "nilai" ? index + 1 : null} />
-          ))}
-        </div>
       )}
+
+      {/* ==================== PEMBAHASAN PER SOAL ==================== */}
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center gap-2.5">
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#eef4ff] text-[#3457c9] dark:bg-white/5 dark:text-[#7fb4e8]">
+            <IconCheckCircle className="h-4 w-4" />
+          </span>
+          <h2 className="text-[15px] font-semibold text-[#16233f] dark:text-white">Pembahasan Soal</h2>
+        </div>
+
+        {hasil.ujian.soal.map((soal, index) => (
+          <SoalReview key={soal.id} nomor={index + 1} soal={soal} jawaban={jawabanMap.get(soal.id) ?? null} />
+        ))}
+      </div>
     </div>
   )
 }
 
 /* =========================================================
-   TAB URUTAN
+   RINGKASAN JAWABAN — icon 3D besar tanpa card pembungkus
 ========================================================= */
 
-function UrutanTab({ label, aktif, href }: { label: string; aktif: boolean; href: string }) {
+function IkonRingkasan({
+  label,
+  value,
+  iconSrc,
+  garisWarna,
+}: {
+  label: string
+  value: number
+  iconSrc: string
+  garisWarna: string
+}) {
   return (
-    <Link
-      href={href}
-      className={`rounded-[9px] px-3 py-1.5 text-[12.5px] font-medium transition-colors ${
-        aktif
-          ? "bg-[#16233f] text-white"
-          : "text-[#5b657d] hover:bg-[#f0f2f1] dark:text-white/60 dark:hover:bg-white/10"
-      }`}
-    >
-      {label}
-    </Link>
+    <div className="group flex flex-col items-center gap-1.5 text-center sm:items-start sm:text-left">
+      <Image
+        src={iconSrc}
+        alt=""
+        width={112}
+        height={112}
+        className="h-16 w-16 object-contain drop-shadow-[0_12px_18px_rgba(22,35,63,0.28)] transition-transform duration-300 ease-out group-hover:-translate-y-1 sm:h-20 sm:w-20"
+      />
+      <p className="mt-1 text-[22px] font-semibold leading-none text-[#16233f] dark:text-white sm:text-[27px]">{value}</p>
+      <p className="text-[11.5px] font-medium text-[#8b93a6] dark:text-white/50 sm:text-[12.5px]">{label}</p>
+      <span
+        className="mt-1 block h-[3px] w-9 rounded-full sm:w-11"
+        style={{ backgroundColor: garisWarna }}
+        aria-hidden="true"
+      />
+    </div>
   )
 }
 
 /* =========================================================
-   KARTU HASIL
+   BADGE STATUS JAWABAN — dengan icon 3D
 ========================================================= */
 
-function ItemHasilCard({ item, peringkat }: { item: ItemHasil; peringkat: number | null }) {
+function StatusJawabanBadge({ status }: { status: StatusJawaban }) {
+  const info = statusInfo[status]
+
   return (
-    <Card className="flex flex-col gap-3.5 p-4 sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex items-center gap-3.5">
-        <span className="relative flex h-11 w-11 shrink-0 items-center justify-center">
-          <Image
-            src={getSubjectIconSrc(item.judul)}
-            alt=""
-            width={44}
-            height={44}
-            className="h-11 w-11 object-contain drop-shadow-[0_3px_5px_rgba(22,35,63,0.22)]"
-          />
-          {peringkat !== null && (
-            <span className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-[#b45309] text-[9.5px] font-bold text-white dark:border-[#141c30]">
-              {peringkat}
-            </span>
-          )}
-        </span>
+    <Badge tone={info.tone} className="shrink-0 items-center gap-1.5 py-1 pl-1.5 pr-2.5">
+      {info.src ? (
+        <Image src={info.src} alt="" width={20} height={20} className="h-4 w-4 object-contain" />
+      ) : (
+        <span className="h-1.5 w-1.5 rounded-full bg-current" />
+      )}
+      {info.label}
+    </Badge>
+  )
+}
 
-        <div>
-          <p className="text-[14px] font-semibold text-[#16233f] dark:text-white">{item.judul}</p>
-          <p className="mt-1 text-[12px] text-[#8b93a6] dark:text-white/40">
-            {formatTanggalSingkat(item.waktuSelesai)} · {item.totalSoal} soal
+/* =========================================================
+   PEMBAHASAN SATU SOAL
+========================================================= */
+
+function SoalReview({
+  nomor,
+  soal,
+  jawaban,
+}: {
+  nomor: number
+  soal: SoalUjian
+  jawaban: JawabanPeserta | null
+}) {
+  const status = hitungStatus(jawaban)
+
+  return (
+    <Card className="group relative overflow-hidden border-[#e9ecf2] p-4 shadow-[0_4px_0_#eef0f4,0_14px_24px_-16px_rgba(22,35,63,0.22)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_6px_0_#e7eaf1,0_18px_30px_-16px_rgba(22,35,63,0.28)] dark:border-white/10 dark:shadow-[0_4px_0_#0f1830,0_14px_24px_-16px_rgba(0,0,0,0.5)] dark:hover:shadow-[0_6px_0_#0f1830,0_18px_30px_-16px_rgba(0,0,0,0.6)] sm:p-5">
+      <div>
+        <div className="flex items-start justify-between gap-3">
+          <p className="text-[13.5px] font-semibold text-[#16233f] dark:text-white">
+            <span className="text-[#8b93a6]">Soal {nomor}.</span> {soal.pertanyaan}
           </p>
+          <StatusJawabanBadge status={status} />
         </div>
-      </div>
 
-      <div className="flex items-center gap-3">
-        <Badge tone={toneSkor(item.skor)} className="text-[13px]">
-          {item.skor !== null ? `Skor ${item.skor}` : "Menunggu penilaian"}
-        </Badge>
-        <Link href={`/hasil/${item.hasilId}`} className="shrink-0">
-          <Button variant="outline" size="sm">
-            Lihat detail
-          </Button>
-        </Link>
+        {soal.tipe === "PILIHAN_GANDA" ? (
+          <div className="mt-3 flex flex-col gap-2">
+            {soal.opsi.map((opsi) => {
+              const dipilih = jawaban?.opsiPilihan === opsi.id
+              const benar = dipilih && jawaban?.benar === true
+              const salah = dipilih && jawaban?.benar === false
+
+              return (
+                <div
+                  key={opsi.id}
+                  className={`flex items-center gap-2.5 rounded-[10px] border px-3.5 py-2.5 text-[12.5px] transition-colors ${
+                    benar
+                      ? "border-[#a7f3d0] bg-[#ecfdf5] text-[#047857]"
+                      : salah
+                        ? "border-[#f5cccc] bg-[#fdf1f1] text-[#d23b3b]"
+                        : "border-[#e7e4dc] bg-white text-[#34435f] dark:border-white/10 dark:bg-white/[0.02] dark:text-white/70"
+                  }`}
+                >
+                  {benar ? (
+                    <IconCheckCircle className="h-4 w-4 shrink-0" />
+                  ) : salah ? (
+                    <IconX className="h-4 w-4 shrink-0" />
+                  ) : (
+                    <span className="h-4 w-4 shrink-0 rounded-full border border-[#d5d9e0]" />
+                  )}
+                  <span className="flex-1">{opsi.teks}</span>
+                  {dipilih && <span className="shrink-0 text-[10.5px] font-medium opacity-70">Jawaban Anda</span>}
+                </div>
+              )
+            })}
+          </div>
+        ) : (
+          <div className="mt-3 rounded-[10px] border border-[#e7e4dc] bg-[#fbfaf7] px-3.5 py-3 dark:border-white/10 dark:bg-white/[0.03]">
+            <p className="text-[11px] font-medium uppercase tracking-wide text-[#8b93a6]">Jawaban Anda</p>
+            <p className="mt-1 whitespace-pre-wrap text-[13px] text-[#34435f] dark:text-white/70">
+              {jawaban?.jawabanTeks?.trim() ? jawaban.jawabanTeks : "Tidak dijawab"}
+            </p>
+          </div>
+        )}
+
+        <p className="mt-3 text-[11.5px] text-[#8b93a6]">{soal.poin} poin</p>
       </div>
     </Card>
   )

@@ -10,6 +10,8 @@ type UjianAwal = {
   id: string
   judul: string
   deskripsi: string | null
+  mataPelajaran: string
+  namaGuru: string
   durasiMenit: number
   acakSoal: boolean
   batasPelanggaran: number
@@ -23,6 +25,8 @@ export function FormUjian({ initialData }: { initialData?: UjianAwal }) {
 
   const [judul, setJudul] = useState(initialData?.judul ?? "")
   const [deskripsi, setDeskripsi] = useState(initialData?.deskripsi ?? "")
+  const [mataPelajaran, setMataPelajaran] = useState(initialData?.mataPelajaran ?? "")
+  const [namaGuru, setNamaGuru] = useState(initialData?.namaGuru ?? "")
   const [durasiMenit, setDurasiMenit] = useState(String(initialData?.durasiMenit ?? 60))
   const [acakSoal, setAcakSoal] = useState(initialData?.acakSoal ?? false)
   const [batasPelanggaran, setBatasPelanggaran] = useState(String(initialData?.batasPelanggaran ?? 3))
@@ -39,7 +43,7 @@ export function FormUjian({ initialData }: { initialData?: UjianAwal }) {
 
     try {
       const url = mode === "create" ? "/api/ujian" : `/api/ujian/${initialData!.id}`
-      const method = mode === "create" ? "POST" : "PUT"
+      const method = mode === "create" ? "POST" : "PATCH"
 
       const res = await fetch(url, {
         method,
@@ -47,6 +51,8 @@ export function FormUjian({ initialData }: { initialData?: UjianAwal }) {
         body: JSON.stringify({
           judul,
           deskripsi,
+          mataPelajaran,
+          namaGuru,
           durasiMenit: Number(durasiMenit),
           acakSoal,
           batasPelanggaran: Number(batasPelanggaran),
@@ -89,6 +95,31 @@ export function FormUjian({ initialData }: { initialData?: UjianAwal }) {
           placeholder="mis. Ujian Tengah Semester - Matematika"
           className="w-full rounded-[10px] border border-[#dcd9ee] px-3.5 py-2.5 text-[14px] text-[#241f4d] outline-none focus:border-[#4338ca]"
         />
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="mb-1.5 block text-[13px] font-medium text-[#241f4d]">Mata Pelajaran</label>
+          <input
+            type="text"
+            value={mataPelajaran}
+            onChange={(e) => setMataPelajaran(e.target.value)}
+            required
+            placeholder="mis. Matematika"
+            className="w-full rounded-[10px] border border-[#dcd9ee] px-3.5 py-2.5 text-[14px] text-[#241f4d] outline-none focus:border-[#4338ca]"
+          />
+        </div>
+        <div>
+          <label className="mb-1.5 block text-[13px] font-medium text-[#241f4d]">Nama Guru</label>
+          <input
+            type="text"
+            value={namaGuru}
+            onChange={(e) => setNamaGuru(e.target.value)}
+            required
+            placeholder="mis. Budi Santoso, S.Pd."
+            className="w-full rounded-[10px] border border-[#dcd9ee] px-3.5 py-2.5 text-[14px] text-[#241f4d] outline-none focus:border-[#4338ca]"
+          />
+        </div>
       </div>
 
       <div>

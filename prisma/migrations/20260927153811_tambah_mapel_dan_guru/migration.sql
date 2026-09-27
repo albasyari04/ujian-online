@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE `ujian` ADD COLUMN `mataPelajaran` VARCHAR(191) NOT NULL DEFAULT '',
+    ADD COLUMN `namaGuru` VARCHAR(191) NOT NULL DEFAULT '';

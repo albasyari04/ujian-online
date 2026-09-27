@@ -70,6 +70,8 @@ model Ujian {
   id               String   @id @default(cuid())
   judul            String
   deskripsi        String?  @db.Text
+  mataPelajaran    String   @default("")
+  namaGuru         String   @default("")
   durasiMenit      Int
   acakSoal         Boolean  @default(false)
   batasPelanggaran Int      @default(3)

@@ -87,6 +87,8 @@ type Ujian = {
   id: string
   judul: string
   deskripsi: string | null
+  mataPelajaran: string
+  namaGuru: string
   durasiMenit: number
   acakSoal: boolean
   batasPelanggaran: number
@@ -98,6 +100,8 @@ type Ujian = {
 type FormState = {
   judul: string
   deskripsi: string
+  mataPelajaran: string
+  namaGuru: string
   durasiMenit: string
   acakSoal: boolean
   batasPelanggaran: string
@@ -108,6 +112,8 @@ type FormState = {
 const FORM_KOSONG: FormState = {
   judul: "",
   deskripsi: "",
+  mataPelajaran: "",
+  namaGuru: "",
   durasiMenit: "60",
   acakSoal: false,
   batasPelanggaran: "3",
@@ -157,7 +163,11 @@ export function UjianGuruClient({ ujianAwal, cariAwal }: { ujianAwal: Ujian[]; c
 
   const hasilFilter = useMemo(() => {
     return daftar.filter((u) => {
-      const cocokCari = u.judul.toLowerCase().includes(cari.trim().toLowerCase())
+      const kataKunci = cari.trim().toLowerCase()
+      const cocokCari =
+        u.judul.toLowerCase().includes(kataKunci) ||
+        (u.mataPelajaran ?? "").toLowerCase().includes(kataKunci) ||
+        (u.namaGuru ?? "").toLowerCase().includes(kataKunci)
       const cocokTab = tab === "semua" || statusUjian(u.mulai, u.selesai).key === tab
       return cocokCari && cocokTab
     })
@@ -175,6 +185,8 @@ export function UjianGuruClient({ ujianAwal, cariAwal }: { ujianAwal: Ujian[]; c
     setForm({
       judul: u.judul,
       deskripsi: u.deskripsi ?? "",
+      mataPelajaran: u.mataPelajaran ?? "",
+      namaGuru: u.namaGuru ?? "",
       durasiMenit: String(u.durasiMenit),
       acakSoal: u.acakSoal,
       batasPelanggaran: String(u.batasPelanggaran),
@@ -200,6 +212,8 @@ export function UjianGuruClient({ ujianAwal, cariAwal }: { ujianAwal: Ujian[]; c
     const payload = {
       judul: form.judul,
       deskripsi: form.deskripsi || undefined,
+      mataPelajaran: form.mataPelajaran,
+      namaGuru: form.namaGuru,
       durasiMenit: form.durasiMenit,
       acakSoal: form.acakSoal,
       batasPelanggaran: form.batasPelanggaran,
@@ -341,7 +355,7 @@ export function UjianGuruClient({ ujianAwal, cariAwal }: { ujianAwal: Ujian[]; c
         <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-2">
           {hasilFilter.map((u) => {
             const status = statusUjian(u.mulai, u.selesai)
-            const subjectIconSrc = getSubjectIconSrc(u.judul)
+            const subjectIconSrc = getSubjectIconSrc(u.mataPelajaran || u.judul)
             return (
               <Card
                 key={u.id}
@@ -388,6 +402,11 @@ export function UjianGuruClient({ ujianAwal, cariAwal }: { ujianAwal: Ujian[]; c
                         {u.judul}
                       </h3>
                     </Link>
+                    {(u.mataPelajaran || u.namaGuru) && (
+                      <p className="line-clamp-1 text-[12px] text-[#8b93a6] dark:text-white/40">
+                        {[u.mataPelajaran, u.namaGuru].filter(Boolean).join(" • ")}
+                      </p>
+                    )}
                     {u.deskripsi && (
                       <p className="line-clamp-1 text-[12px] text-[#8b93a6] dark:text-white/40">{u.deskripsi}</p>
                     )}
@@ -442,6 +461,27 @@ export function UjianGuruClient({ ujianAwal, cariAwal }: { ujianAwal: Ujian[]; c
               placeholder="Contoh: Ulangan Harian Matematika Bab 3"
               className="mt-1 w-full rounded-[10px] border border-[#e7e4dc] px-3 py-2.5 text-[13px] focus:border-[#818cf8] focus:outline-none dark:border-white/10 dark:bg-white/5 dark:text-white"
             />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-[12.5px] font-medium text-[#34435f] dark:text-white/70">Mata Pelajaran</label>
+              <input
+                value={form.mataPelajaran}
+                onChange={(e) => setForm({ ...form, mataPelajaran: e.target.value })}
+                placeholder="Contoh: Matematika"
+                className="mt-1 w-full rounded-[10px] border border-[#e7e4dc] px-3 py-2.5 text-[13px] focus:border-[#818cf8] focus:outline-none dark:border-white/10 dark:bg-white/5 dark:text-white"
+              />
+            </div>
+            <div>
+              <label className="text-[12.5px] font-medium text-[#34435f] dark:text-white/70">Nama Guru</label>
+              <input
+                value={form.namaGuru}
+                onChange={(e) => setForm({ ...form, namaGuru: e.target.value })}
+                placeholder="Contoh: Budi Santoso, S.Pd."
+                className="mt-1 w-full rounded-[10px] border border-[#e7e4dc] px-3 py-2.5 text-[13px] focus:border-[#818cf8] focus:outline-none dark:border-white/10 dark:bg-white/5 dark:text-white"
+              />
+            </div>
           </div>
 
           <div>

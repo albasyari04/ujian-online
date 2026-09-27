@@ -83,11 +83,19 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       return NextResponse.json({ message: "Data yang dikirim tidak valid." }, { status: 400 })
     }
 
-    const { judul, deskripsi, durasiMenit, acakSoal, batasPelanggaran, mulai, selesai } =
+    const { judul, deskripsi, mataPelajaran, namaGuru, durasiMenit, acakSoal, batasPelanggaran, mulai, selesai } =
       body as Record<string, unknown>
 
     if (typeof judul !== "string" || judul.trim().length === 0) {
       return NextResponse.json({ message: "Judul ujian wajib diisi." }, { status: 400 })
+    }
+
+    if (typeof mataPelajaran !== "string" || mataPelajaran.trim().length === 0) {
+      return NextResponse.json({ message: "Mata pelajaran wajib diisi." }, { status: 400 })
+    }
+
+    if (typeof namaGuru !== "string" || namaGuru.trim().length === 0) {
+      return NextResponse.json({ message: "Nama guru wajib diisi." }, { status: 400 })
     }
 
     const durasi = Number(durasiMenit)
@@ -116,6 +124,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       data: {
         judul: judul.trim(),
         deskripsi: typeof deskripsi === "string" && deskripsi.trim().length > 0 ? deskripsi.trim() : null,
+        mataPelajaran: mataPelajaran.trim(),
+        namaGuru: namaGuru.trim(),
         durasiMenit: durasi,
         acakSoal: Boolean(acakSoal),
         batasPelanggaran: batas,

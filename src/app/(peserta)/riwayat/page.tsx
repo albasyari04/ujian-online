@@ -174,9 +174,9 @@ export default async function RiwayatUjianPage({
   return (
     <div className="flex flex-col gap-6">
       <header>
-        <p className="text-[12.5px] font-medium text-[#b45309]">Riwayat pengerjaan</p>
-        <h1 className="mt-1 text-[26px] font-semibold text-[#16233f]">Riwayat Ujian</h1>
-        <p className="mt-1 text-[13px] text-[#5b6a86]">
+        <p className="text-[12.5px] font-medium text-[#b45309] dark:text-amber-400">Riwayat pengerjaan</p>
+        <h1 className="mt-1 text-[26px] font-semibold text-[#16233f] dark:text-white">Riwayat Ujian</h1>
+        <p className="mt-1 text-[13px] text-[#5b6a86] dark:text-white/50">
           Semua ujian yang sudah Anda selesaikan, lengkap dengan skor dan catatan pelanggaran.
         </p>
       </header>
@@ -205,39 +205,43 @@ export default async function RiwayatUjianPage({
         />
       </div>
 
-      <form method="GET" className="flex items-center gap-2">
-        <div className="relative flex-1 max-w-sm">
-          <IconSearch className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#94a3b8]" />
+      <form
+        method="GET"
+        className="flex flex-col gap-2.5 rounded-[16px] border border-[#e7e4dc] bg-white p-2.5 shadow-[0_1px_2px_rgba(22,35,63,0.04),0_10px_20px_-12px_rgba(49,46,129,0.16)] dark:border-white/10 dark:bg-[#101a30] sm:flex-row sm:items-center"
+      >
+        <div className="relative flex-1 sm:max-w-sm">
+          <IconSearch className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#94a3b8] dark:text-white/30" />
           <Input
             type="search"
             name="q"
             defaultValue={kataKunci ?? ""}
             placeholder="Cari nama ujian..."
             aria-label="Cari nama ujian"
-            className="pl-9"
+            className="border-transparent bg-[#f6f5f1] pl-9 focus:border-[#6ee7b7] dark:bg-white/5 dark:text-white dark:placeholder:text-white/30"
           />
         </div>
-        <Button type="submit" variant="outline" size="md">
+        <Button type="submit" size="md" className="sm:w-auto">
+          <IconSearch className="h-4 w-4" />
           Cari
         </Button>
       </form>
 
       {daftar.length === 0 ? (
-        <Card className="flex flex-col items-center gap-3 px-6 py-14 text-center">
-          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#f4f5f7] text-[#5b657d]">
+        <div className="flex flex-col items-center gap-3 rounded-[18px] border border-[#e7e4dc] bg-white px-6 py-14 text-center shadow-[0_1px_2px_rgba(22,35,63,0.04),0_10px_24px_-12px_rgba(49,46,129,0.18)] dark:border-white/10 dark:bg-[#101a30]">
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-[#f4f5f7] to-[#e2e5eb] text-[#5b657d] shadow-[inset_0_1px_1px_rgba(255,255,255,0.8)] dark:from-white/10 dark:to-white/[0.02] dark:text-white/60">
             <IconRiwayat className="h-6 w-6" />
           </span>
           <div>
-            <p className="text-[14.5px] font-semibold text-[#16233f]">
+            <p className="text-[14.5px] font-semibold text-[#16233f] dark:text-white">
               {kataKunci ? "Tidak ada riwayat yang cocok" : "Belum ada riwayat ujian"}
             </p>
-            <p className="mt-1 max-w-sm text-[13px] text-[#8b93a6]">
+            <p className="mt-1 max-w-sm text-[13px] text-[#8b93a6] dark:text-white/40">
               {kataKunci
                 ? "Coba gunakan kata kunci lain atau hapus pencarian untuk melihat semua riwayat."
                 : "Riwayat akan muncul di sini setelah Anda menyelesaikan sebuah ujian."}
             </p>
           </div>
-        </Card>
+        </div>
       ) : (
         <>
           <div className="flex flex-col gap-3">
@@ -270,13 +274,15 @@ function ItemRiwayatCard({ item }: { item: ItemRiwayat }) {
       <span className="pointer-events-none absolute -right-10 -top-12 h-28 w-28 rounded-full bg-[#16233f]/[0.04] blur-2xl dark:bg-white/[0.04]" aria-hidden="true" />
 
       <div className="relative flex items-start gap-3">
-        <Image
-          src={getSubjectIconSrc(item.judul)}
-          alt=""
-          width={44}
-          height={44}
-          className="h-11 w-11 shrink-0 object-contain drop-shadow-[0_3px_5px_rgba(22,35,63,0.22)] transition-transform duration-300 group-hover:-translate-y-0.5"
-        />
+        <span className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-white to-[#eef0f4] shadow-[inset_0_1px_1px_rgba(255,255,255,0.9),0_6px_14px_-6px_rgba(22,35,63,0.3)] transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:rotate-3 dark:from-white/10 dark:to-white/[0.02] sm:h-[54px] sm:w-[54px]">
+          <Image
+            src={getSubjectIconSrc(item.judul)}
+            alt=""
+            width={30}
+            height={30}
+            className="h-7 w-7 object-contain sm:h-8 sm:w-8"
+          />
+        </span>
 
         <div className="relative min-w-0">
           <p className="text-[14px] font-semibold text-[#16233f] dark:text-white">{item.judul}</p>
@@ -298,11 +304,13 @@ function ItemRiwayatCard({ item }: { item: ItemRiwayat }) {
         </div>
       </div>
 
-      <Link href={`/hasil/${item.hasilId}`} className="relative shrink-0">
-        <Button variant="outline" size="sm" className="w-full sm:w-auto">
-          Lihat hasil
-        </Button>
-      </Link>
+      <div className="relative flex border-t border-dashed border-[#e7e4dc] pt-3 dark:border-white/10 sm:border-0 sm:pt-0">
+        <Link href={`/hasil/${item.hasilId}`} className="w-full sm:w-auto">
+          <Button variant="outline" size="sm" className="w-full sm:w-auto">
+            Lihat hasil
+          </Button>
+        </Link>
+      </div>
     </Card>
   )
 }
@@ -324,8 +332,8 @@ function Paginasi({
   const bisaMaju = halamanSekarang < totalHalaman
 
   return (
-    <div className="flex items-center justify-between border-t border-[#e7e4dc] pt-4">
-      <p className="text-[12px] text-[#8b93a6]">
+    <div className="flex items-center justify-between rounded-[16px] border border-[#e7e4dc] bg-white px-4 py-3 shadow-[0_1px_2px_rgba(22,35,63,0.04),0_8px_16px_-12px_rgba(49,46,129,0.16)] dark:border-white/10 dark:bg-[#101a30]">
+      <p className="text-[12px] text-[#8b93a6] dark:text-white/40">
         Halaman {halamanSekarang} dari {totalHalaman}
       </p>
 

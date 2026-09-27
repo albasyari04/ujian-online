@@ -191,15 +191,17 @@ export function StatCard({
 
 type RingkasanTone = "navy" | "blue" | "violet" | "emerald" | "amber" | "red" | "slate" | "indigo"
 
-const RINGKASAN_TONE_STYLES: Record<RingkasanTone, string> = {
-  navy: "bg-gradient-to-br from-[#334876] to-[#16233f] text-white shadow-[0_8px_16px_-6px_rgba(22,35,63,0.5)]",
-  blue: "bg-gradient-to-br from-[#93c5fd] to-[#2563eb] text-white shadow-[0_8px_16px_-6px_rgba(37,99,235,0.5)]",
-  violet: "bg-gradient-to-br from-[#c4b5fd] to-[#6d28d9] text-white shadow-[0_8px_16px_-6px_rgba(109,40,217,0.5)]",
-  emerald: "bg-gradient-to-br from-[#6ee7b7] to-[#047857] text-white shadow-[0_8px_16px_-6px_rgba(4,120,87,0.5)]",
-  amber: "bg-gradient-to-br from-[#fcd34d] to-[#b8863b] text-white shadow-[0_8px_16px_-6px_rgba(184,134,59,0.5)]",
-  red: "bg-gradient-to-br from-[#fca5a5] to-[#b52f2f] text-white shadow-[0_8px_16px_-6px_rgba(181,47,47,0.5)]",
-  slate: "bg-gradient-to-br from-[#cbd5e1] to-[#475569] text-white shadow-[0_8px_16px_-6px_rgba(71,85,105,0.4)]",
-  indigo: "bg-gradient-to-br from-[#818cf8] to-[#4338ca] text-white shadow-[0_8px_16px_-6px_rgba(67,56,202,0.5)]",
+/** Dipakai untuk mewarnai angka (value), bukan sebagai box di belakang icon —
+ *  icon tetap tampil polos sesuai permintaan. */
+const RINGKASAN_VALUE_COLOR: Record<RingkasanTone, string> = {
+  navy: "text-[#16233f] dark:text-white",
+  blue: "text-[#2563eb] dark:text-[#8fb1ff]",
+  violet: "text-[#6d28d9] dark:text-[#c4b5fd]",
+  emerald: "text-[#047857] dark:text-[#6ee7b7]",
+  amber: "text-[#b8863b] dark:text-[#fcd34d]",
+  red: "text-[#b52f2f] dark:text-[#fca5a5]",
+  slate: "text-[#475569] dark:text-white/70",
+  indigo: "text-[#4338ca] dark:text-[#818cf8]",
 }
 
 export function RingkasanCard({
@@ -216,21 +218,27 @@ export function RingkasanCard({
   icon?: ReactNode
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-[16px] border border-[#e7e4dc] bg-white p-3.5 shadow-[0_1px_2px_rgba(22,35,63,0.04),0_10px_20px_-12px_rgba(49,46,129,0.18)] dark:border-white/10 dark:bg-[#101a30] sm:p-4">
-      <span
-        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] ${RINGKASAN_TONE_STYLES[tone]}`}
-      >
-        {icon ? (
-          icon
-        ) : iconImageSrc ? (
-          <Image src={iconImageSrc} alt="" width={28} height={28} className="h-6 w-6 object-contain" />
-        ) : null}
-      </span>
+    <div className="flex flex-col items-center gap-2 rounded-[16px] border border-[#e7e4dc] bg-white p-3.5 text-center shadow-[0_1px_2px_rgba(22,35,63,0.04),0_10px_20px_-12px_rgba(49,46,129,0.18)] dark:border-white/10 dark:bg-[#101a30] sm:p-4">
+      {/* Icon POLOS — tanpa card/box/lingkaran warna di belakangnya, konsisten
+          dengan gaya icon mata pelajaran & StatCard. Hanya drop-shadow untuk kedalaman. */}
+      {icon ? (
+        icon
+      ) : iconImageSrc ? (
+        <Image
+          src={iconImageSrc}
+          alt=""
+          width={40}
+          height={40}
+          className="h-8 w-8 shrink-0 object-contain drop-shadow-[0_6px_10px_rgba(22,35,63,0.22)] sm:h-9 sm:w-9"
+        />
+      ) : null}
       <div className="min-w-0">
-        <p className="truncate text-[20px] font-semibold leading-none text-[#16233f] dark:text-white sm:text-[22px]">
+        <p className={`text-[19px] font-semibold leading-none sm:text-[22px] ${RINGKASAN_VALUE_COLOR[tone]}`}>
           {value}
         </p>
-        <p className="mt-1 truncate text-[11.5px] font-medium text-[#8b93a6] dark:text-white/50">{label}</p>
+        <p className="mt-1 text-[10.5px] font-medium leading-tight text-[#8b93a6] dark:text-white/50 sm:text-[11.5px]">
+          {label}
+        </p>
       </div>
     </div>
   )

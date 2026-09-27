@@ -118,19 +118,14 @@ export default async function UjianTersediaPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <header className="flex items-start gap-3">
-        <span className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] bg-gradient-to-br from-white to-[#eef0f4] text-[#3457c9] shadow-[inset_0_1px_1px_rgba(255,255,255,0.9),0_6px_12px_-6px_rgba(22,35,63,0.3)] dark:from-white/10 dark:to-white/[0.02] dark:text-[#8fb1ff]">
-          <IconDocument className="h-5 w-5" />
-        </span>
-        <div>
-          <p className="text-[12.5px] font-medium text-[#b45309] dark:text-amber-400">
-            {formatTanggalPanjang(sekarang)}
-          </p>
-          <h1 className="mt-1 text-[26px] font-semibold text-[#16233f] dark:text-white">Ujian Tersedia</h1>
-          <p className="mt-1 text-[13px] text-[#5b6a86] dark:text-white/50">
-            Daftar ujian yang sedang dibuka dan dapat Anda kerjakan saat ini.
-          </p>
-        </div>
+      <header>
+        <p className="text-[12.5px] font-medium text-[#b45309] dark:text-amber-400">
+          {formatTanggalPanjang(sekarang)}
+        </p>
+        <h1 className="mt-1 text-[26px] font-semibold text-[#16233f] dark:text-white">Ujian Tersedia</h1>
+        <p className="mt-1 text-[13px] text-[#5b6a86] dark:text-white/50">
+          Daftar ujian yang sedang dibuka dan dapat Anda kerjakan saat ini.
+        </p>
       </header>
 
       <div className="grid grid-cols-3 gap-3 sm:gap-4">
@@ -210,13 +205,15 @@ function UjianTersediaCard({ item, sekarang }: { item: ItemUjianTersedia; sekara
       />
 
       <div className="relative flex items-start gap-3">
-        <Image
-          src={getSubjectIconSrc(ujian.judul)}
-          alt=""
-          width={48}
-          height={48}
-          className="h-11 w-11 shrink-0 object-contain drop-shadow-[0_6px_10px_rgba(22,35,63,0.25)] transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:-rotate-3 sm:h-12 sm:w-12"
-        />
+        <span className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-white to-[#eef0f4] shadow-[inset_0_1px_1px_rgba(255,255,255,0.9),0_6px_14px_-6px_rgba(22,35,63,0.3)] transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:rotate-3 dark:from-white/10 dark:to-white/[0.02] sm:h-[54px] sm:w-[54px]">
+          <Image
+            src={getSubjectIconSrc(ujian.judul)}
+            alt=""
+            width={30}
+            height={30}
+            className="h-7 w-7 object-contain sm:h-8 sm:w-8"
+          />
+        </span>
 
         <div className="relative min-w-0">
           <p className="text-[14px] font-semibold text-[#16233f] dark:text-white">{ujian.judul}</p>
@@ -244,7 +241,7 @@ function UjianTersediaCard({ item, sekarang }: { item: ItemUjianTersedia; sekara
         </div>
       </div>
 
-      <div className="relative">
+      <div className="relative flex border-t border-dashed border-[#e7e4dc] pt-3 dark:border-white/10 sm:border-0 sm:pt-0">
         <AksiUjian ujianId={ujian.id} hasil={hasil} />
       </div>
     </div>

@@ -42,6 +42,7 @@ function parseAnswer(value: string) {
   return Number.isInteger(number) ? String.fromCharCode(64 + number) : ""
 }
 
+/** Cari kunci jawaban di dalam blok soal (misal "Jawaban: A") — dipakai sebagai fallback */
 function extractAnswer(lines: string[]) {
   for (let index = 0; index < lines.length; index += 1) {
     const line = lines[index]
@@ -136,19 +137,26 @@ function parseRows(rows: Record<string, unknown>[]): Question[] {
   })
 }
 
-function isBacaanLine(line: string): boolean {
-  if (/^[A-E][.)]\s*/i.test(line)) return false
-  if (/^\d+[.)]\s*/i.test(line)) return false
-  if (isAnswerSectionHeader(line)) return false
-  if (isAnswerSubHeader(line)) return false
-  if (/^(penilaian|ujian|sma|tahun\s+pelajaran|mata\s+pelajaran|kelas\s*\/|hari\s*\/|waktu\s*:|nama\s+siswa|nomor\s+ujian|nama\s*:|kelas\s*:|tanggal\s*:)/i.test(line)) return false
-  return true
+/** Cek apakah baris adalah baris opsi A-E */
+function isOptionLine(line: string): boolean {
+  return /^\(?[A-E]\)?\s*[.)]\s+/i.test(line)
+}
+
+/** Cek apakah baris adalah EKOR opsi (baris E.) */
+function isLastOptionLine(line: string): boolean {
+  return /^\(?E\)?\s*[.)]\s+/i.test(line)
+}
+
+/** Deteksi baris header umum yang harus dibuang */
+function isHeaderLine(line: string): boolean {
+  return /^(penilaian|ujian|sma|tahun\s+pelajaran|mata\s+pelajaran|kelas\s*\/|hari\s*\/|waktu\s*:|nama\s+siswa|nomor\s+ujian|nama\s*:|kelas\s*:|tanggal\s*:|petunjuk|pilihlah|jawablah|baca|bacaan\s+utama)/i.test(line)
 }
 
 function parseText(rawText: string): Question[] {
   const sanitized = sanitizeRawText(rawText)
   const lines = sanitized.split("\n").map((line) => line.trim()).filter(Boolean)
 
+  // --- Tahap 1: Pisahkan section soal dan section kunci jawaban ---
   const soalLines: string[] = []
   const answerLines: string[] = []
   let inAnswerSection = false
@@ -165,78 +173,140 @@ function parseText(rawText: string): Question[] {
 
   const globalAnswers = extractGlobalAnswers(answerLines)
 
-  let firstQuestionIdx = -1
-  for (let i = 0; i < soalLines.length; i += 1) {
-    if (/^\d+[.)]\s*/i.test(soalLines[i])) {
-      firstQuestionIdx = i
-      break
+  // --- Tahap 2: Bagi soalLines menjadi blok-blok berdasarkan opsi E ---
+  type RawBlock = { bacaan: string; soal: string; blockLines: string[]; opsi: { label: string; teks: string }[]; questionNumber: number | null }
+  const rawBlocks: RawBlock[] = []
+
+  let pendingBacaan: string[] = []
+  let currentBlock: { lines: string[] } | null = null
+  let sudahPernahKetemuSoal = false
+
+  const simpanBlokSekarang = () => {
+    if (!currentBlock) return
+    const blockLines = currentBlock.lines
+    if (blockLines.length === 0) {
+      currentBlock = null
+      return
+    }
+
+    // Cari baris pertama yang bukan opsi (baris pertanyaan)
+    let questionLine = blockLines[0]
+    let questionIdx = 0
+    for (let i = 0; i < blockLines.length; i += 1) {
+      if (!isOptionLine(blockLines[i])) {
+        questionLine = blockLines[i]
+        questionIdx = i
+        break
+      }
+    }
+
+    const nomorMatch = questionLine.match(/^(\d+)[.)]\s*/)
+    const questionNumber = nomorMatch ? Number(nomorMatch[1]) : null
+    const pertanyaan = questionLine.replace(/^(\d+[.)]|soal\s*\d*[:.)]?)\s*/i, "").trim()
+
+    // Ekstrak opsi dari seluruh blockLines
+    const opsi = extractOptions(blockLines.slice(questionIdx))
+
+    // Ambil bacaan yang tertunda (dari antara blok sebelumnya)
+    const bacaanTeks = pendingBacaan
+      .filter((l) => !isHeaderLine(l) && !isOptionLine(l))
+      .join("\n")
+      .trim()
+
+    rawBlocks.push({
+      bacaan: bacaanTeks,
+      soal: pertanyaan,
+      blockLines,
+      opsi,
+      questionNumber,
+    })
+
+    pendingBacaan = []
+    currentBlock = null
+  }
+
+  for (const line of soalLines) {
+    if (isHeaderLine(line) && !sudahPernahKetemuSoal) continue
+
+    if (isOptionLine(line)) {
+      if (!currentBlock) currentBlock = { lines: [] }
+      currentBlock.lines.push(line)
+      if (isLastOptionLine(line)) {
+        simpanBlokSekarang()
+        sudahPernahKetemuSoal = true
+      }
+      continue
+    }
+
+    if (currentBlock) {
+      const diawaliAngka = /^\d+[.)]\s*/i.test(line)
+      if (diawaliAngka) {
+        simpanBlokSekarang()
+        currentBlock = { lines: [line] }
+      } else {
+        currentBlock.lines.push(line)
+      }
+      continue
+    }
+
+    const diawaliAngka = /^\d+[.)]\s*/i.test(line)
+    if (diawaliAngka) {
+      currentBlock = { lines: [line] }
+    } else {
+      pendingBacaan.push(line)
     }
   }
 
-  let bacaan = ""
-  if (firstQuestionIdx > 0) {
-    bacaan = soalLines.slice(0, firstQuestionIdx).filter(isBacaanLine).join("\n").trim()
-  }
+  simpanBlokSekarang()
 
-  const blocks: string[][] = []
-  const linesToParse = firstQuestionIdx >= 0 ? soalLines.slice(firstQuestionIdx) : soalLines
-  for (const line of linesToParse) {
-    if (/^(\d+[.)]|soal\s*\d*[:.)]?)/i.test(line)) blocks.push([])
-    if (blocks.length > 0) blocks[blocks.length - 1].push(line)
-  }
-
+  // --- Tahap 3: Bangun Question dari rawBlocks ---
   const questions: Question[] = []
   let soalCounter = 0
 
-  for (let index = 0; index < blocks.length; index += 1) {
-    const blockLines = blocks[index]
-    const questionLine = blockLines[0]
-    const question = questionLine.replace(/^(\d+[.)]|soal\s*\d*[:.)]?)\s*/i, "").trim()
-    const questionNumber = Number(questionLine.match(/^(\d+)/)?.[1])
-
-    if (/^(ujian|pilihan ganda|nama\s*:|petunjuk\s*:|kelas\s*:|tanggal\s*:|mata pelajaran|kelas\s*\/|hari\s*\/|waktu\s*:|nomor ujian)/i.test(question)) continue
-    if (!question) continue
+  for (const blok of rawBlocks) {
+    if (!blok.soal) continue
 
     soalCounter += 1
-    const options = extractOptions(blockLines)
-    const markedAnswer =
-      options.find((option) =>
-        /(?:\[x\]|\(benar\)|\*)/i.test(blockLines.find((line) => line.includes(option.teks)) ?? "")
-      )?.label ?? ""
 
+    // Prioritas kunci jawaban:
+    // 1. Section KUNCI JAWABAN global (berdasarkan nomor soal asli)
+    // 2. Section KUNCI JAWABAN global (berdasarkan urutan soal)
+    // 3. Di dalam blok soal itu sendiri (mis. "Jawaban: A")
     const answer =
-      extractAnswer(blockLines) ||
-      (questionNumber ? globalAnswers.get(questionNumber) : "") ||
+      (blok.questionNumber ? globalAnswers.get(blok.questionNumber) : "") ||
       globalAnswers.get(soalCounter) ||
-      markedAnswer
+      extractAnswer(blok.blockLines) ||
+      ""
 
-    if (options.length === 0) {
-      const finalQuestion =
-        soalCounter === 1 && bacaan
-          ? `${BACAAN_START}\n${bacaan}\n${BACAAN_END}\n${SOAL_START}\n${question}`
-          : question
+    // Gabungkan bacaan (jika ada) dengan pertanyaan
+    const finalQuestion = blok.bacaan
+      ? `${BACAAN_START}\n${blok.bacaan}\n${BACAAN_END}\n${SOAL_START}\n${blok.soal}`
+      : blok.soal
+
+    // Essay (tanpa opsi)
+    if (blok.opsi.length === 0) {
       questions.push({ pertanyaan: finalQuestion, tipe: "ESSAY", poin: 1, opsi: [] })
       continue
     }
 
-    if (options.length < 2) {
-      throw new Error(`Blok soal ke-${soalCounter} ("${question.slice(0, 50)}..."): hanya ${options.length} opsi terbaca.`)
+    if (blok.opsi.length < 2) {
+      throw new Error(
+        `Soal ke-${soalCounter} ("${blok.soal.slice(0, 50)}..."): hanya ${blok.opsi.length} opsi terbaca.`
+      )
     }
 
     if (!answer) {
-      throw new Error(`Blok soal ke-${soalCounter} ("${question.slice(0, 50)}..."): kunci jawaban tidak ditemukan.`)
+      throw new Error(
+        `Soal ke-${soalCounter} ("${blok.soal.slice(0, 50)}..."): kunci jawaban tidak ditemukan. ` +
+          `Pastikan ada bagian "KUNCI JAWABAN" di akhir dokumen.`
+      )
     }
-
-    const finalQuestion =
-      soalCounter === 1 && bacaan
-        ? `${BACAAN_START}\n${bacaan}\n${BACAAN_END}\n${SOAL_START}\n${question}`
-        : question
 
     questions.push({
       pertanyaan: finalQuestion,
       tipe: "PILIHAN_GANDA",
       poin: 1,
-      opsi: options.map((option) => ({ teks: option.teks, benar: option.label === answer })),
+      opsi: blok.opsi.map((option) => ({ teks: option.teks, benar: option.label === answer })),
     })
   }
 

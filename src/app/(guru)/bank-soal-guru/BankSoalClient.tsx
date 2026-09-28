@@ -90,7 +90,7 @@ export function BankSoalClient({ data }: { data: UjianRingkas[] }) {
     }
   }
 
-  /* ---------- Hapus ujian (beserta seluruh isinya) ---------- */
+  /* ---------- Hapus ujian ---------- */
   async function hapusUjian(ujianId: string, judul: string, jumlahSoal: number) {
     if (
       !confirm(
@@ -258,6 +258,17 @@ export function BankSoalClient({ data }: { data: UjianRingkas[] }) {
                     </Link>
 
                     <div className="flex flex-wrap items-center gap-2">
+                      {/* ============ TOMBOL EDIT SEMUA SOAL (BARU) ============ */}
+                      {u.soal.length > 0 && (
+                        <Link
+                          href={`/ujian-guru/${u.id}/soal/edit-semua`}
+                          className="inline-flex items-center gap-1.5 rounded-[10px] bg-gradient-to-br from-[#818cf8] to-[#4338ca] px-3 py-1.5 text-[12px] font-semibold text-white shadow-[0_6px_16px_-6px_rgba(67,56,202,0.5)] transition-all hover:-translate-y-0.5 hover:shadow-[0_8px_20px_-6px_rgba(67,56,202,0.6)]"
+                        >
+                          <IconPencil className="h-3.5 w-3.5" />
+                          Edit Semua Soal
+                        </Link>
+                      )}
+
                       {u.soal.length > 0 && (
                         <button
                           type="button"

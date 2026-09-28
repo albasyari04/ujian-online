@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/Button"
 import { Modal } from "@/components/ui/Modal"
 import { BACAAN_START, BACAAN_END, SOAL_START, splitBacaanDanSoal } from "@/lib/bacaan"
+import { docxToText } from "@/lib/docxToText"
 
 export { BACAAN_START, BACAAN_END, SOAL_START, splitBacaanDanSoal }
 
@@ -72,6 +73,15 @@ function extractGlobalAnswers(lines: string[]) {
       const num = Number(match[2])
       const ans = parseAnswer(match[1])
       if (num >= 1 && num <= 200 && ans) answers.set(num, ans)
+    }
+  }
+
+  // Fallback: kunci berupa daftar huruf tanpa nomor (C, B, D, ...) -> urut sesuai nomor soal
+  if (answers.size === 0) {
+    let seq = 0
+    for (const line of lines) {
+      const bare = line.match(/^(?:[a-z]\.\s*)?([A-E])$/i)
+      if (bare) answers.set(++seq, bare[1].toUpperCase())
     }
   }
   return answers
@@ -331,9 +341,8 @@ async function parseFile(file: File, ujianId: string): Promise<Question[]> {
     return parseRows(XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, { defval: "" }))
   }
   if (extension === "docx") {
-    const mammoth = await import("mammoth")
-    const result = await mammoth.extractRawText({ arrayBuffer: await file.arrayBuffer() })
-    return parseText(result.value)
+    // Jangan pakai mammoth.extractRawText: penomoran otomatis Word (1. / A.) ikut hilang.
+    return parseText(await docxToText(await file.arrayBuffer()))
   }
   if (extension === "pdf") {
     const formData = new FormData()

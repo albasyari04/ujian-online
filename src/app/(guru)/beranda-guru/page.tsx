@@ -27,14 +27,41 @@ const SECTION_ICON = {
 const GLASS_3D_CARD =
   "relative overflow-hidden p-5 shadow-[0_2px_4px_rgba(22,35,63,0.06),0_14px_28px_-10px_rgba(49,46,129,0.28),0_40px_70px_-28px_rgba(49,46,129,0.5)] ring-1 ring-white/70 ring-inset before:pointer-events-none before:absolute before:inset-0 before:bg-gradient-to-br before:from-white/50 before:via-white/5 before:to-transparent before:content-[''] dark:ring-white/10 dark:before:from-white/10 dark:before:via-transparent"
 
-function formatTanggal(date: Date) {
-  return new Intl.DateTimeFormat("id-ID", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(date)
+/**
+ * Zona waktu dikunci ke Asia/Jakarta.
+ * Server (VPS) berjalan di UTC, sedangkan "Ujian Saya" dirender di
+ * browser (client component) yang otomatis memakai jam lokal perangkat.
+ * Tanpa `timeZone` eksplisit, dua halaman ini bisa menampilkan jam yang
+ * berbeda untuk data yang sama — itulah penyebab selisih 7 jam yang
+ * terlihat sebelumnya (01.30 di dashboard vs 08.30 di Ujian Saya).
+ */
+const ZONA_WAKTU = "Asia/Jakarta"
+
+const fmtHariTanggal = new Intl.DateTimeFormat("id-ID", {
+  weekday: "long",
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+  timeZone: ZONA_WAKTU,
+})
+
+const fmtTanggalSingkatJam = new Intl.DateTimeFormat("id-ID", {
+  day: "numeric",
+  month: "short",
+  hour: "2-digit",
+  minute: "2-digit",
+  timeZone: ZONA_WAKTU,
+})
+
+const fmtJam = new Intl.DateTimeFormat("id-ID", {
+  hour: "2-digit",
+  minute: "2-digit",
+  timeZone: ZONA_WAKTU,
+})
+
+/** Samakan gaya dengan kartu di halaman "Ujian Saya": "2 Okt, 08.30 – 2 Okt, 09.30". */
+function formatRentang(mulai: Date, selesai: Date) {
+  return `${fmtTanggalSingkatJam.format(mulai)} – ${fmtTanggalSingkatJam.format(selesai)}`
 }
 
 function statusUjian(mulai: Date, selesai: Date) {
@@ -80,12 +107,7 @@ export default async function BerandaGuruPage() {
     <div className="space-y-6">
       <div>
         <p className="text-[12.5px] font-medium text-[#8b93a6] dark:text-white/40">
-          {new Intl.DateTimeFormat("id-ID", {
-            weekday: "long",
-            day: "numeric",
-            month: "long",
-            year: "numeric",
-          }).format(new Date())}
+          {fmtHariTanggal.format(new Date())}
         </p>
         <h1 className="mt-1 text-[22px] font-semibold text-[#16233f] dark:text-white">
           Selamat datang, {namaDepan} 👋
@@ -165,7 +187,8 @@ export default async function BerandaGuruPage() {
                       {ujian.judul}
                     </p>
                     <p className="mt-0.5 text-[11.5px] text-[#8b93a6] dark:text-white/40">
-                      {ujian._count.soal} soal · {ujian._count.hasilUjian} peserta · {formatTanggal(ujian.mulai)}
+                      {ujian._count.soal} soal · {ujian._count.hasilUjian} peserta ·{" "}
+                      {formatRentang(ujian.mulai, ujian.selesai)}
                     </p>
                   </div>
 
@@ -208,7 +231,7 @@ export default async function BerandaGuruPage() {
                   </p>
                   <span className="flex shrink-0 items-center gap-1 text-[11px] text-[#8b93a6] dark:text-white/40">
                     <IconClock className="h-3.5 w-3.5" />
-                    {new Intl.DateTimeFormat("id-ID", { hour: "2-digit", minute: "2-digit" }).format(log.waktu)}
+                    {fmtJam.format(log.waktu)}
                   </span>
                 </div>
                 <p className="mt-0.5 truncate text-[11.5px] text-[#8b93a6] dark:text-white/40">

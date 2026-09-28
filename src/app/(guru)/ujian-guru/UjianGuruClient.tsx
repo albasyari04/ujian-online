@@ -128,7 +128,13 @@ function toDatetimeLocal(value: string | Date) {
 }
 
 function formatRentang(mulai: string | Date, selesai: string | Date) {
-  const fmt = new Intl.DateTimeFormat("id-ID", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })
+  const fmt = new Intl.DateTimeFormat("id-ID", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Asia/Jakarta", // kunci ke WIB, jangan ikut jam lokal perangkat pengunjung
+  })
   return `${fmt.format(new Date(mulai))} – ${fmt.format(new Date(selesai))}`
 }
 

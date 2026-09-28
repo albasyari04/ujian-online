@@ -93,7 +93,7 @@ model Soal {
   id         String   @id @default(cuid())
   pertanyaan String   @db.Text
   tipe       TipeSoal @default(PILIHAN_GANDA)
-  poin       Int      @default(1)
+  poin       Float    @default(1) // <-- DIUBAH: Int → Float (agar bisa desimal)
   urutan     Int
   createdAt  DateTime @default(now())
 
@@ -172,8 +172,6 @@ model LogPelanggaran {
   @@map("log_pelanggaran")
 }
 
-// Snapshot TERBARU kamera & layar peserta (satu baris per sesi ujian,
-// ditimpa terus-menerus). Tidak menyimpan riwayat.
 model SnapshotPengawasan {
   hasilUjianId String    @id
   kamera       Bytes?

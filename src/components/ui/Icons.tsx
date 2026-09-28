@@ -197,7 +197,7 @@ export function IconDocument({ className }: IconProps) {
   )
 }
 
-/** Ikon kalkulator — dipakai untuk mata pelajaran eksak seperti Matematika. */
+/** Ikon kalkulator — dipakai untuk tombol Auto Bobot Nilai. */
 export function IconCalculator({ className }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" className={className} fill="none" aria-hidden="true">

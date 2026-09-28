@@ -8,8 +8,9 @@ import {
   IconSpinner,
   IconTrash,
   IconPlus,
-  IconCheckCircle, // <-- Diperbaiki (sebelumnya IconCheck)
-  IconAlertTriangle, // <-- Diperbaiki (sebelumnya IconAlertCircle)
+  IconCheckCircle,
+  IconAlertTriangle,
+  IconCalculator,
 } from "@/components/ui/Icons"
 
 type TipeSoal = "PILIHAN_GANDA" | "ESSAY"
@@ -34,19 +35,16 @@ function opsiKosong(): Required<Pick<OpsiAwal, "teks" | "benar">> & { key: strin
   return { key: idOpsiSementara(), teks: "", benar: false }
 }
 
-/**
- * Form soal versi halaman penuh (bukan modal).
- * Dipakai di route `/soal/baru` dan `/soal/[soalId]/edit`.
- */
 export function FormSoalPage({
   ujianId,
   initialData,
   redirectTo,
+  totalSoalUjian = 0,
 }: {
   ujianId: string
   initialData?: SoalAwal
-  /** URL tujuan setelah simpan/batal. */
   redirectTo: string
+  totalSoalUjian?: number
 }) {
   const router = useRouter()
   const mode = initialData?.id ? "edit" : "create"
@@ -65,6 +63,19 @@ export function FormSoalPage({
 
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+
+  // ================== AUTO BOBOT NILAI ==================
+  function hitungBobotOtomatis() {
+    if (totalSoalUjian <= 0) {
+      alert("Tidak dapat menghitung bobot: total soal ujian tidak diketahui.")
+      return
+    }
+    const bobotIdeal = 100 / totalSoalUjian
+    const bobotFinal = Number.isInteger(bobotIdeal)
+      ? String(bobotIdeal)
+      : bobotIdeal.toFixed(2)
+    setPoin(bobotFinal)
+  }
 
   function tambahOpsi() {
     setOpsi((prev) => [...prev, opsiKosong()])
@@ -116,7 +127,6 @@ export function FormSoalPage({
         return
       }
 
-      // Refresh cache server, lalu kembali ke halaman detail ujian
       router.refresh()
       router.push(redirectTo)
     } catch {
@@ -174,15 +184,36 @@ export function FormSoalPage({
         </div>
 
         <div className="space-y-2">
-          <label className="text-[13px] font-semibold text-[#16233f] dark:text-white/80">Poin / Bobot Nilai</label>
-          <input
-            type="number"
-            min={1}
-            value={poin}
-            onChange={(e) => setPoin(e.target.value)}
-            required
-            className="w-full rounded-[14px] border border-[#e7e4dc] bg-[#fdfdfd] px-4 py-3 text-[13.5px] text-[#34435f] shadow-sm transition-all focus:border-[#818cf8] focus:outline-none focus:ring-4 focus:ring-[#818cf8]/10 dark:border-white/10 dark:bg-[#0d1526] dark:text-white/80"
-          />
+          <label className="text-[13px] font-semibold text-[#16233f] dark:text-white/80">
+            Poin / Bobot Nilai
+          </label>
+          <div className="flex gap-2">
+            <input
+              type="number"
+              min={0.1}
+              step="0.01"
+              value={poin}
+              onChange={(e) => setPoin(e.target.value)}
+              required
+              className="w-full rounded-[14px] border border-[#e7e4dc] bg-[#fdfdfd] px-4 py-3 text-[13.5px] text-[#34435f] shadow-sm transition-all focus:border-[#818cf8] focus:outline-none focus:ring-4 focus:ring-[#818cf8]/10 dark:border-white/10 dark:bg-[#0d1526] dark:text-white/80"
+            />
+            {totalSoalUjian > 0 && (
+              <button
+                type="button"
+                onClick={hitungBobotOtomatis}
+                title={`Hitung otomatis: 100 / ${totalSoalUjian} soal = nilai pas`}
+                className="flex shrink-0 items-center justify-center gap-1.5 rounded-[14px] bg-gradient-to-br from-[#34d399] to-[#059669] px-4 text-[13px] font-semibold text-white shadow-[0_6px_16px_-4px_rgba(5,150,105,0.5)] transition-all hover:-translate-y-0.5 hover:shadow-[0_8px_20px_-4px_rgba(5,150,105,0.6)]"
+              >
+                <IconCalculator className="h-4 w-4" />
+                <span className="hidden sm:inline">Auto</span>
+              </button>
+            )}
+          </div>
+          {totalSoalUjian > 0 && (
+            <p className="text-[11.5px] text-[#8b93a6] dark:text-white/40">
+              Total {totalSoalUjian} soal di ujian ini. Klik <strong>Auto</strong> untuk bobot pas (100/{totalSoalUjian} = {(100 / totalSoalUjian).toFixed(2)}).
+            </p>
+          )}
         </div>
       </div>
 
@@ -213,7 +244,6 @@ export function FormSoalPage({
                     : "border-[#e7e4dc] bg-white hover:border-[#c7cdd8] dark:border-white/10 dark:bg-white/5 dark:hover:border-white/20"
                 }`}
               >
-                {/* Tombol Radio Benar (3D) */}
                 <button
                   type="button"
                   onClick={() => pilihJawabanBenar(o.key)}
@@ -231,7 +261,6 @@ export function FormSoalPage({
                   )}
                 </button>
 
-                {/* Input Teks Opsi */}
                 <input
                   type="text"
                   value={o.teks}
@@ -241,7 +270,6 @@ export function FormSoalPage({
                   className="w-full bg-transparent px-1 text-[13.5px] text-[#16233f] placeholder:text-[#a0aec0] focus:outline-none dark:text-white/80 dark:placeholder:text-white/30"
                 />
 
-                {/* Hapus Opsi */}
                 {opsi.length > 2 && (
                   <button
                     type="button"

@@ -8,9 +8,6 @@ import { requireAdmin, requireGuru } from "@/lib/api-auth"
 type Params = { params: Promise<{ id: string; soalId: string }> }
 type OpsiInput = { teks: string; benar: boolean }
 
-/* =========================================================
-   PUT /api/ujian/:id/soal/:soalId
-========================================================= */
 export async function PUT(request: NextRequest, { params }: Params) {
   const { soalId } = await params
   let guard = await requireGuru()
@@ -93,10 +90,6 @@ export async function PUT(request: NextRequest, { params }: Params) {
   }
 }
 
-/* =========================================================
-   DELETE /api/ujian/:id/soal/:soalId
-   Hapus SATU soal. Urutan: Jawaban → Opsi → Soal.
-========================================================= */
 export async function DELETE(_request: NextRequest, { params }: Params) {
   const { soalId } = await params
   let guard = await requireGuru()
@@ -116,11 +109,8 @@ export async function DELETE(_request: NextRequest, { params }: Params) {
     }
 
     await prisma.$transaction(async (tx) => {
-      // 1. Hapus jawaban peserta yang mengacu ke soal ini
       await tx.jawaban.deleteMany({ where: { soalId } })
-      // 2. Hapus opsi
       await tx.opsi.deleteMany({ where: { soalId } })
-      // 3. Hapus soal
       await tx.soal.delete({ where: { id: soalId } })
     })
 

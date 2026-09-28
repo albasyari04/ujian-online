@@ -14,7 +14,6 @@ export default async function EditSoalPage({
   const guru = await requireGuruSession()
   const { id, soalId } = await params
 
-  // Pastikan ujian milik guru yang login
   const ujian = await prisma.ujian.findFirst({
     where: { id, pembuatId: guru.user.id },
     select: { id: true, judul: true },
@@ -22,13 +21,17 @@ export default async function EditSoalPage({
 
   if (!ujian) notFound()
 
-  // Ambil soal + opsi
   const soal = await prisma.soal.findFirst({
     where: { id: soalId, ujianId: ujian.id },
     include: { opsi: { orderBy: { urutan: "asc" } } },
   })
 
   if (!soal) notFound()
+
+  // Hitung total soal di ujian ini (untuk auto-bobot)
+  const totalSoalUjian = await prisma.soal.count({
+    where: { ujianId: ujian.id },
+  })
 
   return (
     <div className="w-full space-y-5">
@@ -70,6 +73,7 @@ export default async function EditSoalPage({
         <FormSoalPage
           ujianId={ujian.id}
           redirectTo={`/ujian-guru/${ujian.id}`}
+          totalSoalUjian={totalSoalUjian}
           initialData={{
             id: soal.id,
             pertanyaan: soal.pertanyaan,

@@ -3,8 +3,10 @@ import Link from "next/link"
 import { prisma } from "@/lib/prisma"
 import { Badge } from "@/components/ui/Badge"
 import { Card, StatCard } from "@/components/ui/Card"
+import { PantauLive } from "@/components/pengawasan/PantauLive"
 
 const formatterWaktu = new Intl.DateTimeFormat("id-ID", {
+  timeZone: "Asia/Jakarta",
   day: "numeric",
   month: "short",
   hour: "2-digit",
@@ -20,11 +22,19 @@ const labelPelanggaran: Record<string, string> = {
   DEVTOOLS: "Membuka DevTools",
 }
 
+const WIB_OFFSET_MS = 7 * 60 * 60 * 1000
+const HARI_MS = 24 * 60 * 60 * 1000
+
+/** Awal hari ini (00:00) menurut WIB, terlepas dari zona waktu server. */
+function awalHariWib() {
+  const sekarangWib = Date.now() + WIB_OFFSET_MS
+  return new Date(Math.floor(sekarangWib / HARI_MS) * HARI_MS - WIB_OFFSET_MS)
+}
+
 export const dynamic = "force-dynamic"
 
 export default async function PengawasanPage() {
-  const now = new Date()
-  const [sedangMengerjakan, pelanggaran, totalPelanggaran] = await Promise.all([
+  const [sedangMengerjakan, pelanggaran, totalPelanggaran, pelanggaranHariIni] = await Promise.all([
     prisma.hasilUjian.findMany({
       where: { status: "SEDANG_DIKERJAKAN" },
       orderBy: { waktuMulai: "desc" },
@@ -36,9 +46,8 @@ export default async function PengawasanPage() {
       include: { hasilUjian: { include: { user: { select: { nama: true } }, ujian: { select: { judul: true } } } } },
     }),
     prisma.logPelanggaran.count(),
+    prisma.logPelanggaran.count({ where: { waktu: { gte: awalHariWib() } } }),
   ])
-
-  const pelanggaranHariIni = pelanggaran.filter((item) => item.waktu.toDateString() === now.toDateString()).length
 
   return (
     <div className="flex flex-col gap-6">
@@ -74,6 +83,8 @@ export default async function PengawasanPage() {
           tone="blue"
         />
       </div>
+
+      <PantauLive />
 
       <Card className="overflow-hidden">
         <div className="border-b border-[#edf0ef] px-5 py-4 dark:border-white/10">

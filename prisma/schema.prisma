@@ -136,6 +136,7 @@ model HasilUjian {
 
   jawaban        Jawaban[]
   logPelanggaran LogPelanggaran[]
+  snapshot       SnapshotPengawasan?
 
   @@unique([userId, ujianId])
   @@index([ujianId])
@@ -169,6 +170,22 @@ model LogPelanggaran {
 
   @@index([hasilUjianId])
   @@map("log_pelanggaran")
+}
+
+// Snapshot TERBARU kamera & layar peserta (satu baris per sesi ujian,
+// ditimpa terus-menerus). Tidak menyimpan riwayat.
+model SnapshotPengawasan {
+  hasilUjianId String    @id
+  kamera       Bytes?
+  layar        Bytes?
+  kameraAt     DateTime?
+  layarAt      DateTime?
+  fokus        Boolean   @default(true)
+  updatedAt    DateTime  @updatedAt
+
+  hasilUjian HasilUjian @relation(fields: [hasilUjianId], references: [id], onDelete: Cascade)
+
+  @@map("snapshot_pengawasan")
 }
 
 model Notifikasi {

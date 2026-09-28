@@ -1,20 +1,14 @@
 "use client"
 
-import { useRef, useState } from "react"
+import { useMemo, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/Button"
 import { Modal } from "@/components/ui/Modal"
 import { BACAAN_START, BACAAN_END, SOAL_START, splitBacaanDanSoal } from "@/lib/bacaan"
 import { docxToText } from "@/lib/docxToText"
+import { parseRows, parseText, validateQuestions, type Question } from "@/lib/importParser"
 
 export { BACAAN_START, BACAAN_END, SOAL_START, splitBacaanDanSoal }
-
-type Option = { teks: string; benar: boolean }
-type Question = { pertanyaan: string; tipe: "PILIHAN_GANDA" | "ESSAY"; poin: number; opsi?: Option[] }
-
-function clean(value: unknown) {
-  return String(value ?? "").trim()
-}
 
 async function readApiResponse(response: Response) {
   const contentType = response.headers.get("content-type") ?? ""
@@ -33,303 +27,6 @@ async function readApiResponse(response: Response) {
       ? "Server mengembalikan respons yang tidak valid."
       : `Import gagal (HTTP ${response.status}). Server mengembalikan halaman HTML, bukan JSON.`
   )
-}
-
-function parseAnswer(value: string) {
-  const answer = clean(value).toUpperCase().replace(/[.)\],;:]+$/, "")
-  const letter = answer.match(/(?:^|[^A-E])([A-E])(?:$|[^A-E])/i)?.[1]
-  if (letter) return letter.toUpperCase()
-  const number = Number(answer.match(/\b([1-5])\b/)?.[1])
-  return Number.isInteger(number) ? String.fromCharCode(64 + number) : ""
-}
-
-function extractAnswer(lines: string[]) {
-  for (let index = 0; index < lines.length; index += 1) {
-    const line = lines[index]
-    const keyMatch = line.match(/\b(?:kunci(?:\s+jawaban)?|jawaban(?:\s+(?:yang\s+)?benar)?|answer|ans)\b[^\r\n]*?(?:opsi\s*)?\(?([A-E]|[1-5])\)?\s*$/i)
-    if (keyMatch) return parseAnswer(keyMatch[1])
-    if (/\b(?:kunci(?:\s+jawaban)?|jawaban(?:\s+benar)?|answer|ans)\b\s*[:=\-]?\s*$/i.test(line)) {
-      const nextAnswer = lines[index + 1]?.match(/^[(:\-\s]*(?:opsi\s*)?([A-E]|[1-5])(?:\b|\s*\))/i)
-      if (nextAnswer) return parseAnswer(nextAnswer[1])
-    }
-  }
-  return ""
-}
-
-function extractGlobalAnswers(lines: string[]) {
-  const answers = new Map<number, string>()
-  for (const line of lines) {
-    if (/^(?:[A-Z]\.\s*)?(?:pilihan\s+ganda|essay|uraian|isian|kunci|pedoman|penilaian)\b/i.test(line)) continue
-
-    const numberFirst = [...line.matchAll(/(?:^|[\s,;])(\d{1,3})\s*[.):=\-]?\s*(?:jawaban\s*[:=\-]?\s*)?(?:opsi\s*)?\(?([A-E])\)?(?=\s|,|;|$)/gi)]
-    for (const match of numberFirst) {
-      const num = Number(match[1])
-      const ans = parseAnswer(match[2])
-      if (num >= 1 && num <= 200 && ans) answers.set(num, ans)
-    }
-
-    const letterFirst = [...line.matchAll(/(?:^|[\s,;])([A-E])\s*(\d{1,3})\s*[.):=\-]?(?=\s|,|;|$)/gi)]
-    for (const match of letterFirst) {
-      const num = Number(match[2])
-      const ans = parseAnswer(match[1])
-      if (num >= 1 && num <= 200 && ans) answers.set(num, ans)
-    }
-  }
-
-  // Fallback: kunci berupa daftar huruf tanpa nomor (C, B, D, ...) -> urut sesuai nomor soal
-  if (answers.size === 0) {
-    let seq = 0
-    for (const line of lines) {
-      const bare = line.match(/^(?:[a-z]\.\s*)?([A-E])$/i)
-      if (bare) answers.set(++seq, bare[1].toUpperCase())
-    }
-  }
-  return answers
-}
-
-function isAnswerSectionHeader(line: string) {
-  return /^(?:kunci\s+jawaban|kunci|daftar\s+jawaban|jawaban|answer\s+key|pedoman\s+penilaian)\b/i.test(line)
-}
-
-function isAnswerSubHeader(line: string) {
-  return /^(?:[A-Z]\.\s*)?(?:pilihan\s+ganda|essay|uraian|isian)\b/i.test(line)
-}
-
-function sanitizeRawText(text: string): string {
-  return text
-    .replace(/\r/g, "")
-    .replace(/\u00a0|\u200b/g, " ")
-    .replace(/^=+\s*Page\s*\d+\s*=+$/gim, "")
-    .replace(/^[-_]{3,}$/gm, "")
-    .replace(/^#{1,6}\s*/gm, "")
-    .replace(/\*{1,3}([^*]+)\*{1,3}/g, "$1")
-    .replace(/_{2,}([^_]+)_{2,}/g, "$1")
-    .replace(/^>\s?/gm, "")
-    .replace(/\\\s*$/gm, "")
-    .replace(/\t+/g, " ")
-    .replace(/[ ]{2,}/g, " ")
-}
-
-function extractOptions(lines: string[]) {
-  const optionPattern = /(?:^|[\s])(?:\(?)([A-E])(?:\)?\s*[.)]|\)?\s*[-:])\s*/gi
-  const options: { label: string; teks: string }[] = []
-
-  for (const line of lines) {
-    const matches = [...line.matchAll(optionPattern)]
-    if (matches.length === 0) continue
-    for (const [matchIndex, match] of matches.entries()) {
-      const start = (match.index ?? 0) + match[0].length
-      const end = matches[matchIndex + 1]?.index ?? line.length
-      const teks = line.slice(start, end).trim()
-      if (teks) options.push({ label: match[1].toUpperCase(), teks: teks.replace(/^\s*(?:\[x\]|\(benar\)|\*+)\s*/i, "") })
-    }
-  }
-
-  return options
-}
-
-function parseRows(rows: Record<string, unknown>[]): Question[] {
-  return rows.map((row, index) => {
-    const normalized = Object.fromEntries(Object.entries(row).map(([key, value]) => [key.toLowerCase().replace(/[\s_-]+/g, ""), value]))
-    const value = (...keys: string[]) => keys.map((key) => normalized[key.replace(/[\s_-]+/g, "").toLowerCase()]).find((item) => clean(item))
-    const question = clean(value("pertanyaan", "soal", "question"))
-    const type = clean(value("tipe", "type") ?? "PILIHAN_GANDA").toUpperCase()
-    const point = Number(value("poin", "point") ?? 1)
-    if (!question) throw new Error(`Baris ${index + 2}: kolom pertanyaan kosong.`)
-    if (type === "ESSAY") return { pertanyaan: question, tipe: "ESSAY", poin: point, opsi: [] }
-    const labels = ["A", "B", "C", "D", "E"]
-    const answer = parseAnswer(clean(value("jawaban", "kunci", "answer")))
-    const opsi = labels.map((label) => ({ teks: clean(value(`opsi${label}`, label)), benar: answer === label })).filter((option) => option.teks)
-    if (opsi.length < 2) throw new Error(`Baris ${index + 2}: minimal 2 opsi diperlukan.`)
-    if (!answer || !opsi.some((option) => option.benar)) throw new Error(`Baris ${index + 2}: jawaban/kunci A-E wajib diisi.`)
-    return { pertanyaan: question, tipe: "PILIHAN_GANDA", poin: point, opsi }
-  })
-}
-
-/** Cek apakah baris adalah baris opsi A-E */
-function isOptionLine(line: string): boolean {
-  return /^\(?[A-E]\)?\s*[.)]\s+/i.test(line)
-}
-
-/** Cek apakah baris adalah EKOR opsi (baris E.) */
-function isLastOptionLine(line: string): boolean {
-  return /^\(?E\)?\s*[.)]\s+/i.test(line)
-}
-
-/**
- * Deteksi baris HEADER DOKUMEN yang harus dibuang.
- * PENTING: keyword di-anchor dengan \b supaya "Bacalah" tidak match "baca".
- */
-function isHeaderLine(line: string): boolean {
-  return /^(?:\d+\s*[.)]\s*)?(?:soal\s+ujian|naskah\s+soal|penilaian|ujian|sma\b|smk\b|ma\b|tahun\s+pelajaran|mata\s+pelajaran|kelas\s*\/|hari\s*\/|waktu\s*:|nama\s+siswa|nomor\s+ujian|nama\s*:|kelas\s*:|tanggal\s*:|petunjuk|pilihlah|jawablah|bacaan\s+utama|pilihan\s+ganda)/i.test(line)
-}
-
-/**
- * Deteksi baris BACAAN.
- * Baris bacaan = bukan header, bukan opsi, bukan soal ber-nomor.
- * Termasuk: "Bacalah paragraf cerita...", "Pak Seno menatap...", dsb.
- */
-function isBacaanLine(line: string): boolean {
-  if (!line) return false
-  if (isHeaderLine(line)) return false
-  if (isOptionLine(line)) return false
-  if (/^\d+[.)]\s*/.test(line)) return false
-  if (isAnswerSectionHeader(line)) return false
-  if (isAnswerSubHeader(line)) return false
-  return true
-}
-
-function parseText(rawText: string): Question[] {
-  const sanitized = sanitizeRawText(rawText)
-  const lines = sanitized.split("\n").map((line) => line.trim()).filter(Boolean)
-
-  // --- Tahap 1: Pisahkan section soal dan section kunci jawaban ---
-  const soalLines: string[] = []
-  const answerLines: string[] = []
-  let inAnswerSection = false
-
-  for (const line of lines) {
-    if (isAnswerSectionHeader(line)) {
-      inAnswerSection = true
-      continue
-    }
-    if (inAnswerSection && isAnswerSubHeader(line)) continue
-    if (inAnswerSection) answerLines.push(line)
-    else soalLines.push(line)
-  }
-
-  const globalAnswers = extractGlobalAnswers(answerLines)
-
-  // --- Tahap 2: Bagi soalLines menjadi blok-blok berdasarkan opsi E ---
-  type RawBlock = { bacaan: string; soal: string; blockLines: string[]; opsi: { label: string; teks: string }[]; questionNumber: number | null }
-  const rawBlocks: RawBlock[] = []
-
-  let pendingBacaan: string[] = []
-  let currentBlock: { lines: string[] } | null = null
-  let sudahPernahKetemuSoal = false
-
-  const simpanBlokSekarang = () => {
-    if (!currentBlock) return
-    const blockLines = currentBlock.lines
-    if (blockLines.length === 0) {
-      currentBlock = null
-      return
-    }
-
-    let questionLine = blockLines[0]
-    let questionIdx = 0
-    for (let i = 0; i < blockLines.length; i += 1) {
-      if (!isOptionLine(blockLines[i])) {
-        questionLine = blockLines[i]
-        questionIdx = i
-        break
-      }
-    }
-
-    const nomorMatch = questionLine.match(/^(\d+)[.)]\s*/)
-    const questionNumber = nomorMatch ? Number(nomorMatch[1]) : null
-    const pertanyaan = questionLine.replace(/^(\d+[.)]|soal\s*\d*[:.)]?)\s*/i, "").trim()
-
-    const opsi = extractOptions(blockLines.slice(questionIdx))
-
-    // Filter bacaan: hanya baris yang benar-benar bacaan (bukan header/opsi)
-    const bacaanTeks = pendingBacaan
-      .filter((l) => isBacaanLine(l))
-      .join("\n")
-      .trim()
-
-    rawBlocks.push({
-      bacaan: bacaanTeks,
-      soal: pertanyaan,
-      blockLines,
-      opsi,
-      questionNumber,
-    })
-
-    pendingBacaan = []
-    currentBlock = null
-  }
-
-  for (const line of soalLines) {
-    if (!sudahPernahKetemuSoal && isHeaderLine(line)) continue
-
-    if (isOptionLine(line)) {
-      if (!currentBlock) currentBlock = { lines: [] }
-      currentBlock.lines.push(line)
-      if (isLastOptionLine(line)) {
-        simpanBlokSekarang()
-        sudahPernahKetemuSoal = true
-      }
-      continue
-    }
-
-    if (currentBlock) {
-      const diawaliAngka = /^\d+[.)]\s*/i.test(line)
-      if (diawaliAngka) {
-        simpanBlokSekarang()
-        currentBlock = { lines: [line] }
-      } else {
-        currentBlock.lines.push(line)
-      }
-      continue
-    }
-
-    const diawaliAngka = /^\d+[.)]\s*/i.test(line)
-    if (diawaliAngka) {
-      currentBlock = { lines: [line] }
-    } else {
-      if (isBacaanLine(line)) pendingBacaan.push(line)
-    }
-  }
-
-  simpanBlokSekarang()
-
-  // --- Tahap 3: Bangun Question dari rawBlocks ---
-  const questions: Question[] = []
-  let soalCounter = 0
-
-  for (const blok of rawBlocks) {
-    if (!blok.soal) continue
-
-    soalCounter += 1
-
-    const answer =
-      (blok.questionNumber ? globalAnswers.get(blok.questionNumber) : "") ||
-      globalAnswers.get(soalCounter) ||
-      extractAnswer(blok.blockLines) ||
-      ""
-
-    const finalQuestion = blok.bacaan
-      ? `${BACAAN_START}\n${blok.bacaan}\n${BACAAN_END}\n${SOAL_START}\n${blok.soal}`
-      : blok.soal
-
-    if (blok.opsi.length === 0) {
-      questions.push({ pertanyaan: finalQuestion, tipe: "ESSAY", poin: 1, opsi: [] })
-      continue
-    }
-
-    if (blok.opsi.length < 2) {
-      throw new Error(
-        `Soal ke-${soalCounter} ("${blok.soal.slice(0, 50)}..."): hanya ${blok.opsi.length} opsi terbaca.`
-      )
-    }
-
-    if (!answer) {
-      throw new Error(
-        `Soal ke-${soalCounter} ("${blok.soal.slice(0, 50)}..."): kunci jawaban tidak ditemukan. ` +
-          `Pastikan ada bagian "KUNCI JAWABAN" di akhir dokumen.`
-      )
-    }
-
-    questions.push({
-      pertanyaan: finalQuestion,
-      tipe: "PILIHAN_GANDA",
-      poin: 1,
-      opsi: blok.opsi.map((option) => ({ teks: option.teks, benar: option.label === answer })),
-    })
-  }
-
-  return questions
 }
 
 async function parseFile(file: File, ujianId: string): Promise<Question[]> {
@@ -359,6 +56,20 @@ async function parseFile(file: File, ujianId: string): Promise<Question[]> {
   throw new Error("Format tidak didukung. Gunakan .docx, .xlsx, .xls, .csv, .pdf, atau .txt.")
 }
 
+/** Rapikan payload: trim teks, pastikan bentuk data sesuai yang diharapkan server. */
+function buildPayload(questions: Question[]) {
+  return questions.map((q) =>
+    q.tipe === "ESSAY"
+      ? { pertanyaan: q.pertanyaan.trim(), tipe: "ESSAY" as const, poin: q.poin, opsi: [] }
+      : {
+          pertanyaan: q.pertanyaan.trim(),
+          tipe: "PILIHAN_GANDA" as const,
+          poin: q.poin,
+          opsi: (q.opsi ?? []).map((o) => ({ teks: o.teks.trim(), benar: Boolean(o.benar) })),
+        }
+  )
+}
+
 export function ImportSoal({ ujianId, onSuccess }: { ujianId: string; onSuccess?: () => void }) {
   const router = useRouter()
   const inputRef = useRef<HTMLInputElement>(null)
@@ -368,6 +79,10 @@ export function ImportSoal({ ujianId, onSuccess }: { ujianId: string; onSuccess?
   const [error, setError] = useState("")
   const [isParsing, setIsParsing] = useState(false)
   const [isImporting, setIsImporting] = useState(false)
+
+  // Validasi otomatis setiap kali soal berubah (termasuk saat guru memilih kunci di pratinjau).
+  const issues = useMemo(() => validateQuestions(questions), [questions])
+  const problemIndexes = useMemo(() => new Set(issues.map((issue) => issue.index)), [issues])
 
   function reset() {
     setFileName("")
@@ -381,6 +96,7 @@ export function ImportSoal({ ujianId, onSuccess }: { ujianId: string; onSuccess?
       reset()
     }
   }
+
   async function handleFile(file?: File) {
     if (!file) return
     setFileName(file.name)
@@ -395,14 +111,34 @@ export function ImportSoal({ ujianId, onSuccess }: { ujianId: string; onSuccess?
       setIsParsing(false)
     }
   }
+
+  /** Pilih opsi ke-`optionIndex` sebagai satu-satunya jawaban benar pada soal ke-`questionIndex`. */
+  function setKunci(questionIndex: number, optionIndex: number) {
+    setError("")
+    setQuestions((prev) =>
+      prev.map((q, i) =>
+        i === questionIndex && q.tipe === "PILIHAN_GANDA"
+          ? { ...q, opsi: (q.opsi ?? []).map((o, j) => ({ ...o, benar: j === optionIndex })) }
+          : q
+      )
+    )
+  }
+
   async function importQuestions() {
+    // Cegah request yang pasti ditolak server (HTTP 400).
+    const localIssues = validateQuestions(questions)
+    if (localIssues.length > 0) {
+      setError(`Perbaiki dulu ${localIssues.length} masalah pada soal sebelum import.`)
+      return
+    }
+
     setIsImporting(true)
     setError("")
     try {
       const response = await fetch(`/api/ujian/${ujianId}/soal/import`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ soal: questions }),
+        body: JSON.stringify({ soal: buildPayload(questions) }),
       })
       const result = await readApiResponse(response)
       if (!response.ok) throw new Error(result.message ?? "Impor gagal.")
@@ -478,18 +214,35 @@ export function ImportSoal({ ujianId, onSuccess }: { ujianId: string; onSuccess?
             </p>
           )}
 
+          {issues.length > 0 && (
+            <div className="rounded-[10px] border border-amber-200 bg-amber-50 px-3.5 py-2.5 text-[12.5px] text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300">
+              <p className="font-semibold">
+                {issues.length} masalah ditemukan. Perbaiki di pratinjau di bawah (klik opsi untuk menandai jawaban benar):
+              </p>
+              <ul className="mt-1 list-disc space-y-0.5 pl-5">
+                {issues.slice(0, 8).map((issue, i) => (
+                  <li key={`${issue.index}-${i}`}>{issue.message}</li>
+                ))}
+                {issues.length > 8 && <li>...dan {issues.length - 8} masalah lainnya.</li>}
+              </ul>
+            </div>
+          )}
+
           {questions.length > 0 && (
             <div>
               <p className="mb-2 text-[13px] font-semibold text-[#16233f] dark:text-white">
                 Pratinjau {questions.length} soal
               </p>
-              <div className="max-h-72 overflow-y-auto rounded-[12px] border border-[#edf0ef] dark:border-white/10">
-                {questions.slice(0, 10).map((question, index) => {
+              <div className="max-h-96 overflow-y-auto rounded-[12px] border border-[#edf0ef] dark:border-white/10">
+                {questions.map((question, index) => {
                   const { bacaan, soal } = splitBacaanDanSoal(question.pertanyaan)
+                  const bermasalah = problemIndexes.has(index)
                   return (
                     <div
-                      key={`${question.pertanyaan}-${index}`}
-                      className="border-b border-[#f0f2f1] px-3.5 py-2.5 last:border-0 dark:border-white/5"
+                      key={`${index}-${question.pertanyaan.slice(0, 30)}`}
+                      className={`border-b border-[#f0f2f1] px-3.5 py-2.5 last:border-0 dark:border-white/5 ${
+                        bermasalah ? "bg-red-50/60 dark:bg-red-500/5" : ""
+                      }`}
                     >
                       {bacaan && (
                         <div className="mb-2 rounded-[8px] border border-amber-200 bg-amber-50/60 px-2.5 py-2 dark:border-amber-500/20 dark:bg-amber-500/10">
@@ -504,6 +257,36 @@ export function ImportSoal({ ujianId, onSuccess }: { ujianId: string; onSuccess?
                       <p className="text-[12.5px] font-medium text-[#34435f] dark:text-white/80">
                         {index + 1}. {soal.length > 150 ? `${soal.slice(0, 150)}...` : soal}
                       </p>
+
+                      {question.tipe === "PILIHAN_GANDA" ? (
+                        <div className="mt-1.5 space-y-1">
+                          {(question.opsi ?? []).map((option, optionIndex) => (
+                            <button
+                              key={optionIndex}
+                              type="button"
+                              onClick={() => setKunci(index, optionIndex)}
+                              className={`flex w-full items-start gap-2 rounded-[8px] px-2 py-1 text-left text-[11.5px] transition-colors ${
+                                option.benar
+                                  ? "bg-emerald-50 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-300"
+                                  : "text-[#5b657d] hover:bg-[#f4f5f7] dark:text-white/60 dark:hover:bg-white/5"
+                              }`}
+                              title="Klik untuk menandai sebagai jawaban benar"
+                            >
+                              <span
+                                className={`mt-px flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[9.5px] font-bold ${
+                                  option.benar
+                                    ? "bg-emerald-500 text-white"
+                                    : "bg-[#e7e9f0] text-[#5b657d] dark:bg-white/10 dark:text-white/50"
+                                }`}
+                              >
+                                {String.fromCharCode(65 + optionIndex)}
+                              </span>
+                              <span className="break-words">{option.teks}</span>
+                            </button>
+                          ))}
+                        </div>
+                      ) : null}
+
                       <p className="mt-1 text-[11.5px] text-[#8b93a6] dark:text-white/40">
                         {question.tipe === "ESSAY" ? "Essay" : `${question.opsi?.length ?? 0} opsi`} · {question.poin} poin
                       </p>
@@ -511,9 +294,6 @@ export function ImportSoal({ ujianId, onSuccess }: { ujianId: string; onSuccess?
                   )
                 })}
               </div>
-              {questions.length > 10 && (
-                <p className="mt-1 text-[11.5px] text-[#8b93a6] dark:text-white/40">Menampilkan 10 soal pertama.</p>
-              )}
             </div>
           )}
 
@@ -524,7 +304,7 @@ export function ImportSoal({ ujianId, onSuccess }: { ujianId: string; onSuccess?
             <Button
               type="button"
               onClick={() => void importQuestions()}
-              disabled={questions.length === 0 || isParsing}
+              disabled={questions.length === 0 || isParsing || issues.length > 0}
               isLoading={isImporting}
             >
               Import {questions.length > 0 ? `${questions.length} soal` : "soal"}

@@ -21,6 +21,7 @@ export type SoalAwal = {
   id?: string
   pertanyaan: string
   tipe: TipeSoal
+  kunciJawaban?: string | null
   poin: number
   opsi: OpsiAwal[]
 }
@@ -52,6 +53,7 @@ export function FormSoalPage({
   const [pertanyaan, setPertanyaan] = useState(initialData?.pertanyaan ?? "")
   const [tipe, setTipe] = useState<TipeSoal>(initialData?.tipe ?? "PILIHAN_GANDA")
   const [poin, setPoin] = useState(String(initialData?.poin ?? 1))
+  const [kunciJawaban, setKunciJawaban] = useState(initialData?.kunciJawaban ?? "")
   const [opsi, setOpsi] = useState(() => {
     const awal = initialData?.opsi?.map((o) => ({
       key: o.id ?? idOpsiSementara(),
@@ -113,6 +115,7 @@ export function FormSoalPage({
           pertanyaan,
           tipe,
           poin: Number(poin),
+          kunciJawaban: tipe === "ESSAY" ? kunciJawaban.trim() || null : null,
           opsi:
             tipe === "PILIHAN_GANDA"
               ? opsi.map(({ teks, benar }) => ({ teks, benar }))
@@ -285,6 +288,25 @@ export function FormSoalPage({
           </div>
           <p className="mt-2 text-[11.5px] text-[#8b93a6] dark:text-white/40">
             Pilih tombol di samping opsi untuk menandai jawaban yang benar.
+          </p>
+        </div>
+      )}
+
+      {/* ================= KUNCI JAWABAN (Hanya Essay) ================= */}
+      {tipe === "ESSAY" && (
+        <div className="space-y-2 pt-2">
+          <label className="text-[13px] font-semibold text-[#16233f] dark:text-white/80">
+            Kunci Jawaban / Jawaban Acuan
+          </label>
+          <textarea
+            value={kunciJawaban}
+            onChange={(e) => setKunciJawaban(e.target.value)}
+            rows={6}
+            placeholder="Tulis jawaban acuan atau poin-poin penting yang harus ada di jawaban siswa..."
+            className="w-full resize-y rounded-[14px] border border-[#e7e4dc] bg-[#fdfdfd] p-4 text-[13.5px] text-[#34435f] shadow-inner transition-all placeholder:text-[#a0aec0] focus:border-[#818cf8] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#818cf8]/10 dark:border-white/10 dark:bg-[#0d1526] dark:text-white/80 dark:placeholder:text-white/30 dark:focus:border-[#818cf8] dark:focus:bg-[#0d1526]"
+          />
+          <p className="text-[11.5px] text-[#8b93a6] dark:text-white/40">
+            Hanya terlihat oleh guru. Dipakai sebagai acuan saat menilai jawaban esai siswa.
           </p>
         </div>
       )}

@@ -62,7 +62,7 @@ export default async function EditSoalPage({
               Edit Soal
             </h1>
             <p className="mt-1.5 text-[13px] text-[#5b657d] dark:text-white/50">
-              Ubah pertanyaan, tipe soal, poin, atau opsi jawaban di bawah ini.
+              Ubah pertanyaan, tipe soal, kunci jawaban, poin, atau opsi jawaban di bawah ini.
             </p>
           </div>
         </div>
@@ -78,6 +78,7 @@ export default async function EditSoalPage({
             id: soal.id,
             pertanyaan: soal.pertanyaan,
             tipe: soal.tipe,
+            kunciJawaban: soal.kunciJawaban ?? "",
             poin: soal.poin,
             opsi: soal.opsi.map((o) => ({
               id: o.id,

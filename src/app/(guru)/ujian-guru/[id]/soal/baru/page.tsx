@@ -21,6 +21,10 @@ export default async function TambahSoalPage({
 
   if (!ujian) notFound()
 
+  // Total soal setelah soal baru ini tersimpan (untuk auto-bobot)
+  const totalSoalUjian =
+    (await prisma.soal.count({ where: { ujianId: ujian.id } })) + 1
+
   return (
     <div className="mx-auto max-w-3xl space-y-5">
       <Link
@@ -37,12 +41,16 @@ export default async function TambahSoalPage({
         </p>
         <h1 className="mt-1 text-[22px] font-bold text-[#16233f] dark:text-white">Tambah Soal Baru</h1>
         <p className="mt-1 text-[13px] text-[#5b657d] dark:text-white/50">
-          Isi pertanyaan, tipe soal, poin, dan opsi jawaban (jika pilihan ganda).
+          Isi pertanyaan, tipe soal, poin, dan opsi jawaban (pilihan ganda) atau kunci jawaban (essay).
         </p>
       </div>
 
       <div className="rounded-[18px] border border-[#e7e4dc] bg-white p-5 shadow-[0_1px_2px_rgba(22,35,63,0.04),0_14px_28px_-14px_rgba(49,46,129,0.2)] dark:border-white/10 dark:bg-[#101a30] sm:p-6">
-        <FormSoalPage ujianId={ujian.id} redirectTo={`/ujian-guru/${ujian.id}`} />
+        <FormSoalPage
+          ujianId={ujian.id}
+          redirectTo={`/ujian-guru/${ujian.id}`}
+          totalSoalUjian={totalSoalUjian}
+        />
       </div>
     </div>
   )

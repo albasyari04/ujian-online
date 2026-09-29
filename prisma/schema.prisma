@@ -93,6 +93,7 @@ model Soal {
   id         String   @id @default(cuid())
   pertanyaan String   @db.Text
   tipe       TipeSoal @default(PILIHAN_GANDA)
+  kunciJawaban String? @db.Text // jawaban acuan untuk soal esai (hanya dilihat guru)
   poin       Float    @default(1) // <-- DIUBAH: Int → Float (agar bisa desimal)
   urutan     Int
   createdAt  DateTime @default(now())

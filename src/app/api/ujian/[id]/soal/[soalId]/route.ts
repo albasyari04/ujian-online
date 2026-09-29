@@ -8,6 +8,8 @@ import { requireAdmin, requireGuru } from "@/lib/api-auth"
 type Params = { params: Promise<{ id: string; soalId: string }> }
 type OpsiInput = { teks: string; benar: boolean }
 
+const MAKS_KUNCI_JAWABAN = 10000
+
 export async function PUT(request: NextRequest, { params }: Params) {
   const { soalId } = await params
   let guard = await requireGuru()
@@ -21,11 +23,12 @@ export async function PUT(request: NextRequest, { params }: Params) {
     return NextResponse.json({ message: "Data yang dikirim tidak valid." }, { status: 400 })
   }
 
-  const { pertanyaan, tipe, poin, opsi } = body as {
+  const { pertanyaan, tipe, poin, opsi, kunciJawaban } = body as {
     pertanyaan?: string
     tipe?: string
     poin?: number
     opsi?: OpsiInput[]
+    kunciJawaban?: string | null
   }
 
   if (typeof pertanyaan !== "string" || pertanyaan.trim().length === 0) {
@@ -40,6 +43,23 @@ export async function PUT(request: NextRequest, { params }: Params) {
   if (!Number.isFinite(poinValue) || poinValue <= 0) {
     return NextResponse.json({ message: "Poin harus berupa angka lebih dari 0." }, { status: 400 })
   }
+
+  if (kunciJawaban != null && typeof kunciJawaban !== "string") {
+    return NextResponse.json({ message: "Kunci jawaban tidak valid." }, { status: 400 })
+  }
+  if (typeof kunciJawaban === "string" && kunciJawaban.length > MAKS_KUNCI_JAWABAN) {
+    return NextResponse.json(
+      { message: `Kunci jawaban maksimal ${MAKS_KUNCI_JAWABAN} karakter.` },
+      { status: 400 }
+    )
+  }
+
+  // Kunci jawaban hanya berlaku untuk essay. Jika tipe diganti ke pilihan ganda
+  // atau kolom dikosongkan, nilainya di-reset ke null.
+  const kunciFinal =
+    tipe === "ESSAY" && typeof kunciJawaban === "string" && kunciJawaban.trim().length > 0
+      ? kunciJawaban.trim()
+      : null
 
   let opsiValid: OpsiInput[] = []
 
@@ -65,6 +85,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
         data: {
           pertanyaan: pertanyaan.trim(),
           tipe,
+          kunciJawaban: kunciFinal,
           poin: poinValue,
           opsi:
             tipe === "PILIHAN_GANDA"

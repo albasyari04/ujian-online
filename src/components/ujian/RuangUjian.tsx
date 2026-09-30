@@ -1,6 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
+import Image from "next/image"
 import { useRouter } from "next/navigation"
 
 import { NavigasiSoal } from "@/components/ujian/NavigasiSoal"
@@ -8,6 +9,7 @@ import { PengawasUjian } from "@/components/ujian/PengawasUjian"
 import { SoalCard, type SoalPeserta } from "@/components/ujian/SoalCard"
 import { Timer } from "@/components/ujian/Timer"
 import { splitBacaanDanSoal } from "@/lib/bacaan"
+import { getSubjectIconSrc } from "@/lib/subject-icons"
 import type { PengaturanPelanggaranAktif } from "@/lib/pengaturan"
 
 type JawabanAwal = { soalId: string; jawabanTeks: string | null; opsiPilihan: string | null }
@@ -158,9 +160,13 @@ export function RuangUjian({
         <header className="sticky top-0 z-30 border-b border-[#e7e4dc] bg-white/80 backdrop-blur-xl dark:border-white/10 dark:bg-[#0d1526]/80">
           <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-3 px-4 py-3 sm:px-6">
             <div className="flex min-w-0 items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#818cf8] to-[#4338ca] text-white shadow-[0_8px_16px_-4px_rgba(67,56,202,0.5)]">
-                <IconBookOpen className="h-5 w-5" />
-              </div>
+              <Image
+                src={getSubjectIconSrc(ujian.judul)}
+                alt=""
+                width={44}
+                height={44}
+                className="h-11 w-11 shrink-0 object-contain drop-shadow-[0_8px_12px_rgba(0,0,0,0.3)]"
+              />
               <div className="min-w-0">
                 <p className="truncate text-[11px] font-medium uppercase tracking-wide text-[#8b93a6] dark:text-white/40">
                   Ujian Online

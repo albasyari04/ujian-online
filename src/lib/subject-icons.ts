@@ -21,6 +21,7 @@ const SUBJECT_ICON_RULES: SubjectIconRule[] = [
   { match: /bahasa\s*arab|\barab\b/i, icon: "bahasa-arab-icon.png" },
   { match: /bahasa\s*indonesia|\bindo\b/i, icon: "bahasa-indo-icon.png" },
   { match: /bahasa\s*inggris|\binggris\b|\benglish\b/i, icon: "bahasa-inggris-icon.png" },
+  { match: /\bpai\b|pendidikan\s*agama\s*islam|agama\s*islam/i, icon: "PAI.png" },
   { match: /qur.?an|tahfiz|tahfidz/i, icon: "alquran-icon.png" },
   { match: /fiqih|fiqh/i, icon: "fiqih-icon.png" },
   { match: /biologi/i, icon: "biologi-icon.png" },

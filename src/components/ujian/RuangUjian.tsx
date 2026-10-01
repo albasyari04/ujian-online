@@ -98,6 +98,7 @@ export function RuangUjian({
     Object.fromEntries(jawabanAwal.map((item) => [item.soalId, item.opsiPilihan ?? item.jawabanTeks ?? ""])),
   )
   const [mengirim, setMengirim] = useState(false)
+  const [konfirmasiTerbuka, setKonfirmasiTerbuka] = useState(false)
   const [error, setError] = useState("")
   const [bacaanTerbukaMobile, setBacaanTerbukaMobile] = useState(true)
 
@@ -130,17 +131,33 @@ export function RuangUjian({
     if (!response.ok) setError("Jawaban belum tersimpan. Periksa koneksi lalu coba lagi.")
   }
 
-  const kumpulkan = async (otomatis = false) => {
-    if (!otomatis && !window.confirm("Kumpulkan jawaban sekarang? Setelah dikumpulkan, jawaban tidak dapat diubah.")) return
+  // Konfirmasi memakai modal di dalam halaman (bukan window.confirm) supaya jendela
+  // tidak kehilangan fokus dan tidak terbaca sebagai pelanggaran.
+  const mintaKonfirmasiKumpulkan = () => {
+    if (mengirim) return
+    setKonfirmasiTerbuka(true)
+  }
+
+  // Dipakai tombol "Ya, kumpulkan" dan pengumpulan otomatis saat waktu habis.
+  // Selama mengirim = true, PengawasUjian menghentikan semua deteksi pelanggaran.
+  const kumpulkan = async () => {
+    if (mengirim) return
+    setKonfirmasiTerbuka(false)
     setMengirim(true)
     setError("")
-    const response = await fetch(`/api/hasil-ujian/${hasilId}/submit`, { method: "POST" })
-    if (response.ok) router.push(`/hasil/${hasilId}`)
-    else {
+    try {
+      const response = await fetch(`/api/hasil-ujian/${hasilId}/submit`, { method: "POST" })
+      if (response.ok) {
+        if (document.fullscreenElement) await document.exitFullscreen().catch(() => {})
+        router.push(`/hasil/${hasilId}`)
+        return // biarkan mengirim = true sampai halaman berpindah, agar pengawasan tetap berhenti
+      }
       const result = await response.json().catch(() => null)
       setError(result?.message ?? "Jawaban gagal dikumpulkan.")
-      setMengirim(false)
+    } catch {
+      setError("Jawaban gagal dikumpulkan. Periksa koneksi lalu coba lagi.")
     }
+    setMengirim(false) // gagal: pengawasan aktif kembali
   }
 
   const hentikanKarenaPelanggaran = async () => {
@@ -154,6 +171,7 @@ export function RuangUjian({
       batasPelanggaran={ujian.batasPelanggaran}
       pengaturan={pengaturanPelanggaran}
       onDihentikan={() => void hentikanKarenaPelanggaran()}
+      jeda={mengirim}
     >
       <div className="min-h-screen bg-gradient-to-br from-[#eef4ff] via-[#f6f7fb] to-[#f5f3ff] dark:from-[#0a0f1e] dark:via-[#0d1526] dark:to-[#131b30]">
         {/* ============ HEADER STICKY ============ */}
@@ -191,7 +209,7 @@ export function RuangUjian({
                 </div>
               </div>
 
-              <Timer waktuSelesai={waktuSelesai} onHabis={() => void kumpulkan(true)} />
+              <Timer waktuSelesai={waktuSelesai} onHabis={() => void kumpulkan()} />
             </div>
           </div>
         </header>
@@ -287,7 +305,7 @@ export function RuangUjian({
                   <button
                     type="button"
                     disabled={mengirim}
-                    onClick={() => void kumpulkan()}
+                    onClick={mintaKonfirmasiKumpulkan}
                     className="group inline-flex items-center gap-2 rounded-[12px] bg-gradient-to-br from-emerald-500 to-emerald-700 px-5 py-3 text-[13px] font-semibold text-white shadow-[0_4px_0_#059669,0_10px_24px_-8px_rgba(5,150,105,0.6)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_0_#059669,0_14px_28px_-8px_rgba(5,150,105,0.7)] active:translate-y-0 active:shadow-[0_2px_0_#059669] disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {mengirim ? (
@@ -331,6 +349,42 @@ export function RuangUjian({
             </aside>
           </div>
         </div>
+
+        {/* ============ MODAL KONFIRMASI KUMPULKAN ============ */}
+        {konfirmasiTerbuka && (
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="judul-konfirmasi-kumpulkan"
+            className="fixed inset-0 z-[9000] flex items-center justify-center bg-black/50 px-4"
+          >
+            <div className="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-2xl dark:bg-[#0d1526]">
+              <h2 id="judul-konfirmasi-kumpulkan" className="text-[16px] font-semibold text-[#16233f] dark:text-white">
+                Kumpulkan jawaban sekarang?
+              </h2>
+              <p className="mt-2 text-[13px] leading-6 text-[#5b5490] dark:text-white/60">
+                Terjawab {jumlahTerjawab} dari {ujian.soal.length} soal. Setelah dikumpulkan, jawaban tidak dapat diubah.
+              </p>
+              <div className="mt-5 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setKonfirmasiTerbuka(false)}
+                  className="flex-1 rounded-[10px] border border-[#e7e4dc] bg-white px-4 py-2.5 text-[13px] font-semibold text-[#4338ca] hover:bg-[#f6f7fb] dark:border-white/10 dark:bg-white/5 dark:text-[#818cf8]"
+                >
+                  Periksa lagi
+                </button>
+                <button
+                  type="button"
+                  autoFocus
+                  onClick={() => void kumpulkan()}
+                  className="flex-1 rounded-[10px] bg-emerald-600 px-4 py-2.5 text-[13px] font-semibold text-white hover:bg-emerald-700"
+                >
+                  Ya, kumpulkan
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </PengawasUjian>
   )

@@ -28,16 +28,13 @@ const DESKRIPSI_SINGKAT: Record<TipePelanggaran, string> = {
 /* =========================================================
    KONFIGURASI PEMANTAUAN
 ========================================================= */
-/** Kamera wajib aktif sebelum ujian bisa dimulai. */
-const WAJIB_KAMERA = true
-/** Berbagi layar wajib — hanya berlaku di perangkat yang mendukung (desktop). HP hanya kamera. */
+/** Berbagi layar wajib — hanya berlaku di perangkat yang mendukung (desktop). */
 const WAJIB_LAYAR = true
 /** Jeda antar pengiriman snapshot ke server. Naikkan bila peserta sangat banyak. */
 const INTERVAL_SNAPSHOT_MS = 8_000
 /** Jeda minimum agar event ganda (mis. visibilitychange + blur) tidak dihitung dua kali. */
 const COOLDOWN_PELANGGARAN_MS = 5_000
 const BLUR_GRACE_MS = 600
-const UKURAN_KAMERA = { lebarMaks: 320, kualitas: 0.6 }
 const UKURAN_LAYAR = { lebarMaks: 960, kualitas: 0.55 }
 
 /* =========================================================
@@ -46,16 +43,10 @@ const UKURAN_LAYAR = { lebarMaks: 960, kualitas: 0.55 }
 const subscribeKosong = () => () => {}
 const dukungLayar = () => typeof navigator !== "undefined" && typeof navigator.mediaDevices?.getDisplayMedia === "function"
 
-function pesanErrorMedia(error: unknown, jenis: "kamera" | "layar") {
+function pesanErrorLayar(error: unknown) {
 	const nama = error instanceof DOMException ? error.name : ""
-	if (nama === "NotAllowedError") {
-		return jenis === "kamera"
-			? "Izin kamera ditolak. Klik ikon gembok di address bar, izinkan kamera, lalu coba lagi."
-			: "Izin berbagi layar ditolak atau dibatalkan. Coba lagi, lalu pilih “Seluruh layar”."
-	}
-	if (nama === "NotFoundError") return "Kamera tidak ditemukan pada perangkat ini."
-	if (nama === "NotReadableError") return "Kamera sedang dipakai aplikasi lain. Tutup aplikasi itu lalu coba lagi."
-	return `Gagal mengaktifkan ${jenis}. Pastikan halaman dibuka lewat HTTPS, lalu coba lagi.`
+	if (nama === "NotAllowedError") return "Izin berbagi layar ditolak atau dibatalkan. Coba lagi, lalu pilih “Seluruh layar”."
+	return "Gagal mengaktifkan berbagi layar. Pastikan halaman dibuka lewat HTTPS, lalu coba lagi."
 }
 
 function buatVideo(stream: MediaStream) {
@@ -168,19 +159,6 @@ function useAlarm() {
 /* =========================================================
    KOMPONEN KECIL
 ========================================================= */
-function PratinjauKamera({ stream, className = "" }: { stream: MediaStream; className?: string }) {
-	const ref = useRef<HTMLVideoElement>(null)
-
-	useEffect(() => {
-		const el = ref.current
-		if (!el) return
-		el.srcObject = stream
-		void el.play().catch(() => {})
-	}, [stream])
-
-	return <video ref={ref} muted playsInline autoPlay className={`scale-x-[-1] bg-black object-cover ${className}`} />
-}
-
 function Langkah({
 	nomor,
 	judul,
@@ -220,12 +198,15 @@ export function PengawasUjian({
 	batasPelanggaran,
 	pengaturan = PENGATURAN_DEFAULT,
 	onDihentikan,
+	jeda = false,
 	children,
 }: {
 	hasilId: string
 	batasPelanggaran: number
 	pengaturan?: PengaturanPelanggaranAktif
 	onDihentikan: () => void
+	/** true selama ujian sedang dikumpulkan: semua deteksi pelanggaran & alarm dihentikan sementara. */
+	jeda?: boolean
 	children: React.ReactNode
 }) {
 	const router = useRouter()
@@ -237,11 +218,8 @@ export function PengawasUjian({
 	const [modal, setModal] = useState<TipePelanggaran | null>(null)
 	const [jumlahPelanggaran, setJumlahPelanggaran] = useState(0)
 
-	const [streamKamera, setStreamKamera] = useState<MediaStream | null>(null)
 	const [layarSiap, setLayarSiap] = useState(false)
-	const [pesanKamera, setPesanKamera] = useState("")
 	const [pesanLayar, setPesanLayar] = useState("")
-	const [kameraPutus, setKameraPutus] = useState(false)
 	const [layarPutus, setLayarPutus] = useState(false)
 
 	const [jauhTab, setJauhTab] = useState(false)
@@ -254,33 +232,22 @@ export function PengawasUjian({
 	const sedangDialog = useRef(false)
 	const sudahMulai = useRef(false)
 	const wajibFullscreen = useRef(false)
-	const kameraStream = useRef<MediaStream | null>(null)
 	const layarStream = useRef<MediaStream | null>(null)
-	const kameraVideo = useRef<HTMLVideoElement | null>(null)
 	const layarVideo = useRef<HTMLVideoElement | null>(null)
+	const jedaRef = useRef(jeda)
+
+	// Ref dipakai agar listener tidak perlu dipasang ulang setiap status jeda berubah.
+	useEffect(() => {
+		jedaRef.current = jeda
+	}, [jeda])
 
 	const hentikanSemuaStream = useCallback(() => {
-		kameraStream.current?.getTracks().forEach((track) => track.stop())
 		layarStream.current?.getTracks().forEach((track) => track.stop())
-		kameraStream.current = null
 		layarStream.current = null
 	}, [])
 
-	// Matikan kamera & berbagi layar saat komponen dilepas (ujian selesai / pindah halaman).
+	// Matikan berbagi layar saat komponen dilepas (ujian selesai / pindah halaman).
 	useEffect(() => hentikanSemuaStream, [hentikanSemuaStream])
-
-	function pasangKamera(stream: MediaStream) {
-		kameraStream.current?.getTracks().forEach((track) => track.stop())
-		kameraStream.current = stream
-		kameraVideo.current = buatVideo(stream)
-		setStreamKamera(stream)
-		setKameraPutus(false)
-		stream.getVideoTracks()[0]?.addEventListener("ended", () => {
-			if (kameraStream.current !== stream) return
-			setStreamKamera(null)
-			if (sudahMulai.current) setKameraPutus(true)
-		})
-	}
 
 	function pasangLayar(stream: MediaStream) {
 		layarStream.current?.getTracks().forEach((track) => track.stop())
@@ -293,26 +260,6 @@ export function PengawasUjian({
 			setLayarSiap(false)
 			if (sudahMulai.current) setLayarPutus(true)
 		})
-	}
-
-	async function aktifkanKamera() {
-		setPesanKamera("")
-		if (!navigator.mediaDevices?.getUserMedia) {
-			setPesanKamera("Browser ini tidak mendukung kamera, atau halaman tidak dibuka lewat HTTPS.")
-			return
-		}
-		sedangDialog.current = true
-		try {
-			const stream = await navigator.mediaDevices.getUserMedia({
-				video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } },
-				audio: false,
-			})
-			pasangKamera(stream)
-		} catch (error) {
-			setPesanKamera(pesanErrorMedia(error, "kamera"))
-		} finally {
-			sedangDialog.current = false
-		}
 	}
 
 	async function bagikanLayar() {
@@ -335,7 +282,7 @@ export function PengawasUjian({
 			}
 			pasangLayar(stream)
 		} catch (error) {
-			setPesanLayar(pesanErrorMedia(error, "layar"))
+			setPesanLayar(pesanErrorLayar(error))
 		} finally {
 			sedangDialog.current = false
 		}
@@ -356,7 +303,7 @@ export function PengawasUjian({
 
 	const catat = useCallback(async (tipe: TipePelanggaran) => {
 		if (!pengaturan[tipe]) return
-		if (!dimulai || sedangKirim.current) return
+		if (!dimulai || sedangKirim.current || jedaRef.current) return
 
 		// Cooldown per tipe (bukan sekali seumur ujian): pelanggaran yang sama boleh
 		// tercatat lagi, tetapi event ganda dalam hitungan detik dianggap satu.
@@ -393,7 +340,7 @@ export function PengawasUjian({
 		let blurTimeout: ReturnType<typeof setTimeout> | null = null
 
 		const onVisibility = () => {
-			if (!pengaturan.PINDAH_TAB) return
+			if (!pengaturan.PINDAH_TAB || jedaRef.current) return
 			if (document.hidden) {
 				setJauhTab(true)
 				alarm.mulai()
@@ -405,14 +352,14 @@ export function PengawasUjian({
 
 		// "blur" murni sangat sensitif — bisa terpicu klik ikon ekstensi, address bar,
 		// atau notifikasi OS sekilas. Beri jeda (grace period): baru dianggap pelanggaran
-		// jika jendela MASIH belum fokus setelah jeda itu. Dialog izin kamera/layar
+		// jika jendela MASIH belum fokus setelah jeda itu. Dialog izin berbagi layar
 		// yang dibuka sistem sendiri juga diabaikan (sedangDialog).
 		const onBlur = () => {
-			if (document.hidden) return // sudah ditangani oleh PINDAH_TAB
+			if (document.hidden || jedaRef.current) return // PINDAH_TAB ditangani terpisah; jeda = sedang mengumpulkan
 			if (blurTimeout) clearTimeout(blurTimeout)
 			blurTimeout = setTimeout(() => {
 				blurTimeout = null
-				if (sedangDialog.current) return
+				if (sedangDialog.current || jedaRef.current) return
 				if (!document.hidden && !document.hasFocus()) {
 					setJauhFokus(true)
 					alarm.mulai()
@@ -430,6 +377,7 @@ export function PengawasUjian({
 		}
 
 		const onFullscreen = () => {
+			if (jedaRef.current) return
 			if (document.fullscreenElement) {
 				setKeluarFullscreen(false)
 				return
@@ -479,13 +427,13 @@ export function PengawasUjian({
 	}, [alarm, catat, dimulai, pengaturan])
 
 	// Alarm menyala selama salah satu kondisi berikut benar, dan mati otomatis saat semuanya pulih.
-	const alarmAktif = dimulai && (jauhTab || jauhFokus || keluarFullscreen || kameraPutus || layarPutus)
+	const alarmAktif = dimulai && !jeda && (jauhTab || jauhFokus || keluarFullscreen || layarPutus)
 	useEffect(() => {
 		if (alarmAktif) alarm.mulai()
 		else alarm.berhenti()
 	}, [alarm, alarmAktif])
 
-	// Kirim snapshot kamera + layar secara berkala ke server.
+	// Kirim snapshot layar secara berkala ke server.
 	useEffect(() => {
 		if (!dimulai) return
 
@@ -493,10 +441,6 @@ export function PengawasUjian({
 			if (sedangKirimSnapshot.current) return
 			sedangKirimSnapshot.current = true
 			try {
-				const kamera =
-					kameraVideo.current && trackHidup(kameraStream.current)
-						? ambilFrame(kameraVideo.current, UKURAN_KAMERA.lebarMaks, UKURAN_KAMERA.kualitas)
-						: null
 				const layar =
 					layarVideo.current && trackHidup(layarStream.current)
 						? ambilFrame(layarVideo.current, UKURAN_LAYAR.lebarMaks, UKURAN_LAYAR.kualitas)
@@ -507,7 +451,7 @@ export function PengawasUjian({
 					headers: { "Content-Type": "application/json" },
 					body: JSON.stringify({
 						hasilUjianId: hasilId,
-						kamera,
+						kamera: null, // kamera sudah tidak dipakai; field dipertahankan agar API snapshot tetap cocok
 						layar,
 						fokus: !document.hidden && document.hasFocus(),
 					}),
@@ -530,8 +474,7 @@ export function PengawasUjian({
 
 	/* ---------------- LAYAR PERSIAPAN ---------------- */
 	if (!dimulai) {
-		const kameraOk = streamKamera !== null
-		const bisaMulai = setuju && (kameraOk || !WAJIB_KAMERA) && (layarSiap || !layarDidukung || !WAJIB_LAYAR)
+		const bisaMulai = setuju && (layarSiap || !layarDidukung || !WAJIB_LAYAR)
 
 		return (
 			<div className="fixed inset-0 z-[10000] flex items-start justify-center overflow-y-auto bg-[#16233f]/95 px-4 py-6 sm:items-center">
@@ -543,16 +486,8 @@ export function PengawasUjian({
 					</p>
 
 					<ol className="mt-5 flex flex-col gap-3">
-						<Langkah nomor={1} judul="Aktifkan kamera" selesai={kameraOk}>
-							{streamKamera && <PratinjauKamera stream={streamKamera} className="h-24 w-32 rounded-lg" />}
-							<button type="button" onClick={() => void aktifkanKamera()} className={TOMBOL_LANGKAH}>
-								{kameraOk ? "Ulangi kamera" : "Aktifkan kamera"}
-							</button>
-							{pesanKamera && <p className="text-[12px] leading-5 text-[#d23b3b]">{pesanKamera}</p>}
-						</Langkah>
-
 						{layarDidukung ? (
-							<Langkah nomor={2} judul="Bagikan seluruh layar" selesai={layarSiap}>
+							<Langkah nomor={1} judul="Bagikan seluruh layar" selesai={layarSiap}>
 								<p className="text-[12px] leading-5 text-[#5b5490]">
 									Pada jendela yang muncul, pilih “Seluruh layar” (Entire screen), lalu klik Bagikan.
 								</p>
@@ -563,11 +498,11 @@ export function PengawasUjian({
 							</Langkah>
 						) : (
 							<li className="rounded-xl border border-dashed border-[#e7e4dc] p-3 text-left text-[12px] leading-5 text-[#5b5490]">
-								Perangkat ini tidak mendukung berbagi layar, jadi hanya kamera yang dipantau.
+								Perangkat ini tidak mendukung berbagi layar, jadi pemantauan hanya berdasarkan aktivitas halaman ujian.
 							</li>
 						)}
 
-						<Langkah nomor={layarDidukung ? 3 : 2} judul="Nyalakan suara perangkat" selesai={false}>
+						<Langkah nomor={layarDidukung ? 2 : 1} judul="Nyalakan suara perangkat" selesai={false}>
 							<p className="text-[12px] leading-5 text-[#5b5490]">
 								Alarm akan berbunyi bila Anda meninggalkan halaman ujian. Pastikan volume menyala.
 							</p>
@@ -585,7 +520,7 @@ export function PengawasUjian({
 							className="mt-1 h-4 w-4 shrink-0 accent-[#4338ca]"
 						/>
 						<span>
-							Saya memahami bahwa selama ujian, gambar kamera dan layar saya dikirim ke pengawas secara berkala
+							Saya memahami bahwa selama ujian, gambar layar saya dikirim ke pengawas secara berkala
 							(hanya gambar terbaru yang disimpan sementara), dan alarm akan berbunyi bila saya meninggalkan halaman
 							ujian.
 						</span>
@@ -616,17 +551,7 @@ export function PengawasUjian({
 				{children}
 			</div>
 
-			{streamKamera && (
-				<div className="pointer-events-none fixed bottom-3 left-3 z-40 h-14 w-[72px] overflow-hidden rounded-lg border-2 border-white shadow-lg sm:h-[72px] sm:w-24">
-					<PratinjauKamera stream={streamKamera} className="h-full w-full" />
-					<span className="absolute left-1 top-1 flex items-center gap-1 rounded-full bg-black/55 px-1.5 py-0.5 text-[9px] font-medium text-white">
-						<span className="h-1.5 w-1.5 animate-pulse rounded-full bg-red-500" />
-						Dipantau
-					</span>
-				</div>
-			)}
-
-			{(keluarFullscreen || kameraPutus || layarPutus) && (
+			{!jeda && (keluarFullscreen || layarPutus) && (
 				<div className="fixed inset-0 z-[9990] flex items-center justify-center bg-[#7f1d1d]/90 px-4">
 					<div className="w-full max-w-md rounded-2xl bg-white p-6 text-center shadow-2xl">
 						<h2 className="text-[17px] font-semibold text-[#16233f]">Kembali ke ujian</h2>
@@ -644,15 +569,6 @@ export function PengawasUjian({
 									Kembali ke layar penuh
 								</button>
 							)}
-							{kameraPutus && (
-								<button
-									type="button"
-									onClick={() => void aktifkanKamera()}
-									className="rounded-[10px] bg-[#4338ca] px-5 py-2.5 text-[13.5px] font-semibold text-white hover:bg-[#3730a3]"
-								>
-									Aktifkan kamera lagi
-								</button>
-							)}
 							{layarPutus && (
 								<button
 									type="button"
@@ -664,7 +580,6 @@ export function PengawasUjian({
 							)}
 						</div>
 
-						{pesanKamera && kameraPutus && <p className="mt-3 text-[12px] leading-5 text-[#d23b3b]">{pesanKamera}</p>}
 						{pesanLayar && layarPutus && <p className="mt-3 text-[12px] leading-5 text-[#d23b3b]">{pesanLayar}</p>}
 					</div>
 				</div>

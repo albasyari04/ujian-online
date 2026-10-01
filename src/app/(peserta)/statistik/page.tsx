@@ -6,7 +6,6 @@ import { prisma } from "@/lib/prisma"
 import { Card, StatCard } from "@/components/ui/Card"
 import { Badge } from "@/components/ui/Badge"
 // NOTE: sesuaikan path import ini dengan lokasi file subject-icons.ts di proyek Anda
-// (mis. "@/lib/subject-icons" atau "@/utils/subject-icons").
 import { getSubjectIconSrc } from "@/lib/subject-icons"
 
 export const dynamic = "force-dynamic"
@@ -27,30 +26,63 @@ const formatTanggalSingkat = (value: Date) =>
   new Intl.DateTimeFormat("id-ID", { day: "numeric", month: "short" }).format(value)
 
 /* =========================================================
-   HELPER GRAFIK TREN (SVG murni, statis di server)
+   HELPER GRAFIK BATANG (SVG murni, statis di server)
 ========================================================= */
 
-type TitikTren = { x: number; y: number; skor: number; tanggal: Date }
+type BatangData = {
+  x: number
+  y: number
+  width: number
+  height: number
+  skor: number
+  tanggal: Date
+  label: string
+}
 
-function buildTrenSkor(data: { tanggal: Date; skor: number }[]) {
+function buildBarChart(data: { tanggal: Date; skor: number }[]) {
   const width = 600
-  const height = 170
-  const padX = 20
-  const padY = 18
+  const height = 220
+  const padX = 30
+  const padY = 30
+  const barWidth = 40
+  const gap = 15
 
-  if (data.length === 0) return { pathGaris: "", titik: [] as TitikTren[], width, height }
+  if (data.length === 0) {
+    return { batang: [] as BatangData[], pathGaris: "", width, height, maxSkor: 100 }
+  }
 
+  const maxSkor = Math.max(...data.map((d) => d.skor), 100)
   const n = data.length
-  const titik: TitikTren[] = data.map((d, i) => {
-    const x = n === 1 ? width / 2 : padX + (i / (n - 1)) * (width - padX * 2)
-    const skorAman = Math.min(100, Math.max(0, d.skor))
-    const y = height - padY - (skorAman / 100) * (height - padY * 2)
-    return { x, y, skor: d.skor, tanggal: d.tanggal }
+  const availableWidth = width - padX * 2
+  const totalBarWidth = n * barWidth + (n - 1) * gap
+  const startX = padX + (availableWidth - totalBarWidth) / 2
+
+  const batang: BatangData[] = data.map((d, i) => {
+    const x = startX + i * (barWidth + gap)
+    const normalizedSkor = d.skor / maxSkor
+    const barHeight = normalizedSkor * (height - padY * 2)
+    const y = height - padY - barHeight
+
+    return {
+      x,
+      y,
+      width: barWidth,
+      height: barHeight,
+      skor: d.skor,
+      tanggal: d.tanggal,
+      label: `${d.skor.toFixed(1)}`,
+    }
   })
 
-  const pathGaris = titik.map((t, i) => `${i === 0 ? "M" : "L"} ${t.x.toFixed(1)} ${t.y.toFixed(1)}`).join(" ")
+  // Garis tren di atas batang
+  const pathGaris = batang
+    .map((b, i) => {
+      const centerX = b.x + b.width / 2
+      return `${i === 0 ? "M" : "L"} ${centerX.toFixed(1)} ${b.y.toFixed(1)}`
+    })
+    .join(" ")
 
-  return { pathGaris, titik, width, height }
+  return { batang, pathGaris, width, height, maxSkor }
 }
 
 /* =========================================================
@@ -97,7 +129,8 @@ export default async function StatistikPage() {
   const dataTren = hasilSelesai
     .filter((hasil) => hasil.waktuSelesai)
     .map((hasil) => ({ tanggal: hasil.waktuSelesai as Date, skor: hasil.skor ?? 0 }))
-  const { pathGaris, titik, width, height } = buildTrenSkor(dataTren)
+
+  const { batang, pathGaris, width, height } = buildBarChart(dataTren)
 
   return (
     <div className="flex flex-col gap-6">
@@ -147,14 +180,14 @@ export default async function StatistikPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          {/* ===================== TREN SKOR ===================== */}
+          {/* ===================== TREN SKOR (DIAGRAM BATANG) ===================== */}
           <Card className="flex flex-col gap-4 p-4 lg:col-span-2">
             <div className="flex items-center justify-between">
               <p className="text-[13.5px] font-semibold text-[#16233f] dark:text-white">Tren skor</p>
               <Badge tone="slate">{totalSelesai} ujian</Badge>
             </div>
 
-            {titik.length < 2 ? (
+            {batang.length < 2 ? (
               <div className="flex flex-1 items-center justify-center rounded-[12px] border border-dashed border-[#e7e4dc] py-10 dark:border-white/10">
                 <p className="text-[12.5px] text-[#8b93a6] dark:text-white/40">
                   Selesaikan minimal 2 ujian untuk melihat tren skor.
@@ -162,49 +195,77 @@ export default async function StatistikPage() {
               </div>
             ) : (
               <>
-                <svg viewBox={`0 0 ${width} ${height}`} className="h-44 w-full">
-                  <line
-                    x1="0"
-                    y1={height - 18}
-                    x2={width}
-                    y2={height - 18}
-                    className="stroke-[#efece4] dark:stroke-white/10"
-                    strokeWidth="1"
-                  />
-                  <line
-                    x1="0"
-                    y1="18"
-                    x2={width}
-                    y2="18"
-                    className="stroke-[#efece4] dark:stroke-white/10"
-                    strokeWidth="1"
-                    strokeDasharray="4 4"
-                  />
-
-                  <path
-                    d={pathGaris}
-                    fill="none"
-                    className="stroke-[#16233f] dark:stroke-white"
-                    strokeWidth="2.2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-
-                  {titik.map((t, i) => (
-                    <circle
-                      key={i}
-                      cx={t.x}
-                      cy={t.y}
-                      r="3.8"
-                      className="fill-[#e8a33d] stroke-white dark:stroke-[#101a30]"
-                      strokeWidth="1.5"
+                <div className="relative w-full overflow-x-auto">
+                  <svg viewBox={`0 0 ${width} ${height}`} className="h-56 w-full min-w-[500px]">
+                    {/* Garis horizontal latar belakang */}
+                    <line
+                      x1="0"
+                      y1={height - 30}
+                      x2={width}
+                      y2={height - 30}
+                      className="stroke-[#efece4] dark:stroke-white/10"
+                      strokeWidth="1"
                     />
-                  ))}
-                </svg>
+                    <line
+                      x1="0"
+                      y1="30"
+                      x2={width}
+                      y2="30"
+                      className="stroke-[#efece4] dark:stroke-white/10"
+                      strokeWidth="1"
+                      strokeDasharray="4 4"
+                    />
+
+                    {/* Batang */}
+                    {batang.map((b, i) => (
+                      <g key={i}>
+                        <rect
+                          x={b.x}
+                          y={b.y}
+                          width={b.width}
+                          height={b.height}
+                          rx="4"
+                          className="fill-[#c084fc] dark:fill-[#a855f7]"
+                        />
+                        {/* Label skor di atas batang */}
+                        <text
+                          x={b.x + b.width / 2}
+                          y={b.y - 8}
+                          textAnchor="middle"
+                          className="fill-[#16233f] dark:fill-white text-[11px] font-semibold"
+                        >
+                          {b.label}
+                        </text>
+                      </g>
+                    ))}
+
+                    {/* Garis tren di atas batang */}
+                    <path
+                      d={pathGaris}
+                      fill="none"
+                      className="stroke-[#a855f7] dark:stroke-[#c084fc]"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+
+                    {/* Titik pada garis tren */}
+                    {batang.map((b, i) => (
+                      <circle
+                        key={i}
+                        cx={b.x + b.width / 2}
+                        cy={b.y}
+                        r="4"
+                        className="fill-white stroke-[#a855f7] dark:stroke-[#c084fc]"
+                        strokeWidth="2"
+                      />
+                    ))}
+                  </svg>
+                </div>
 
                 <div className="flex items-center justify-between text-[11px] text-[#8b93a6] dark:text-white/40">
-                  <span>{formatTanggalSingkat(titik[0].tanggal)}</span>
-                  <span>{formatTanggalSingkat(titik[titik.length - 1].tanggal)}</span>
+                  <span>{formatTanggalSingkat(batang[0].tanggal)}</span>
+                  <span>{formatTanggalSingkat(batang[batang.length - 1].tanggal)}</span>
                 </div>
               </>
             )}

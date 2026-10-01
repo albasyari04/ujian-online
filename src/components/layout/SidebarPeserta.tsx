@@ -273,7 +273,7 @@ export function SidebarPeserta({
               <p className="truncate text-[11.5px] font-semibold" title={namaTampil}>
                 {namaTampil}
               </p>
-              <p className="truncate text-[10px] text-white/60">Portal Ujian</p>
+              <p className="truncate text-[10px] text-white/60">Peserta Ujian</p>
             </div>
           </div>
         </div>

@@ -9,7 +9,9 @@ import { Badge } from "@/components/ui/Badge"
 import { getSubjectIconSrc } from "@/lib/subject-icons"
 import { IconClock } from "@/components/ui/Icons"
 
-// Icon 3D untuk kartu ringkasan di atas — file disimpan di public/image/icon/
+/* =========================================================
+   ICONS
+========================================================= */
 const STAT_ICON = {
   ujianSaya: "/image/icon/ujian-saya-icon.png",
   totalSoal: "/image/icon/total-soal-icon.png",
@@ -17,24 +19,21 @@ const STAT_ICON = {
   rataRata: "/image/icon/rata-rata-score.png",
 }
 
-// Icon 3D untuk header kartu ringkasan "Ujian Terbaru" & "Pelanggaran Terbaru"
 const SECTION_ICON = {
   ujianTerbaru: "/image/icon/daftar-jadwal-ujian-icon.png",
   pelanggaran: "/image/icon/pelanggaran-terbaru-icon.png",
+  statistik: "/image/icon/statistik-icon.png",
 }
 
-// Kelas bersama untuk card glassmorphism 3D (shadow berlapis + highlight cahaya di sudut atas)
+/* =========================================================
+   GLASS CARD 3D
+========================================================= */
 const GLASS_3D_CARD =
   "relative overflow-hidden p-5 shadow-[0_2px_4px_rgba(22,35,63,0.06),0_14px_28px_-10px_rgba(49,46,129,0.28),0_40px_70px_-28px_rgba(49,46,129,0.5)] ring-1 ring-white/70 ring-inset before:pointer-events-none before:absolute before:inset-0 before:bg-gradient-to-br before:from-white/50 before:via-white/5 before:to-transparent before:content-[''] dark:ring-white/10 dark:before:from-white/10 dark:before:via-transparent"
 
-/**
- * Zona waktu dikunci ke Asia/Jakarta.
- * Server (VPS) berjalan di UTC, sedangkan "Ujian Saya" dirender di
- * browser (client component) yang otomatis memakai jam lokal perangkat.
- * Tanpa `timeZone` eksplisit, dua halaman ini bisa menampilkan jam yang
- * berbeda untuk data yang sama — itulah penyebab selisih 7 jam yang
- * terlihat sebelumnya (01.30 di dashboard vs 08.30 di Ujian Saya).
- */
+/* =========================================================
+   ZONA WAKTU & FORMATTER
+========================================================= */
 const ZONA_WAKTU = "Asia/Jakarta"
 
 const fmtHariTanggal = new Intl.DateTimeFormat("id-ID", {
@@ -59,7 +58,12 @@ const fmtJam = new Intl.DateTimeFormat("id-ID", {
   timeZone: ZONA_WAKTU,
 })
 
-/** Samakan gaya dengan kartu di halaman "Ujian Saya": "2 Okt, 08.30 – 2 Okt, 09.30". */
+const fmtBulanSingkat = new Intl.DateTimeFormat("id-ID", {
+  day: "numeric",
+  month: "short",
+  timeZone: ZONA_WAKTU,
+})
+
 function formatRentang(mulai: Date, selesai: Date) {
   return `${fmtTanggalSingkatJam.format(mulai)} – ${fmtTanggalSingkatJam.format(selesai)}`
 }
@@ -71,10 +75,259 @@ function statusUjian(mulai: Date, selesai: Date) {
   return { label: "Berlangsung", tone: "emerald" as const }
 }
 
+/* =========================================================
+   HELPER DIAGRAM BATANG
+   Menghasilkan path SVG untuk batang + garis tren.
+========================================================= */
+type BarDatum = {
+  label: string
+  value: number
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
+function buildBarChart(data: { label: string; value: number }[]) {
+  const width = 640
+  const height = 240
+  const padLeft = 42
+  const padRight = 20
+  const padTop = 30
+  const padBottom = 36
+  const gap = 16
+
+  if (data.length === 0) {
+    return {
+      bars: [] as BarDatum[],
+      linePath: "",
+      width,
+      height,
+      yTicks: [] as number[],
+      chartArea: { x: padLeft, y: padTop, w: width - padLeft - padRight, h: height - padTop - padBottom },
+    }
+  }
+
+  const chartW = width - padLeft - padRight
+  const chartH = height - padTop - padBottom
+  const n = data.length
+  const barWidth = Math.min(52, Math.max(28, (chartW - gap * (n - 1)) / n - 4))
+  const totalBarWidth = n * barWidth + (n - 1) * gap
+  const startX = padLeft + (chartW - totalBarWidth) / 2
+
+  const maxValue = Math.max(...data.map((d) => d.value), 100)
+
+  const bars: BarDatum[] = data.map((d, i) => {
+    const x = startX + i * (barWidth + gap)
+    const normalized = Math.min(d.value, maxValue) / maxValue
+    const barHeight = normalized * chartH
+    const y = padTop + chartH - barHeight
+
+    return {
+      label: d.label,
+      value: d.value,
+      x,
+      y,
+      width: barWidth,
+      height: barHeight,
+    }
+  })
+
+  // Garis tren melengkung (quadratic bezier)
+  const points = bars.map((b) => ({ x: b.x + b.width / 2, y: b.y }))
+  let linePath = ""
+  if (points.length > 0) {
+    linePath = `M ${points[0].x} ${points[0].y}`
+    for (let i = 1; i < points.length; i++) {
+      const prev = points[i - 1]
+      const curr = points[i]
+      const midX = (prev.x + curr.x) / 2
+      linePath += ` Q ${midX} ${prev.y} ${midX} ${(prev.y + curr.y) / 2}`
+      linePath += ` Q ${midX} ${curr.y} ${curr.x} ${curr.y}`
+    }
+  }
+
+  const yTicks = [0, 25, 50, 75, 100]
+
+  return {
+    bars,
+    linePath,
+    width,
+    height,
+    yTicks,
+    chartArea: { x: padLeft, y: padTop, w: chartW, h: chartH },
+  }
+}
+
+/* =========================================================
+   KOMPONEN DIAGRAM BATANG
+========================================================= */
+function BarChartStatistik({
+  data,
+  totalPeserta,
+}: {
+  data: { label: string; value: number }[]
+  totalPeserta: number
+}) {
+  if (data.length === 0) {
+    return (
+      <div className="flex h-56 items-center justify-center rounded-[14px] border border-dashed border-[#e7e4dc] dark:border-white/10">
+        <p className="text-[12.5px] text-[#8b93a6] dark:text-white/40">
+          Belum ada data statistik. Buat ujian dan tunggu peserta selesai untuk melihat tren.
+        </p>
+      </div>
+    )
+  }
+
+  if (data.length === 1) {
+    return (
+      <div className="flex h-56 items-center justify-center rounded-[14px] border border-dashed border-[#e7e4dc] dark:border-white/10">
+        <p className="text-[12.5px] text-[#8b93a6] dark:text-white/40">
+          Butuh minimal 2 ujian selesai untuk menampilkan tren.
+        </p>
+      </div>
+    )
+  }
+
+  const { bars, linePath, width, height, yTicks, chartArea } = buildBarChart(data)
+
+  return (
+    <div className="relative w-full overflow-x-auto">
+      <svg viewBox={`0 0 ${width} ${height}`} className="h-60 w-full min-w-[520px]">
+        <defs>
+          {/* Gradasi batang: ungu muda → ungu tua */}
+          <linearGradient id="dashBarGradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#c084fc" />
+            <stop offset="100%" stopColor="#7c3aed" />
+          </linearGradient>
+          {/* Gradasi garis tren */}
+          <linearGradient id="dashLineGradient" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="#e9d5ff" />
+            <stop offset="100%" stopColor="#a855f7" />
+          </linearGradient>
+        </defs>
+
+        {/* Sumbu Y + garis grid */}
+        {yTicks.map((tick) => {
+          const y = chartArea.y + chartArea.h - (tick / 100) * chartArea.h
+          return (
+            <g key={tick}>
+              <line
+                x1={chartArea.x}
+                y1={y}
+                x2={chartArea.x + chartArea.w}
+                y2={y}
+                className="stroke-[#efece4] dark:stroke-white/10"
+                strokeWidth="1"
+                strokeDasharray={tick === 0 ? "0" : "3 3"}
+              />
+              <text
+                x={chartArea.x - 8}
+                y={y + 4}
+                textAnchor="end"
+                className="fill-[#8b93a6] dark:fill-white/40"
+                style={{ fontSize: "10px" }}
+              >
+                {tick}
+              </text>
+            </g>
+          )
+        })}
+
+        {/* Sumbu Y vertikal */}
+        <line
+          x1={chartArea.x}
+          y1={chartArea.y}
+          x2={chartArea.x}
+          y2={chartArea.y + chartArea.h}
+          className="stroke-[#d6d3cc] dark:stroke-white/20"
+          strokeWidth="1.5"
+        />
+
+        {/* Batang */}
+        {bars.map((bar, i) => (
+          <g key={i}>
+            {/* Shadow tipis di belakang */}
+            <rect
+              x={bar.x + 2}
+              y={bar.y + 2}
+              width={bar.width}
+              height={bar.height}
+              rx="6"
+              className="fill-black/5 dark:fill-black/25"
+            />
+            {/* Batang dengan gradasi */}
+            <rect
+              x={bar.x}
+              y={bar.y}
+              width={bar.width}
+              height={bar.height}
+              rx="6"
+              fill="url(#dashBarGradient)"
+            />
+            {/* Label nilai di atas batang */}
+            <text
+              x={bar.x + bar.width / 2}
+              y={bar.y - 8}
+              textAnchor="middle"
+              className="fill-[#16233f] dark:fill-white"
+              style={{ fontSize: "11px", fontWeight: 700 }}
+            >
+              {bar.value.toFixed(1)}
+            </text>
+            {/* Label bulan/tanggal di bawah batang */}
+            <text
+              x={bar.x + bar.width / 2}
+              y={chartArea.y + chartArea.h + 18}
+              textAnchor="middle"
+              className="fill-[#8b93a6] dark:fill-white/40"
+              style={{ fontSize: "10.5px" }}
+            >
+              {bar.label}
+            </text>
+          </g>
+        ))}
+
+        {/* Garis tren melengkung */}
+        <path
+          d={linePath}
+          fill="none"
+          stroke="url(#dashLineGradient)"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+
+        {/* Titik pada garis tren */}
+        {bars.map((bar, i) => (
+          <circle
+            key={i}
+            cx={bar.x + bar.width / 2}
+            cy={bar.y}
+            r="4.5"
+            className="fill-white"
+            stroke="#a855f7"
+            strokeWidth="2.5"
+          />
+        ))}
+      </svg>
+
+      {/* Keterangan di bawah chart */}
+      <div className="mt-1 flex items-center justify-between text-[11px] text-[#8b93a6] dark:text-white/40">
+        <span>{data.length} ujian selesai</span>
+        <span>{totalPeserta} peserta total</span>
+      </div>
+    </div>
+  )
+}
+
+/* =========================================================
+   HALAMAN
+========================================================= */
 export default async function BerandaGuruPage() {
   const guru = await requireGuruSession()
 
-  const [ujianSaya, hasilSelesai, pelanggaranTerbaru, pesertaMengerjakan] = await Promise.all([
+  const [ujianSaya, hasilSelesai, pelanggaranTerbaru, pesertaMengerjakan, hasilPerUjian] = await Promise.all([
     prisma.ujian.findMany({
       where: { pembuatId: guru.user.id },
       orderBy: { mulai: "desc" },
@@ -93,6 +346,17 @@ export default async function BerandaGuruPage() {
     prisma.hasilUjian.count({
       where: { ujian: { pembuatId: guru.user.id }, status: "SEDANG_DIKERJAKAN" },
     }),
+    // Untuk diagram: rata-rata skor per ujian (yang sudah selesai)
+    prisma.hasilUjian.groupBy({
+      by: ["ujianId"],
+      where: {
+        ujian: { pembuatId: guru.user.id },
+        status: "SELESAI",
+        skor: { not: null },
+      },
+      _avg: { skor: true },
+      _count: { id: true },
+    }),
   ])
 
   const totalSoal = ujianSaya.reduce((sum, u) => sum + u._count.soal, 0)
@@ -102,6 +366,26 @@ export default async function BerandaGuruPage() {
 
   const ujianTerbaru = ujianSaya.slice(0, 5)
   const namaDepan = (guru.user.name as string).trim().split(" ")[0] || "Guru"
+
+  // Siapkan data diagram batang: rata-rata skor per ujian
+  // Urutkan berdasarkan tanggal ujian (terlama → terbaru), ambil 6 terakhir
+  const ujianMap = new Map(ujianSaya.map((u) => [u.id, u]))
+  const dataStatistik = hasilPerUjian
+    .map((h) => {
+      const ujian = ujianMap.get(h.ujianId)
+      if (!ujian) return null
+      return {
+        label: fmtBulanSingkat.format(ujian.mulai),
+        value: Math.round((h._avg.skor ?? 0) * 10) / 10,
+        tanggal: ujian.mulai,
+      }
+    })
+    .filter((d): d is NonNullable<typeof d> => d !== null)
+    .sort((a, b) => a.tanggal.getTime() - b.tanggal.getTime())
+    .slice(-6)
+    .map(({ label, value }) => ({ label, value }))
+
+  const totalPesertaSeluruh = ujianSaya.reduce((sum, u) => sum + u._count.hasilUjian, 0)
 
   return (
     <div className="space-y-6">
@@ -117,6 +401,7 @@ export default async function BerandaGuruPage() {
         </p>
       </div>
 
+      {/* ==================== STAT CARDS ==================== */}
       <div className="grid grid-cols-2 gap-3.5 lg:grid-cols-4">
         <StatCard iconImageSrc={STAT_ICON.ujianSaya} label="Ujian Saya" value={ujianSaya.length} tone="indigo" />
         <StatCard iconImageSrc={STAT_ICON.totalSoal} label="Total Soal" value={totalSoal} tone="emerald" />
@@ -136,6 +421,7 @@ export default async function BerandaGuruPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-5">
+        {/* ==================== KARTU UJIAN TERBARU ==================== */}
         <Card variant="glass" className={`${GLASS_3D_CARD} lg:col-span-3`}>
           <div className="relative flex items-center justify-between gap-2">
             <div className="flex items-center gap-2.5">
@@ -197,8 +483,42 @@ export default async function BerandaGuruPage() {
               )
             })}
           </div>
+
+          {/* ==================== DIAGRAM STATISTIK (DI BAWAH UJIAN TERBARU) ====================
+              Diagram batang menampilkan tren rata-rata skor per ujian.
+              Desain selaras dengan referensi: batang bergradasi + garis tren + label nilai.
+          ================================================================================== */}
+          <div className="relative mt-5 border-t border-white/40 pt-5 dark:border-white/10">
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2.5">
+                <span className="relative flex h-10 w-10 shrink-0 items-center justify-center drop-shadow-[0_8px_14px_rgba(168,85,247,0.35)]">
+                  <Image
+                    src={SECTION_ICON.statistik}
+                    alt=""
+                    width={40}
+                    height={40}
+                    className="h-10 w-10 object-contain"
+                  />
+                </span>
+                <div>
+                  <h3 className="text-[14px] font-semibold text-[#16233f] dark:text-white">
+                    Statistik Tren Skor
+                  </h3>
+                  <p className="text-[11.5px] text-[#8b93a6] dark:text-white/40">
+                    Rata-rata skor per ujian (6 terakhir)
+                  </p>
+                </div>
+              </div>
+              {dataStatistik.length > 0 && (
+                <Badge tone="slate">{dataStatistik.length} ujian</Badge>
+              )}
+            </div>
+
+            <BarChartStatistik data={dataStatistik} totalPeserta={totalPesertaSeluruh} />
+          </div>
         </Card>
 
+        {/* ==================== KARTU PELANGGARAN TERBARU ==================== */}
         <Card variant="glass" className={`${GLASS_3D_CARD} lg:col-span-2`}>
           <div className="relative flex items-center gap-2.5">
             <span className="relative flex h-12 w-12 shrink-0 items-center justify-center drop-shadow-[0_12px_18px_rgba(181,47,47,0.3)]">

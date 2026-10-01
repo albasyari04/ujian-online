@@ -7,7 +7,14 @@ import { useRouter } from "next/navigation"
 import type { Soal, Opsi } from "@prisma/client"
 import { ImportSoal, BACAAN_START, BACAAN_END, SOAL_START } from "@/components/admin/ImportSoal"
 import { Card } from "@/components/ui/Card"
-import { IconDocument, IconPencil, IconPlus, IconTrash } from "@/components/ui/Icons"
+import {
+  IconDocument,
+  IconPencil,
+  IconPlus,
+  IconTrash,
+  IconChevronRight,
+} from "@/components/ui/Icons"
+import { TombolRepairSkor } from "./TombolRepairSkor"
 
 /** Pisahkan bacaan & soal dari field "pertanyaan" */
 function splitBacaanDanSoal(pertanyaan: string): { bacaan: string | null; soal: string } {
@@ -57,11 +64,12 @@ export function SoalManagerClient({
 
   return (
     <>
-      {/* ==================== HEADER BANK SOAL ==================== */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
+      {/* ==================== HEADER BANK SOAL (DENGAN 4 TOMBOL SEJAJAR) ==================== */}
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        {/* Judul */}
+        <div className="shrink-0">
           <h2 className="flex items-center gap-2 text-[18px] font-bold text-[#16233f] dark:text-white">
-            <span className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-gradient-to-br from-[#818cf8] to-[#4338ca] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_4px_10px_-3px_rgba(67,56,202,0.5)]">
+            <span className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-gradient-to-b from-[#818cf8] to-[#4338ca] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_4px_10px_-3px_rgba(67,56,202,0.5)]">
               <IconDocument className="h-4 w-4" />
             </span>
             Bank Soal Ujian Ini
@@ -70,16 +78,38 @@ export function SoalManagerClient({
             Kelola daftar pertanyaan untuk ujian ini.
           </p>
         </div>
-        <div className="flex items-center gap-2.5">
+
+        {/* ==================== GRUP TOMBOL AKSI (4 TOMBOL SEJAJAR) ====================
+            Layout: [Import soal] [Tambah Soal] | [Lihat Hasil & Nilai] [Hitung Ulang Skor]
+            Semua tombol ukuran sama: px-4 py-2.5, text-[12.5px], rounded-[10px], h-10
+        ============================================================================= */}
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Grup 1: Aksi Soal */}
           <ImportSoal ujianId={ujianId} onSuccess={handleSuccess} />
+
           <Link
             href={`/ujian-guru/${ujianId}/soal/baru`}
-            className="group/btn relative inline-flex items-center gap-2 overflow-hidden rounded-[12px] bg-gradient-to-b from-[#818cf8] to-[#4338ca] px-4 py-2.5 text-[13px] font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_4px_0_#312e81,0_12px_20px_-8px_rgba(67,56,202,0.5)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_6px_0_#312e81,0_16px_24px_-8px_rgba(67,56,202,0.6)] active:translate-y-[3px] active:shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_1px_0_#312e81,0_4px_8px_-4px_rgba(67,56,202,0.5)]"
+            className="group/btn relative inline-flex items-center gap-2 overflow-hidden rounded-[10px] bg-gradient-to-b from-[#818cf8] to-[#4338ca] px-4 py-2.5 text-[12.5px] font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_4px_0_#312e81,0_12px_20px_-8px_rgba(67,56,202,0.5)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_6px_0_#312e81,0_16px_24px_-8px_rgba(67,56,202,0.6)] active:translate-y-[3px] active:shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_1px_0_#312e81,0_4px_8px_-4px_rgba(67,56,202,0.5)]"
           >
             <span className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent" />
             <IconPlus className="relative h-4 w-4" />
             <span className="relative">Tambah Soal</span>
           </Link>
+
+          {/* Pemisah visual */}
+          <span className="mx-1 hidden h-8 w-px bg-[#e7e4dc] dark:bg-white/10 sm:block" aria-hidden="true" />
+
+          {/* Grup 2: Aksi Hasil */}
+          <Link
+            href={`/hasil-guru/${ujianId}`}
+            className="group/btn relative inline-flex items-center gap-2 overflow-hidden rounded-[10px] bg-gradient-to-b from-[#818cf8] to-[#4338ca] px-4 py-2.5 text-[12.5px] font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_4px_0_#312e81,0_12px_20px_-8px_rgba(67,56,202,0.5)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_6px_0_#312e81,0_16px_24px_-8px_rgba(67,56,202,0.6)] active:translate-y-[3px] active:shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_1px_0_#312e81,0_4px_8px_-4px_rgba(67,56,202,0.5)]"
+          >
+            <span className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent" />
+            <span className="relative">Lihat Hasil &amp; Nilai</span>
+            <IconChevronRight className="relative h-4 w-4 transition-transform duration-200 group-hover/btn:translate-x-0.5" />
+          </Link>
+
+          <TombolRepairSkor ujianId={ujianId} />
         </div>
       </div>
 

@@ -98,7 +98,7 @@ export function EditSemuaSoalClient({ ujianId, totalSoal, initialSoal }: Props) 
 
   // ================= SIMPAN SEMUA =================
   async function simpanSemua() {
-    if (!confirm("Simpan perubahan untuk SEMUA soal? Tindakan ini akan menimpa data sebelumnya.")) {
+    if (!confirm("Simpan perubahan untuk SEMUA soal? Tindakan ini akan menimpa data sebelumnya dan menghitung ulang skor semua peserta.")) {
       return
     }
 
@@ -118,7 +118,11 @@ export function EditSemuaSoalClient({ ujianId, totalSoal, initialSoal }: Props) 
             poin: s.poin,
             opsi:
               s.tipe === "PILIHAN_GANDA"
-                ? s.opsi.map((o) => ({ teks: o.teks, benar: o.benar }))
+                ? s.opsi.map((o) => ({ 
+                    id: o.id,      // <-- KIRIM ID OPSI (INI KUNCI PERBAIKANNYA)
+                    teks: o.teks, 
+                    benar: o.benar 
+                  }))
                 : undefined,
           })),
         }),
@@ -127,9 +131,9 @@ export function EditSemuaSoalClient({ ujianId, totalSoal, initialSoal }: Props) 
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data?.message ?? "Gagal menyimpan.")
 
-      setSuccess("Semua soal berhasil disimpan!")
+      setSuccess(`Semua soal berhasil disimpan! ${data.jumlahPesertaDiupdate ? `${data.jumlahPesertaDiupdate} peserta telah dihitung ulang skornya.` : ""}`)
       router.refresh()
-      setTimeout(() => setSuccess(null), 3000)
+      setTimeout(() => setSuccess(null), 5000)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Gagal menyimpan.")
     } finally {

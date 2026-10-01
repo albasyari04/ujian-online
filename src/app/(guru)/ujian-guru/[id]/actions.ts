@@ -4,10 +4,20 @@ import { revalidatePath } from "next/cache"
 import { requireGuruSession } from "@/lib/guru/session"
 import { prisma } from "@/lib/prisma"
 
+/** Normalisasi teks: lowercase, hapus spasi berlebih, hapus tanda baca di ujung */
+function normalisasiTeks(teks: string | null | undefined): string {
+  if (!teks) return ""
+  return teks
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ") // spasi berlebih jadi satu
+    .replace(/[.,;:!?'"()\[\]{}]/g, "") // hapus tanda baca
+    .trim()
+}
+
 export async function repairSkorUjian(ujianId: string) {
   const guru = await requireGuruSession()
 
-  // Pastikan ujian milik guru yang login
   const ujian = await prisma.ujian.findFirst({
     where: { id: ujianId, pembuatId: guru.user.id },
     select: { id: true },
@@ -31,6 +41,8 @@ export async function repairSkorUjian(ujianId: string) {
     })
 
     let jumlahPesertaDiperbaiki = 0
+    let jumlahJawabanCocok = 0
+    let jumlahJawabanTidakCocok = 0
 
     for (const hasil of hasilUjianList) {
       let totalPoinDidapat = 0
@@ -48,17 +60,40 @@ export async function repairSkorUjian(ujianId: string) {
           const opsiBenar = soalItem.opsi.find((o) => o.benar)
           if (!opsiBenar) continue
 
-          // Cocokkan berdasarkan ID ATAU Teks (untuk data lama yang rusak)
-          if (jawabanPeserta.opsiPilihan === opsiBenar.id) {
+          const jawabanPesertaRaw = jawabanPeserta.opsiPilihan
+
+          // STRATEGI 1: Cocokkan berdasarkan ID (jika data masih bagus)
+          if (jawabanPesertaRaw === opsiBenar.id) {
             benar = true
+            jumlahJawabanCocok++
           } else {
-            const opsiYangDipilihPeserta = soalItem.opsi.find(
-              (o) =>
-                o.teks.trim().toLowerCase() ===
-                jawabanPeserta.opsiPilihan?.trim().toLowerCase()
+            // STRATEGI 2: Cocokkan berdasarkan TEKS (dengan normalisasi)
+            const teksJawabanPeserta = normalisasiTeks(jawabanPesertaRaw)
+            const teksOpsiBenar = normalisasiTeks(opsiBenar.teks)
+            const teksOpsiPeserta = normalisasiTeks(
+              soalItem.opsi.find((o) => o.id === jawabanPesertaRaw)?.teks
             )
-            if (opsiYangDipilihPeserta?.id === opsiBenar.id) {
+
+            if (teksJawabanPeserta === teksOpsiBenar) {
               benar = true
+              jumlahJawabanCocok++
+            } else if (teksOpsiPeserta === teksOpsiBenar) {
+              benar = true
+              jumlahJawabanCocok++
+            } else {
+              // STRATEGI 3: Cocokkan berdasarkan huruf depan (A, B, C, D, E)
+              // Jika jawaban peserta adalah "A", "B", dll.
+              const hurufJawaban = jawabanPesertaRaw?.trim().toUpperCase()
+              if (hurufJawaban && hurufJawaban.length === 1 && /^[A-E]$/.test(hurufJawaban)) {
+                const indexBenar = soalItem.opsi.findIndex((o) => o.benar)
+                const hurufBenar = String.fromCharCode(65 + indexBenar) // A=65
+                if (hurufJawaban === hurufBenar) {
+                  benar = true
+                  jumlahJawabanCocok++
+                }
+              } else {
+                jumlahJawabanTidakCocok++
+              }
             }
           }
         } else {
@@ -83,13 +118,13 @@ export async function repairSkorUjian(ujianId: string) {
       jumlahPesertaDiperbaiki++
     }
 
-    // Refresh halaman agar skor terbaru langsung tampil
+    revalidatePath(`/ujian-guru/${ujianId}`)
     revalidatePath(`/hasil-guru/${ujianId}`)
     revalidatePath(`/hasil-guru`)
 
     return {
       success: true,
-      message: `Berhasil memperbaiki skor ${jumlahPesertaDiperbaiki} peserta.`,
+      message: `Berhasil memperbaiki skor ${jumlahPesertaDiperbaiki} peserta. Jawaban cocok: ${jumlahJawabanCocok}, tidak cocok: ${jumlahJawabanTidakCocok}.`,
     }
   } catch (error) {
     console.error("Repair skor error:", error)

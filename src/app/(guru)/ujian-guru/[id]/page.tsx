@@ -72,7 +72,6 @@ export default async function DetailUjianGuruPage({ params }: { params: Promise<
           className="pointer-events-none absolute -bottom-16 right-1/3 h-40 w-40 rounded-full bg-[radial-gradient(circle,rgba(192,132,252,0.12),transparent_65%)] blur-2xl"
         />
 
-        {/* Glare atas untuk efek 3D */}
         <span
           className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/60 to-transparent dark:from-white/[0.05]"
           aria-hidden="true"
@@ -81,7 +80,6 @@ export default async function DetailUjianGuruPage({ params }: { params: Promise<
         <div className="relative flex flex-col justify-between gap-6 lg:flex-row lg:items-start">
           {/* SISI KIRI: Icon + Judul + Info */}
           <div className="flex flex-1 items-start gap-5">
-            {/* Icon Subjek dengan efek 3D */}
             <div className="relative shrink-0">
               <div className="absolute inset-0 rounded-full bg-indigo-500/30 blur-2xl" />
               <div className="relative flex h-20 w-20 items-center justify-center rounded-[22px] bg-gradient-to-br from-white to-[#eef2ff] shadow-[inset_0_2px_4px_rgba(255,255,255,0.9),inset_0_-2px_4px_rgba(129,140,248,0.15),0_12px_24px_-8px_rgba(67,56,202,0.4)] dark:from-white/10 dark:to-white/[0.02] dark:shadow-[inset_0_1px_2px_rgba(255,255,255,0.1),0_12px_24px_-8px_rgba(0,0,0,0.5)] sm:h-24 sm:w-24">
@@ -93,7 +91,6 @@ export default async function DetailUjianGuruPage({ params }: { params: Promise<
                   className="h-14 w-14 object-contain drop-shadow-[0_12px_20px_rgba(49,46,129,0.35)] transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-3 sm:h-16 sm:w-16"
                 />
               </div>
-              {/* Badge sparkle */}
               <span className="absolute -right-1 -top-1 flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-[#fbbf24] to-[#d97706] text-white shadow-[0_4px_10px_-2px_rgba(217,119,6,0.6)]">
                 <IconSparkles className="h-3.5 w-3.5" />
               </span>
@@ -127,7 +124,6 @@ export default async function DetailUjianGuruPage({ params }: { params: Promise<
                 </span>
               </div>
 
-              {/* Distribusi Soal */}
               <div className="flex items-center gap-3 pt-1 text-[11.5px] text-[#8b93a6] dark:text-white/40">
                 <span className="flex items-center gap-1.5">
                   <span className="h-2 w-2 rounded-full bg-gradient-to-br from-[#818cf8] to-[#4338ca]" />
@@ -141,16 +137,18 @@ export default async function DetailUjianGuruPage({ params }: { params: Promise<
             </div>
           </div>
 
-          {/* SISI KANAN: Tombol Aksi */}
-          <div className="flex shrink-0 flex-col gap-2.5 lg:items-end">
-            <Link href={`/hasil-guru/${ujian.id}`} className="w-full lg:w-auto">
-              <button className="group/btn relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-[14px] bg-gradient-to-b from-[#818cf8] to-[#4338ca] px-6 py-3.5 text-[13px] font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_5px_0_#312e81,0_16px_28px_-12px_rgba(67,56,202,0.6)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_7px_0_#312e81,0_20px_32px_-12px_rgba(67,56,202,0.7)] active:translate-y-[4px] active:shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_1px_0_#312e81,0_4px_10px_-4px_rgba(67,56,202,0.5)] lg:w-auto">
+          {/* ==================== SISI KANAN: Tombol Aksi ==================== */}
+          <div className="flex w-full flex-col gap-2.5 sm:w-auto sm:min-w-[220px] lg:shrink-0">
+            {/* Tombol Utama: Lihat Hasil & Nilai */}
+            <Link href={`/hasil-guru/${ujian.id}`} className="w-full">
+              <button className="group/btn relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-[14px] bg-gradient-to-b from-[#818cf8] to-[#4338ca] px-6 py-3.5 text-[13px] font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_5px_0_#312e81,0_16px_28px_-12px_rgba(67,56,202,0.6)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_7px_0_#312e81,0_20px_32px_-12px_rgba(67,56,202,0.7)] active:translate-y-[4px] active:shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_1px_0_#312e81,0_4px_10px_-4px_rgba(67,56,202,0.5)]">
                 <span className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent" />
                 <span className="relative">Lihat Hasil & Nilai</span>
                 <IconChevronRight className="relative h-4 w-4 transition-transform duration-200 group-hover/btn:translate-x-1" />
               </button>
             </Link>
 
+            {/* Tombol Sekunder: Hitung Ulang Skor (warna selaras, ukuran sama) */}
             <TombolRepairSkor ujianId={ujian.id} />
           </div>
         </div>

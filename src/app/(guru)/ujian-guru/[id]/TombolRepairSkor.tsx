@@ -39,14 +39,15 @@ export function TombolRepairSkor({ ujianId }: { ujianId: string }) {
   }
 
   return (
-    <div className="flex w-full flex-col gap-2 lg:w-auto">
+    <div className="flex w-full flex-col gap-2">
+      {/* Tombol Sekunder: WARNA SELARAS dengan tombol utama (ungu outline) */}
       <button
         type="button"
         onClick={handleRepair}
         disabled={loading}
-        className="group/btn relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-[14px] bg-gradient-to-b from-[#fbbf24] to-[#b45309] px-6 py-3.5 text-[13px] font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_5px_0_#78350f,0_16px_28px_-12px_rgba(180,83,9,0.6)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_7px_0_#78350f,0_20px_32px_-12px_rgba(180,83,9,0.7)] active:translate-y-[4px] active:shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_1px_0_#78350f,0_4px_10px_-4px_rgba(180,83,9,0.5)] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 lg:w-auto"
+        className="group/btn relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-[14px] border border-[#c7d2fe] bg-gradient-to-b from-white to-[#eef2ff] px-6 py-3.5 text-[13px] font-semibold text-[#4338ca] shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_5px_0_#c7d2fe,0_16px_28px_-12px_rgba(67,56,202,0.35)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[#a5b4fc] hover:from-[#f5f7ff] hover:to-[#e0e7ff] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.95),0_7px_0_#c7d2fe,0_20px_32px_-12px_rgba(67,56,202,0.45)] active:translate-y-[4px] active:shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_1px_0_#c7d2fe,0_4px_10px_-4px_rgba(67,56,202,0.3)] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 dark:border-[#818cf8]/40 dark:from-white/5 dark:to-[#818cf8]/10 dark:text-[#a5b4fc] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_5px_0_rgba(129,140,248,0.25),0_16px_28px_-12px_rgba(0,0,0,0.5)] dark:hover:from-white/10 dark:hover:to-[#818cf8]/15"
       >
-        <span className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/30 to-transparent" />
+        <span className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/60 to-transparent dark:from-white/[0.06]" />
         {loading ? (
           <>
             <IconSpinner className="relative h-4 w-4 animate-spin" />

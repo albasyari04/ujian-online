@@ -12,6 +12,9 @@ import { SidebarPeserta } from "./SidebarPeserta"
 type PesertaUser = {
   nama: string
   email: string
+  /** Opsional — dipakai oleh avatar di Navbar dan Sidebar.
+   *  Kalau kosong, kedua komponen jatuh ke /image/icon/user-icon.png. */
+  fotoUrl?: string | null
 }
 
 /**
@@ -42,7 +45,11 @@ export function PesertaShell({
 
   return (
     <div className="flex h-[100dvh] w-full overflow-hidden bg-[#fbfaf7] dark:bg-[#0b1120]">
-      <SidebarPeserta open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <SidebarPeserta
+        open={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        user={{ nama: user.nama, fotoUrl: user.fotoUrl }}
+      />
 
       <div className="flex h-full min-w-0 flex-1 flex-col">
         <NavbarPeserta

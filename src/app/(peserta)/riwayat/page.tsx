@@ -183,11 +183,8 @@ export default async function RiwayatUjianPage({
 
       {/* =========================================================
           RINGKASAN
-          Sekarang memakai StatCard — komponen & style yang SAMA
-          persis dengan card ringkasan di halaman Jadwal Ujian
-          (icon polos kanan-atas, angka besar, efek gradient/
-          shadow 3D, grid 3 kolom dengan gap yang mengecil di
-          layar sempit).
+          Memakai StatCard — komponen & style yang SAMA persis dengan
+          card ringkasan di halaman Jadwal Ujian.
       ========================================================= */}
       <div className="grid grid-cols-3 gap-2 sm:gap-4">
         <StatCard
@@ -213,11 +210,17 @@ export default async function RiwayatUjianPage({
         />
       </div>
 
+      {/* =========================================================
+          PENCARIAN
+          Kolom input mengisi seluruh ruang sisa (flex-1, tanpa
+          max-width) sehingga tombol "Cari" (shrink-0) selalu berada
+          di pojok kanan form.
+      ========================================================= */}
       <form
         method="GET"
         className="flex items-center gap-2 rounded-[16px] border border-[#e7e4dc] bg-white p-2.5 shadow-[0_1px_2px_rgba(22,35,63,0.04),0_10px_20px_-12px_rgba(49,46,129,0.16)] dark:border-white/10 dark:bg-[#101a30]"
       >
-        <div className="relative min-w-0 flex-1 sm:max-w-sm">
+        <div className="relative min-w-0 flex-1">
           <IconSearch className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#94a3b8] dark:text-white/30" />
           <Input
             type="search"

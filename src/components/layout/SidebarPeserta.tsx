@@ -5,6 +5,13 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import type { ReactElement } from "react"
 
+type SidebarUser = {
+  nama: string
+  /** URL/path foto profil peserta. Kalau kosong, dipakai /image/icon/user-icon.png
+   *  (sama persis dengan avatar di NavbarPeserta). */
+  fotoUrl?: string | null
+}
+
 /* =========================================================
    ICONS
    Semua ikon didefinisikan lokal (SVG inline) supaya konsisten
@@ -86,8 +93,6 @@ function IconStatistik({ className }: { className?: string }) {
     </svg>
   )
 }
-
-
 
 function IconProfil({ className }: { className?: string }) {
   return (
@@ -173,11 +178,16 @@ const navGroups: NavGroup[] = [
 export function SidebarPeserta({
   open,
   onClose,
+  user,
 }: {
   open: boolean
   onClose: () => void
+  user: SidebarUser
 }) {
   const pathname = usePathname()
+
+  const namaTampil = user.nama.trim() || "Peserta"
+  const fotoSrc = user.fotoUrl && user.fotoUrl.trim() !== "" ? user.fotoUrl : "/image/icon/user-icon.png"
 
   return (
     <>
@@ -254,12 +264,15 @@ export function SidebarPeserta({
         </nav>
 
         <div className="border-t border-white/10 px-3.5 pt-4">
-          <div className="flex items-center gap-2 rounded-[12px] bg-white/10 px-2.5 py-2.5">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#e8a33d] text-[12px] font-semibold text-[#16233f]">
-              P
+          <div className="flex items-center gap-2.5 rounded-[12px] bg-white/10 px-2.5 py-2.5">
+            {/* Avatar — memakai foto yang sama dengan avatar di navbar */}
+            <span className="relative inline-block h-8 w-8 shrink-0 overflow-hidden rounded-full bg-white/10 ring-1 ring-white/20">
+              <Image src={fotoSrc} alt={namaTampil} fill sizes="32px" className="object-cover" />
             </span>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-[11.5px] font-semibold">Peserta</p>
+              <p className="truncate text-[11.5px] font-semibold" title={namaTampil}>
+                {namaTampil}
+              </p>
               <p className="truncate text-[10px] text-white/60">Portal Ujian</p>
             </div>
           </div>

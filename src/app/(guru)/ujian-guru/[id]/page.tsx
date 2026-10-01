@@ -16,14 +16,32 @@ import {
 import { SoalManagerClient } from "./SoalManagerClient"
 import { TombolRepairSkor } from "./TombolRepairSkor"
 
-function formatTanggal(date: Date) {
-  return new Intl.DateTimeFormat("id-ID", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(date)
+/* =========================================================
+   FORMAT TANGGAL & JAM
+   Format diperpendek: "28 Sep 2026, 03.37 – 05.15 WIB"
+========================================================= */
+
+const fmtTanggalSingkat = new Intl.DateTimeFormat("id-ID", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+  timeZone: "Asia/Jakarta",
+})
+
+const fmtJam = new Intl.DateTimeFormat("id-ID", {
+  hour: "2-digit",
+  minute: "2-digit",
+  timeZone: "Asia/Jakarta",
+})
+
+function formatRentangWaktu(mulai: Date, selesai: Date) {
+  const tanggalSama =
+    fmtTanggalSingkat.format(mulai) === fmtTanggalSingkat.format(selesai)
+
+  if (tanggalSama) {
+    return `${fmtTanggalSingkat.format(mulai)}, ${fmtJam.format(mulai)} – ${fmtJam.format(selesai)} WIB`
+  }
+  return `${fmtTanggalSingkat.format(mulai)}, ${fmtJam.format(mulai)} – ${fmtTanggalSingkat.format(selesai)}, ${fmtJam.format(selesai)} WIB`
 }
 
 export default async function DetailUjianGuruPage({ params }: { params: Promise<{ id: string }> }) {
@@ -108,11 +126,11 @@ export default async function DetailUjianGuruPage({ params }: { params: Promise<
                 )}
               </div>
 
-              {/* Info Pills - 3D Style */}
+              {/* Info Pills - 3D Style (format waktu diperpendek) */}
               <div className="flex flex-wrap items-center gap-2 pt-1">
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-[#c7d2fe] bg-gradient-to-b from-[#eef2ff] to-[#dbe4f5] px-3 py-1.5 text-[11.5px] font-medium text-[#4338ca] shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_2px_0_#c7d2fe,0_4px_8px_-4px_rgba(67,56,202,0.3)] dark:border-[#818cf8]/30 dark:from-[#818cf8]/15 dark:to-[#818cf8]/5 dark:text-[#818cf8] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_2px_0_rgba(129,140,248,0.2)]">
                   <IconClock className="h-3.5 w-3.5" />
-                  {formatTanggal(ujian.mulai)} – {formatTanggal(ujian.selesai)}
+                  {formatRentangWaktu(ujian.mulai, ujian.selesai)}
                 </span>
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-[#a7f3d0] bg-gradient-to-b from-[#ecfdf5] to-[#d1fae5] px-3 py-1.5 text-[11.5px] font-medium text-[#047857] shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_2px_0_#a7f3d0,0_4px_8px_-4px_rgba(4,120,87,0.25)] dark:border-emerald-400/30 dark:from-emerald-400/15 dark:to-emerald-400/5 dark:text-emerald-300 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_2px_0_rgba(16,185,129,0.2)]">
                   <IconDocument className="h-3.5 w-3.5" />
@@ -137,18 +155,24 @@ export default async function DetailUjianGuruPage({ params }: { params: Promise<
             </div>
           </div>
 
-          {/* ==================== SISI KANAN: Tombol Aksi ==================== */}
-          <div className="flex w-full flex-col gap-2.5 sm:w-auto sm:min-w-[220px] lg:shrink-0">
+          {/* ==================== SISI KANAN: Tombol Aksi ====================
+              Ukuran selaras dengan tombol "Import soal" & "Tambah Soal" di section bawah:
+              - px-4 py-2.5
+              - text-[12.5px]
+              - icon h-4 w-4
+              - min-w-[180px] untuk konsistensi lebar
+          ================================================================ */}
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:min-w-[200px] lg:shrink-0">
             {/* Tombol Utama: Lihat Hasil & Nilai */}
             <Link href={`/hasil-guru/${ujian.id}`} className="w-full">
-              <button className="group/btn relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-[14px] bg-gradient-to-b from-[#818cf8] to-[#4338ca] px-6 py-3.5 text-[13px] font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_5px_0_#312e81,0_16px_28px_-12px_rgba(67,56,202,0.6)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_7px_0_#312e81,0_20px_32px_-12px_rgba(67,56,202,0.7)] active:translate-y-[4px] active:shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_1px_0_#312e81,0_4px_10px_-4px_rgba(67,56,202,0.5)]">
+              <button className="group/btn relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-[10px] bg-gradient-to-b from-[#818cf8] to-[#4338ca] px-4 py-2.5 text-[12.5px] font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_4px_0_#312e81,0_12px_20px_-8px_rgba(67,56,202,0.5)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_6px_0_#312e81,0_16px_24px_-8px_rgba(67,56,202,0.6)] active:translate-y-[3px] active:shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_1px_0_#312e81,0_4px_8px_-4px_rgba(67,56,202,0.5)]">
                 <span className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent" />
                 <span className="relative">Lihat Hasil & Nilai</span>
-                <IconChevronRight className="relative h-4 w-4 transition-transform duration-200 group-hover/btn:translate-x-1" />
+                <IconChevronRight className="relative h-4 w-4 transition-transform duration-200 group-hover/btn:translate-x-0.5" />
               </button>
             </Link>
 
-            {/* Tombol Sekunder: Hitung Ulang Skor (warna selaras, ukuran sama) */}
+            {/* Tombol Sekunder: Hitung Ulang Skor */}
             <TombolRepairSkor ujianId={ujian.id} />
           </div>
         </div>

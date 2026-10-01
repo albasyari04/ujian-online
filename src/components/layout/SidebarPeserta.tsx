@@ -211,12 +211,12 @@ export function SidebarPeserta({
         `}
       >
         <div className="flex flex-col items-center gap-2 px-5 text-center">
-          {/* Logo baru — gambar 3D sudah punya warna & bentuknya sendiri,
+          {/* Logo baru — gambar LOGO_SMA.png sudah punya warna & bentuknya sendiri,
               jadi ditampilkan polos tanpa kotak/latar solid, hanya diberi drop-shadow. */}
           <div className="flex h-14 w-14 shrink-0 items-center justify-center">
             <Image
-              src="/image/ujian-online.png"
-              alt="Ujian Online"
+              src="/image/LOGO_SMA.png"
+              alt="SMA Al Istiqomah"
               width={72}
               height={72}
               className="h-full w-full object-contain drop-shadow-[0_6px_12px_rgba(0,0,0,0.35)]"

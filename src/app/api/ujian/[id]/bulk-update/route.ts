@@ -7,12 +7,18 @@ import { requireAdmin, requireGuru } from "@/lib/api-auth"
 
 type Params = { params: Promise<{ id: string }> }
 
+type OpsiInput = {
+  id?: string // Opsional: jika ada, berarti update; jika tidak, berarti create
+  teks: string
+  benar: boolean
+}
+
 type SoalInput = {
   id: string
   pertanyaan: string
   tipe: "PILIHAN_GANDA" | "ESSAY"
   poin: number
-  opsi?: { teks: string; benar: boolean }[]
+  opsi?: OpsiInput[]
 }
 
 export async function POST(request: NextRequest, { params }: Params) {
@@ -63,7 +69,6 @@ export async function POST(request: NextRequest, { params }: Params) {
 
   try {
     // Pastikan ujian milik guru yang login
-    // FIX: guard.userId, bukan guard.user.id
     const ujian = await prisma.ujian.findFirst({
       where: { id: ujianId, pembuatId: guard.userId },
       select: { id: true },
@@ -73,35 +78,132 @@ export async function POST(request: NextRequest, { params }: Params) {
       return NextResponse.json({ message: "Ujian tidak ditemukan." }, { status: 404 })
     }
 
-    // Update semua soal dalam satu transaksi
+    // =========================================================
+    // 1. UPDATE SOAL & OPSI
+    // =========================================================
     await prisma.$transaction(async (tx) => {
       for (const s of soalList) {
-        // Hapus opsi lama
-        await tx.opsi.deleteMany({ where: { soalId: s.id } })
-
-        // Update soal + buat opsi baru
+        // Update soal
         await tx.soal.update({
           where: { id: s.id },
           data: {
             pertanyaan: s.pertanyaan.trim(),
             tipe: s.tipe,
             poin: s.poin,
-            opsi:
-              s.tipe === "PILIHAN_GANDA" && s.opsi
-                ? {
-                    create: s.opsi.map((o, i) => ({
-                      teks: o.teks.trim(),
-                      benar: Boolean(o.benar),
-                      urutan: i,
-                    })),
-                  }
-                : undefined,
           },
         })
+
+        // Handle opsi jika tipe PG
+        if (s.tipe === "PILIHAN_GANDA" && s.opsi) {
+          // Ambil opsi yang ada di database saat ini
+          const opsiLama = await tx.opsi.findMany({
+            where: { soalId: s.id },
+            select: { id: true },
+          })
+
+          const opsiIdsInput = s.opsi.map((o) => o.id).filter(Boolean) as string[]
+          
+          // Hapus opsi yang tidak ada di input (opsi yang dihapus guru)
+          const opsiIdsHapus = opsiLama
+            .filter((o) => !opsiIdsInput.includes(o.id))
+            .map((o) => o.id)
+          
+          if (opsiIdsHapus.length > 0) {
+            await tx.opsi.deleteMany({
+              where: { id: { in: opsiIdsHapus } },
+            })
+          }
+
+          // Update atau Create opsi
+          for (let i = 0; i < s.opsi.length; i++) {
+            const o = s.opsi[i]
+            if (o.id) {
+              // Update opsi yang sudah ada
+              await tx.opsi.update({
+                where: { id: o.id },
+                data: {
+                  teks: o.teks.trim(),
+                  benar: Boolean(o.benar),
+                  urutan: i,
+                },
+              })
+            } else {
+              // Create opsi baru (jika guru menambah opsi)
+              await tx.opsi.create({
+                data: {
+                  soalId: s.id,
+                  teks: o.teks.trim(),
+                  benar: Boolean(o.benar),
+                  urutan: i,
+                },
+              })
+            }
+          }
+        }
       }
     })
 
-    return NextResponse.json({ message: "Semua soal berhasil diperbarui." })
+    // =========================================================
+    // 2. HITUNG ULANG SKOR SEMUA PESERTA
+    // =========================================================
+    // Ambil semua soal terbaru untuk perhitungan
+    const soalTerbaru = await prisma.soal.findMany({
+      where: { ujianId },
+      include: { opsi: true },
+    })
+
+    // Ambil semua hasil ujian peserta yang sudah SELESAI
+    const hasilUjianList = await prisma.hasilUjian.findMany({
+      where: { ujianId, status: "SELESAI" },
+      include: { jawaban: true },
+    })
+
+    let jumlahPesertaDiupdate = 0
+
+    for (const hasil of hasilUjianList) {
+      let totalPoinDidapat = 0
+      let totalPoinMaksimal = 0
+
+      for (const soalItem of soalTerbaru) {
+        totalPoinMaksimal += soalItem.poin
+
+        const jawabanPeserta = hasil.jawaban.find((j) => j.soalId === soalItem.id)
+        if (!jawabanPeserta) continue
+
+        // Cek apakah jawaban benar
+        let benar = false
+        if (soalItem.tipe === "PILIHAN_GANDA") {
+          const opsiBenar = soalItem.opsi.find((o) => o.benar)
+          benar = opsiBenar?.id === jawabanPeserta.opsiPilihan
+        } else {
+          // Untuk essay, kita asumsikan sudah dinilai manual (benar === true)
+          benar = jawabanPeserta.benar === true
+        }
+
+        if (benar) {
+          totalPoinDidapat += soalItem.poin
+        }
+      }
+
+      // Hitung skor akhir (skala 0-100)
+      const skorAkhir = totalPoinMaksimal > 0 
+        ? Math.round((totalPoinDidapat / totalPoinMaksimal) * 100 * 10) / 10 
+        : 0
+
+      // Update skor peserta
+      await prisma.hasilUjian.update({
+        where: { id: hasil.id },
+        data: { skor: skorAkhir },
+      })
+      
+      jumlahPesertaDiupdate++
+    }
+
+    return NextResponse.json({ 
+      message: "Semua soal berhasil diperbarui dan skor peserta telah dihitung ulang.",
+      jumlahPesertaDiupdate 
+    })
+
   } catch (error) {
     console.error("Bulk update error:", error)
     if (error instanceof Prisma.PrismaClientKnownRequestError) {

@@ -35,21 +35,18 @@ export function EditSemuaSoalClient({ ujianId, totalSoal, initialSoal }: Props) 
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
-  // Update poin per soal
   function ubahPoin(soalId: string, newPoin: number) {
     setSoal((prev) =>
       prev.map((s) => (s.id === soalId ? { ...s, poin: newPoin } : s))
     )
   }
 
-  // Update pertanyaan
   function ubahPertanyaan(soalId: string, newPertanyaan: string) {
     setSoal((prev) =>
       prev.map((s) => (s.id === soalId ? { ...s, pertanyaan: newPertanyaan } : s))
     )
   }
 
-  // Update opsi (teks)
   function ubahOpsi(soalId: string, opsiId: string, newTeks: string) {
     setSoal((prev) =>
       prev.map((s) =>
@@ -78,7 +75,6 @@ export function EditSemuaSoalClient({ ujianId, totalSoal, initialSoal }: Props) 
     )
   }
 
-  // ================= AUTO BOBOT =================
   function hitungAutoBobot() {
     if (totalSoal <= 0) {
       alert("Tidak ada soal untuk dihitung.")
@@ -96,7 +92,6 @@ export function EditSemuaSoalClient({ ujianId, totalSoal, initialSoal }: Props) 
     setTimeout(() => setSuccess(null), 4000)
   }
 
-  // ================= SIMPAN SEMUA =================
   async function simpanSemua() {
     if (!confirm("Simpan perubahan untuk SEMUA soal? Tindakan ini akan menimpa data sebelumnya dan menghitung ulang skor semua peserta.")) {
       return
@@ -119,7 +114,7 @@ export function EditSemuaSoalClient({ ujianId, totalSoal, initialSoal }: Props) 
             opsi:
               s.tipe === "PILIHAN_GANDA"
                 ? s.opsi.map((o) => ({ 
-                    id: o.id,      // <-- KIRIM ID OPSI (INI KUNCI PERBAIKANNYA)
+                    id: o.id,      // <-- KIRIM ID OPSI (KUNCI)
                     teks: o.teks, 
                     benar: o.benar 
                   }))
@@ -143,7 +138,6 @@ export function EditSemuaSoalClient({ ujianId, totalSoal, initialSoal }: Props) 
 
   return (
     <div className="space-y-5">
-      {/* TOOLBAR */}
       <div className="sticky top-2 z-10 flex flex-wrap items-center justify-between gap-3 rounded-[18px] border border-[#e7e4dc] bg-white/95 p-4 shadow-[0_4px_12px_-4px_rgba(22,35,63,0.08)] backdrop-blur-md dark:border-white/10 dark:bg-[#101a30]/95">
         <div className="flex items-center gap-2">
           <span className="text-[13px] font-semibold text-[#16233f] dark:text-white/80">
@@ -189,7 +183,6 @@ export function EditSemuaSoalClient({ ujianId, totalSoal, initialSoal }: Props) 
         </div>
       </div>
 
-      {/* NOTIFIKASI */}
       {error && (
         <div className="flex items-center gap-2.5 rounded-[12px] border border-red-200 bg-red-50 p-3.5 text-[13px] text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-400">
           <IconAlertTriangle className="h-4 w-4 shrink-0" />
@@ -203,14 +196,12 @@ export function EditSemuaSoalClient({ ujianId, totalSoal, initialSoal }: Props) 
         </div>
       )}
 
-      {/* DAFTAR SOAL */}
       <div className="space-y-3">
         {soal.map((s, idx) => (
           <div
             key={s.id}
             className="rounded-[18px] border border-[#e7e4dc] bg-white p-4 shadow-[0_1px_2px_rgba(22,35,63,0.04),0_8px_20px_-12px_rgba(49,46,129,0.2)] transition-all hover:shadow-[0_4px_16px_-6px_rgba(49,46,129,0.3)] dark:border-white/10 dark:bg-[#101a30] sm:p-5"
           >
-            {/* Header soal */}
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-2">
                 <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#818cf8] to-[#4338ca] text-[12px] font-bold text-white shadow-[0_4px_10px_-2px_rgba(67,56,202,0.5)]">
@@ -227,7 +218,6 @@ export function EditSemuaSoalClient({ ujianId, totalSoal, initialSoal }: Props) 
                 </span>
               </div>
 
-              {/* Input Poin */}
               <div className="flex items-center gap-2">
                 <label className="text-[11.5px] font-semibold text-[#5b657d] dark:text-white/50">
                   Poin:
@@ -243,7 +233,6 @@ export function EditSemuaSoalClient({ ujianId, totalSoal, initialSoal }: Props) 
               </div>
             </div>
 
-            {/* Textarea Pertanyaan */}
             <textarea
               value={s.pertanyaan}
               onChange={(e) => ubahPertanyaan(s.id, e.target.value)}
@@ -251,7 +240,6 @@ export function EditSemuaSoalClient({ ujianId, totalSoal, initialSoal }: Props) 
               className="mt-3 w-full resize-y rounded-[12px] border border-[#e7e4dc] bg-[#fdfdfd] p-3 text-[13px] text-[#34435f] shadow-inner focus:border-[#818cf8] focus:outline-none focus:ring-2 focus:ring-[#818cf8]/20 dark:border-white/10 dark:bg-[#0d1526] dark:text-white/80"
             />
 
-            {/* Opsi Jawaban (hanya PG) */}
             {s.tipe === "PILIHAN_GANDA" && (
               <div className="mt-3 space-y-2">
                 {s.opsi.map((o, oIdx) => (
@@ -292,7 +280,6 @@ export function EditSemuaSoalClient({ ujianId, totalSoal, initialSoal }: Props) 
         ))}
       </div>
 
-      {/* BOTTOM ACTION */}
       <div className="flex justify-end border-t border-[#edf0ef] pt-5 dark:border-white/10">
         <button
           type="button"

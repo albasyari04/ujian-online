@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma"
 import { getSubjectIconSrc } from "@/lib/subject-icons"
 import { IconArrowLeft, IconUsers, IconDocument, IconClock } from "@/components/ui/Icons"
 import { SoalManagerClient } from "./SoalManagerClient"
+import { TombolRepairSkor } from "./TombolRepairSkor"
 
 function formatTanggal(date: Date) {
   return new Intl.DateTimeFormat("id-ID", {
@@ -100,13 +101,18 @@ export default async function DetailUjianGuruPage({ params }: { params: Promise<
             </div>
           </div>
 
-          {/* Tombol Lihat Hasil */}
-          <Link href={`/hasil-guru/${ujian.id}`} className="shrink-0">
-            <button className="group flex items-center gap-2 rounded-[12px] bg-gradient-to-br from-[#818cf8] to-[#4338ca] px-5 py-3 text-[13px] font-semibold text-white shadow-[0_8px_20px_-6px_rgba(67,56,202,0.5)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_12px_24px_-6px_rgba(67,56,202,0.6)] active:translate-y-0">
-              Lihat Hasil & Nilai
-              <span className="transition-transform duration-200 group-hover:translate-x-0.5">→</span>
-            </button>
-          </Link>
+          {/* Tombol Aksi */}
+          <div className="flex shrink-0 flex-col gap-2 sm:items-end">
+            <Link href={`/hasil-guru/${ujian.id}`}>
+              <button className="group flex w-full items-center justify-center gap-2 rounded-[12px] bg-gradient-to-br from-[#818cf8] to-[#4338ca] px-5 py-3 text-[13px] font-semibold text-white shadow-[0_8px_20px_-6px_rgba(67,56,202,0.5)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_12px_24px_-6px_rgba(67,56,202,0.6)] active:translate-y-0 sm:w-auto">
+                Lihat Hasil & Nilai
+                <span className="transition-transform duration-200 group-hover:translate-x-0.5">→</span>
+              </button>
+            </Link>
+
+            {/* TOMBOL REPAIR SKOR */}
+            <TombolRepairSkor ujianId={ujian.id} />
+          </div>
         </div>
       </div>
 

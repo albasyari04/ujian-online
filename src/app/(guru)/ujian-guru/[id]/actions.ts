@@ -1,28 +1,23 @@
-import { NextResponse } from "next/server"
-import type { NextRequest } from "next/server"
+"use server"
+
+import { revalidatePath } from "next/cache"
+import { requireGuruSession } from "@/lib/guru/session"
 import { prisma } from "@/lib/prisma"
-import { requireAdmin, requireGuru } from "@/lib/api-auth"
 
-type Params = { params: Promise<{ id: string }> }
+export async function repairSkorUjian(ujianId: string) {
+  const guru = await requireGuruSession()
 
-export async function POST(request: NextRequest, { params }: Params) {
-  const { id: ujianId } = await params
-  let guard = await requireGuru()
-  if (guard.error) {
-    guard = await requireAdmin()
-    if (guard.error) return guard.error
+  // Pastikan ujian milik guru yang login
+  const ujian = await prisma.ujian.findFirst({
+    where: { id: ujianId, pembuatId: guru.user.id },
+    select: { id: true },
+  })
+
+  if (!ujian) {
+    return { success: false, message: "Ujian tidak ditemukan atau bukan milik Anda." }
   }
 
   try {
-    const ujian = await prisma.ujian.findFirst({
-      where: { id: ujianId, pembuatId: guard.userId },
-      select: { id: true },
-    })
-
-    if (!ujian) {
-      return NextResponse.json({ message: "Ujian tidak ditemukan." }, { status: 404 })
-    }
-
     // 1. Ambil semua soal & opsi terbaru
     const soalTerbaru = await prisma.soal.findMany({
       where: { ujianId },
@@ -53,13 +48,14 @@ export async function POST(request: NextRequest, { params }: Params) {
           const opsiBenar = soalItem.opsi.find((o) => o.benar)
           if (!opsiBenar) continue
 
-          // STRATEGI PERBAIKAN: Cocokkan berdasarkan ID ATAU Teks
+          // Cocokkan berdasarkan ID ATAU Teks (untuk data lama yang rusak)
           if (jawabanPeserta.opsiPilihan === opsiBenar.id) {
             benar = true
           } else {
-            // Fallback: cocokkan berdasarkan teks
             const opsiYangDipilihPeserta = soalItem.opsi.find(
-              (o) => o.teks.trim().toLowerCase() === jawabanPeserta.opsiPilihan?.trim().toLowerCase()
+              (o) =>
+                o.teks.trim().toLowerCase() ===
+                jawabanPeserta.opsiPilihan?.trim().toLowerCase()
             )
             if (opsiYangDipilihPeserta?.id === opsiBenar.id) {
               benar = true
@@ -74,28 +70,29 @@ export async function POST(request: NextRequest, { params }: Params) {
         }
       }
 
-      const skorAkhir = totalPoinMaksimal > 0 
-        ? Math.round((totalPoinDidapat / totalPoinMaksimal) * 100 * 10) / 10 
-        : 0
+      const skorAkhir =
+        totalPoinMaksimal > 0
+          ? Math.round((totalPoinDidapat / totalPoinMaksimal) * 100 * 10) / 10
+          : 0
 
       await prisma.hasilUjian.update({
         where: { id: hasil.id },
         data: { skor: skorAkhir },
       })
-      
+
       jumlahPesertaDiperbaiki++
     }
 
-    return NextResponse.json({ 
-      message: `Berhasil memperbaiki skor ${jumlahPesertaDiperbaiki} peserta.`,
-      jumlahPesertaDiperbaiki 
-    })
+    // Refresh halaman agar skor terbaru langsung tampil
+    revalidatePath(`/hasil-guru/${ujianId}`)
+    revalidatePath(`/hasil-guru`)
 
+    return {
+      success: true,
+      message: `Berhasil memperbaiki skor ${jumlahPesertaDiperbaiki} peserta.`,
+    }
   } catch (error) {
     console.error("Repair skor error:", error)
-    return NextResponse.json(
-      { message: "Gagal memperbaiki skor." },
-      { status: 500 }
-    )
+    return { success: false, message: "Gagal memperbaiki skor." }
   }
 }

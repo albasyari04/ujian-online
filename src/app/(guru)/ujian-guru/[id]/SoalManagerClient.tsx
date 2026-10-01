@@ -13,6 +13,7 @@ import {
   IconPlus,
   IconTrash,
   IconChevronRight,
+  IconTrendingUp,
 } from "@/components/ui/Icons"
 import { TombolRepairSkor } from "./TombolRepairSkor"
 
@@ -34,6 +35,13 @@ function splitBacaanDanSoal(pertanyaan: string): { bacaan: string | null; soal: 
 
   return { bacaan: bacaan || null, soal }
 }
+
+/* =========================================================
+   TOMBOL PUTIH SERAGAM (tanpa efek 3D, tanpa shadow tebal)
+   Dipakai untuk semua tombol aksi di header Bank Soal.
+========================================================= */
+const TOMBOL_PUTIH =
+  "inline-flex h-10 w-full items-center justify-center gap-2 whitespace-nowrap rounded-[10px] border border-[#e7e4dc] bg-white px-3 text-[12.5px] font-medium text-[#34435f] transition-colors duration-150 hover:border-[#c7d2fe] hover:bg-[#f8faff] hover:text-[#4338ca] dark:border-white/10 dark:bg-white/5 dark:text-white/70 dark:hover:border-[#818cf8]/40 dark:hover:bg-[#818cf8]/10 dark:hover:text-[#818cf8]"
 
 export function SoalManagerClient({
   ujianId,
@@ -64,12 +72,12 @@ export function SoalManagerClient({
 
   return (
     <>
-      {/* ==================== HEADER BANK SOAL (DENGAN 4 TOMBOL SEJAJAR) ==================== */}
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        {/* Judul */}
-        <div className="shrink-0">
+      {/* ==================== HEADER BANK SOAL ==================== */}
+      <div className="space-y-4">
+        {/* Judul Section */}
+        <div>
           <h2 className="flex items-center gap-2 text-[18px] font-bold text-[#16233f] dark:text-white">
-            <span className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-gradient-to-b from-[#818cf8] to-[#4338ca] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_4px_10px_-3px_rgba(67,56,202,0.5)]">
+            <span className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-[#eef2ff] text-[#4338ca] dark:bg-[#818cf8]/15 dark:text-[#818cf8]">
               <IconDocument className="h-4 w-4" />
             </span>
             Bank Soal Ujian Ini
@@ -79,36 +87,34 @@ export function SoalManagerClient({
           </p>
         </div>
 
-        {/* ==================== GRUP TOMBOL AKSI (4 TOMBOL SEJAJAR) ====================
-            Layout: [Import soal] [Tambah Soal] | [Lihat Hasil & Nilai] [Hitung Ulang Skor]
-            Semua tombol ukuran sama: px-4 py-2.5, text-[12.5px], rounded-[10px], h-10
-        ============================================================================= */}
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Grup 1: Aksi Soal */}
-          <ImportSoal ujianId={ujianId} onSuccess={handleSuccess} />
+        {/* ==================== GRID 4 TOMBOL PUTIH (RAPI KANAN-KIRI) ====================
+            Layout:
+            - Mobile: grid-cols-2 → 2 baris × 2 kolom (rapi kotak)
+            - Desktop: grid-cols-4 → 1 baris × 4 kolom (sejajar)
+            Semua tombol: warna putih, ukuran sama, tanpa efek 3D.
+        ============================================================================== */}
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {/* Tombol 1: Import Soal */}
+          <ImportSoal
+            ujianId={ujianId}
+            onSuccess={handleSuccess}
+            triggerClassName={TOMBOL_PUTIH}
+          />
 
-          <Link
-            href={`/ujian-guru/${ujianId}/soal/baru`}
-            className="group/btn relative inline-flex items-center gap-2 overflow-hidden rounded-[10px] bg-gradient-to-b from-[#818cf8] to-[#4338ca] px-4 py-2.5 text-[12.5px] font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_4px_0_#312e81,0_12px_20px_-8px_rgba(67,56,202,0.5)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_6px_0_#312e81,0_16px_24px_-8px_rgba(67,56,202,0.6)] active:translate-y-[3px] active:shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_1px_0_#312e81,0_4px_8px_-4px_rgba(67,56,202,0.5)]"
-          >
-            <span className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent" />
-            <IconPlus className="relative h-4 w-4" />
-            <span className="relative">Tambah Soal</span>
+          {/* Tombol 2: Tambah Soal */}
+          <Link href={`/ujian-guru/${ujianId}/soal/baru`} className={TOMBOL_PUTIH}>
+            <IconPlus className="h-4 w-4" />
+            <span>Tambah Soal</span>
           </Link>
 
-          {/* Pemisah visual */}
-          <span className="mx-1 hidden h-8 w-px bg-[#e7e4dc] dark:bg-white/10 sm:block" aria-hidden="true" />
-
-          {/* Grup 2: Aksi Hasil */}
-          <Link
-            href={`/hasil-guru/${ujianId}`}
-            className="group/btn relative inline-flex items-center gap-2 overflow-hidden rounded-[10px] bg-gradient-to-b from-[#818cf8] to-[#4338ca] px-4 py-2.5 text-[12.5px] font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_4px_0_#312e81,0_12px_20px_-8px_rgba(67,56,202,0.5)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_6px_0_#312e81,0_16px_24px_-8px_rgba(67,56,202,0.6)] active:translate-y-[3px] active:shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_1px_0_#312e81,0_4px_8px_-4px_rgba(67,56,202,0.5)]"
-          >
-            <span className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent" />
-            <span className="relative">Lihat Hasil &amp; Nilai</span>
-            <IconChevronRight className="relative h-4 w-4 transition-transform duration-200 group-hover/btn:translate-x-0.5" />
+          {/* Tombol 3: Lihat Hasil & Nilai */}
+          <Link href={`/hasil-guru/${ujianId}`} className={TOMBOL_PUTIH}>
+            <IconTrendingUp className="h-4 w-4" />
+            <span className="truncate">Lihat Hasil</span>
+            <IconChevronRight className="h-3.5 w-3.5 shrink-0 opacity-60" />
           </Link>
 
+          {/* Tombol 4: Hitung Ulang Skor (TANPA prop variant) */}
           <TombolRepairSkor ujianId={ujianId} />
         </div>
       </div>
@@ -128,10 +134,7 @@ export function SoalManagerClient({
               Tambahkan soal pertama untuk ujian ini.
             </p>
           </div>
-          <Link
-            href={`/ujian-guru/${ujianId}/soal/baru`}
-            className="mt-2 inline-flex items-center gap-1.5 rounded-[10px] border border-[#c7d2fe] bg-gradient-to-b from-white to-[#eef2ff] px-4 py-2 text-[12.5px] font-medium text-[#4338ca] shadow-[0_2px_0_#c7d2fe,0_4px_10px_-4px_rgba(67,56,202,0.25)] transition-all hover:-translate-y-0.5 hover:shadow-[0_4px_0_#c7d2fe,0_8px_14px_-4px_rgba(67,56,202,0.35)] dark:border-[#818cf8]/30 dark:from-white/5 dark:to-[#818cf8]/10 dark:text-[#818cf8]"
-          >
+          <Link href={`/ujian-guru/${ujianId}/soal/baru`} className={TOMBOL_PUTIH}>
             <IconPlus className="h-3.5 w-3.5" />
             Tambah Soal Pertama
           </Link>
@@ -174,7 +177,7 @@ export function SoalManagerClient({
                   <div className="flex items-center gap-1.5 opacity-100 transition-opacity duration-200 sm:opacity-0 sm:group-hover:opacity-100">
                     <Link
                       href={`/ujian-guru/${ujianId}/soal/${soal.id}/edit`}
-                      className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-b from-white to-[#eef2ff] text-[#4338ca] shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_2px_0_#c7d2fe,0_6px_10px_-4px_rgba(67,56,202,0.3)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_4px_0_#c7d2fe,0_10px_16px_-4px_rgba(67,56,202,0.4)] dark:from-white/10 dark:to-white/[0.02] dark:text-[#818cf8] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_2px_0_rgba(129,140,248,0.2)]"
+                      className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[#4338ca] shadow-sm transition-all duration-200 hover:bg-[#eef2ff] dark:bg-white/10 dark:text-[#818cf8] dark:hover:bg-white/15"
                       aria-label="Edit soal"
                     >
                       <IconPencil className="h-4 w-4" />
@@ -182,7 +185,7 @@ export function SoalManagerClient({
                     <button
                       type="button"
                       onClick={() => handleDelete(soal.id)}
-                      className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-b from-white to-[#fef2f2] text-[#d23b3b] shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_2px_0_#fecaca,0_6px_10px_-4px_rgba(210,59,59,0.3)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_4px_0_#fecaca,0_10px_16px_-4px_rgba(210,59,59,0.4)] dark:from-white/10 dark:to-red-500/10 dark:text-red-400 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_2px_0_rgba(239,68,68,0.2)]"
+                      className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[#d23b3b] shadow-sm transition-all duration-200 hover:bg-[#fef2f2] dark:bg-white/10 dark:text-red-400 dark:hover:bg-red-500/15"
                       aria-label="Hapus soal"
                     >
                       <IconTrash className="h-4 w-4" />

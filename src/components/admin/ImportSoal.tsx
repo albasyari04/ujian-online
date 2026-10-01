@@ -38,7 +38,6 @@ async function parseFile(file: File, ujianId: string): Promise<Question[]> {
     return parseRows(XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, { defval: "" }))
   }
   if (extension === "docx") {
-    // Jangan pakai mammoth.extractRawText: penomoran otomatis Word (1. / A.) ikut hilang.
     return parseText(await docxToText(await file.arrayBuffer()))
   }
   if (extension === "pdf") {
@@ -70,7 +69,16 @@ function buildPayload(questions: Question[]) {
   )
 }
 
-export function ImportSoal({ ujianId, onSuccess }: { ujianId: string; onSuccess?: () => void }) {
+export function ImportSoal({
+  ujianId,
+  onSuccess,
+  triggerClassName,
+}: {
+  ujianId: string
+  onSuccess?: () => void
+  /** Class opsional untuk mengganti style tombol trigger (default: Button variant="outline"). */
+  triggerClassName?: string
+}) {
   const router = useRouter()
   const inputRef = useRef<HTMLInputElement>(null)
   const [open, setOpen] = useState(false)
@@ -80,7 +88,6 @@ export function ImportSoal({ ujianId, onSuccess }: { ujianId: string; onSuccess?
   const [isParsing, setIsParsing] = useState(false)
   const [isImporting, setIsImporting] = useState(false)
 
-  // Validasi otomatis setiap kali soal berubah (termasuk saat guru memilih kunci di pratinjau).
   const issues = useMemo(() => validateQuestions(questions), [questions])
   const problemIndexes = useMemo(() => new Set(issues.map((issue) => issue.index)), [issues])
 
@@ -112,7 +119,6 @@ export function ImportSoal({ ujianId, onSuccess }: { ujianId: string; onSuccess?
     }
   }
 
-  /** Pilih opsi ke-`optionIndex` sebagai satu-satunya jawaban benar pada soal ke-`questionIndex`. */
   function setKunci(questionIndex: number, optionIndex: number) {
     setError("")
     setQuestions((prev) =>
@@ -125,7 +131,6 @@ export function ImportSoal({ ujianId, onSuccess }: { ujianId: string; onSuccess?
   }
 
   async function importQuestions() {
-    // Cegah request yang pasti ditolak server (HTTP 400).
     const localIssues = validateQuestions(questions)
     if (localIssues.length > 0) {
       setError(`Perbaiki dulu ${localIssues.length} masalah pada soal sebelum import.`)
@@ -155,9 +160,27 @@ export function ImportSoal({ ujianId, onSuccess }: { ujianId: string; onSuccess?
 
   return (
     <>
-      <Button type="button" variant="outline" onClick={() => setOpen(true)}>
-        Import soal
-      </Button>
+      {/* Trigger: pakai triggerClassName jika ada, kalau tidak pakai Button default */}
+      {triggerClassName ? (
+        <button type="button" onClick={() => setOpen(true)} className={triggerClassName}>
+          <svg
+            className="h-4 w-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+            aria-hidden="true"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v12m0 0l-4-4m4 4l4-4M4 20h16" />
+          </svg>
+          <span>Import soal</span>
+        </button>
+      ) : (
+        <Button type="button" variant="outline" onClick={() => setOpen(true)}>
+          Import soal
+        </Button>
+      )}
+
       <Modal open={open} onClose={close} title="Import Soal" maxWidth="760px">
         <div className="flex flex-col gap-5">
           <div className="relative overflow-hidden rounded-[18px] border border-dashed border-[#b8c8c0] bg-gradient-to-br from-white via-[#f8fafc] to-[#eef2ff] p-6 text-center shadow-[0_8px_24px_-12px_rgba(49,46,129,0.25)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_32px_-12px_rgba(49,46,129,0.35)] dark:border-white/10 dark:from-[#0d1526] dark:via-[#0d1526] dark:to-[#131b30]">

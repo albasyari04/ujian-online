@@ -347,3 +347,33 @@ export function IconSend({ className }: IconProps) {
     </svg>
   )
 }
+
+/** Ikon refresh / putar ulang — dipakai untuk tombol "Hitung Ulang Skor". */
+export function IconRefresh({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" aria-hidden="true">
+      <path
+        d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C15.6392 3 18.7856 5.17342 20.1086 8.27132"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+      <path
+        d="M21 3V8H16"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+/** Ikon kilau / sparkle — dipakai untuk badge dekoratif pada card 3D. */
+export function IconSparkles({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden="true">
+      <path d="M12 2L14.09 8.26L20.18 9.5L15.64 13.14L17.5 19.5L12 16.09L6.5 19.5L8.36 13.14L3.82 9.5L9.91 8.26L12 2Z" />
+    </svg>
+  )
+}

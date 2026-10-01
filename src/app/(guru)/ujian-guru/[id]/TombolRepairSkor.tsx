@@ -2,13 +2,14 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { IconSpinner } from "@/components/ui/Icons"
+import { IconSpinner, IconRefresh } from "@/components/ui/Icons"
 import { repairSkorUjian } from "./actions"
 
 export function TombolRepairSkor({ ujianId }: { ujianId: string }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [pesan, setPesan] = useState<{ tipe: "sukses" | "gagal"; teks: string } | null>(null)
+  const [debug, setDebug] = useState<string[]>([])
 
   async function handleRepair() {
     if (
@@ -21,48 +22,66 @@ export function TombolRepairSkor({ ujianId }: { ujianId: string }) {
 
     setLoading(true)
     setPesan(null)
+    setDebug([])
 
     const hasil = await repairSkorUjian(ujianId)
 
     if (hasil.success) {
       setPesan({ tipe: "sukses", teks: hasil.message })
+      if (hasil.debug) setDebug(hasil.debug)
       router.refresh()
     } else {
       setPesan({ tipe: "gagal", teks: hasil.message })
+      if (hasil.debug) setDebug(hasil.debug)
     }
 
     setLoading(false)
-    setTimeout(() => setPesan(null), 5000)
   }
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex w-full flex-col gap-2 lg:w-auto">
       <button
         type="button"
         onClick={handleRepair}
         disabled={loading}
-        className="inline-flex items-center gap-2 rounded-[12px] bg-gradient-to-br from-[#f59e0b] to-[#b45309] px-4 py-2.5 text-[12.5px] font-semibold text-white shadow-[0_8px_20px_-6px_rgba(180,83,9,0.5)] transition-all hover:-translate-y-0.5 hover:shadow-[0_12px_24px_-6px_rgba(180,83,9,0.6)] disabled:cursor-not-allowed disabled:opacity-60"
+        className="group/btn relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-[14px] bg-gradient-to-b from-[#fbbf24] to-[#b45309] px-6 py-3.5 text-[13px] font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_5px_0_#78350f,0_16px_28px_-12px_rgba(180,83,9,0.6)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_7px_0_#78350f,0_20px_32px_-12px_rgba(180,83,9,0.7)] active:translate-y-[4px] active:shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_1px_0_#78350f,0_4px_10px_-4px_rgba(180,83,9,0.5)] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 lg:w-auto"
       >
+        <span className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/30 to-transparent" />
         {loading ? (
           <>
-            <IconSpinner className="h-4 w-4 animate-spin" />
-            Menghitung ulang...
+            <IconSpinner className="relative h-4 w-4 animate-spin" />
+            <span className="relative">Menghitung ulang...</span>
           </>
         ) : (
-          <>🔄 Hitung Ulang Skor Peserta</>
+          <>
+            <IconRefresh className="relative h-4 w-4 transition-transform duration-500 group-hover/btn:rotate-180" />
+            <span className="relative">Hitung Ulang Skor Peserta</span>
+          </>
         )}
       </button>
 
       {pesan && (
-        <p
-          className={`text-[12px] ${
+        <div
+          className={`flex items-start gap-2 rounded-[10px] border px-3 py-2 text-[11.5px] ${
             pesan.tipe === "sukses"
-              ? "text-emerald-600 dark:text-emerald-400"
-              : "text-red-600 dark:text-red-400"
+              ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300"
+              : "border-red-200 bg-red-50 text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300"
           }`}
         >
-          {pesan.teks}
-        </p>
+          <span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-current" />
+          <p className="flex-1">{pesan.teks}</p>
+        </div>
+      )}
+
+      {debug.length > 0 && (
+        <div className="mt-1 max-h-48 overflow-auto rounded-[10px] border border-amber-200 bg-amber-50/80 p-2.5 text-[10px] leading-relaxed text-amber-900 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-200">
+          <p className="mb-1 font-bold text-[10.5px]">🔍 Debug:</p>
+          {debug.map((d, i) => (
+            <p key={i} className="border-t border-amber-200/50 py-0.5 break-all first:border-0 first:pt-0">
+              {d}
+            </p>
+          ))}
+        </div>
       )}
     </div>
   )

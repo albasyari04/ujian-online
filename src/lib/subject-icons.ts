@@ -34,6 +34,8 @@ const SUBJECT_ICON_RULES: SubjectIconRule[] = [
   { match: /sejarah/i, icon: "sejarah-icon.png" },
   { match: /seni\s*budaya|\bseni\b/i, icon: "seni-budaya-icon.png" },
   { match: /sosiologi/i, icon: "sosiologi-icon.png" },
+  // Tambahan: Ekonomi
+  { match: /ekonomi/i, icon: "ekonomi-icon.png" },
 ]
 
 export function getSubjectIconSrc(judul: string): string {

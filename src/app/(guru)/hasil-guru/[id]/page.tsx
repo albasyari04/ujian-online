@@ -18,14 +18,19 @@ function toneSkor(skor: number | null): SkorTone {
   return "red"
 }
 
-function formatTanggal(date: Date | null) {
+// Formatter dibuat sekali di level modul, dikunci ke WIB.
+// Harus sama dengan formatRentang di UjianGuruClient (halaman Ujian Saya).
+const formatterWaktu = new Intl.DateTimeFormat("id-ID", {
+  day: "numeric",
+  month: "short",
+  hour: "2-digit",
+  minute: "2-digit",
+  timeZone: "Asia/Jakarta", // kunci ke WIB, jangan ikut zona waktu server
+})
+
+function formatTanggal(date: Date | string | null) {
   if (!date) return "—"
-  return new Intl.DateTimeFormat("id-ID", {
-    day: "numeric",
-    month: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(date)
+  return formatterWaktu.format(new Date(date))
 }
 
 function inisial(nama: string) {

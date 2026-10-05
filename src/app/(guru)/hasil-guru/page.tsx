@@ -17,6 +17,25 @@ function toneSkor(skor: number | null): SkorTone {
   return "red"
 }
 
+function IconDownload({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M12 3v12" />
+      <path d="m7 10 5 5 5-5" />
+      <path d="M5 21h14" />
+    </svg>
+  )
+}
+
 export default async function HasilGuruPage() {
   const guru = await requireGuruSession()
 
@@ -107,10 +126,16 @@ export default async function HasilGuruPage() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {ringkasan.map(({ ujian: u, peserta, selesai, rataRata }) => {
             const persentaseSelesai = peserta > 0 ? Math.round((selesai / peserta) * 100) : 0
+            const bisaUnduh = peserta > 0
 
             return (
-              <Link key={u.id} href={`/hasil-guru/${u.id}`} className="block">
-                <Card className="group relative flex flex-col gap-4 overflow-hidden bg-gradient-to-br from-white via-[#fcfbf8] to-[#f6f5f1] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_5px_0_#eef0f4,0_16px_28px_-16px_rgba(22,35,63,0.32)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_7px_0_#e3e7ee,0_22px_34px_-16px_rgba(22,35,63,0.4)] dark:from-[#182137] dark:via-[#141c30] dark:to-[#111a2c] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_5px_0_#0d1424,0_18px_30px_-16px_rgba(0,0,0,0.6)] dark:hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_7px_0_#0d1424,0_24px_36px_-16px_rgba(0,0,0,0.68)]">
+              // Wrapper: memegang efek hover (translate) agar overlay Link & tombol
+              // berada dalam satu stacking context yang sama.
+              <div
+                key={u.id}
+                className="group relative transition-transform duration-300 hover:-translate-y-1"
+              >
+                <Card className="relative flex h-full flex-col gap-4 overflow-hidden bg-gradient-to-br from-white via-[#fcfbf8] to-[#f6f5f1] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_5px_0_#eef0f4,0_16px_28px_-16px_rgba(22,35,63,0.32)] transition-all duration-300 group-hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_7px_0_#e3e7ee,0_22px_34px_-16px_rgba(22,35,63,0.4)] dark:from-[#182137] dark:via-[#141c30] dark:to-[#111a2c] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_5px_0_#0d1424,0_18px_30px_-16px_rgba(0,0,0,0.6)] dark:group-hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_7px_0_#0d1424,0_24px_36px_-16px_rgba(0,0,0,0.68)]">
                   <span
                     className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/75 to-transparent dark:from-white/[0.05]"
                     aria-hidden="true"
@@ -202,8 +227,37 @@ export default async function HasilGuruPage() {
                       />
                     </div>
                   </div>
+
+                  {/* Tombol unduh nilai (z-20 → di atas overlay Link) */}
+                  {bisaUnduh ? (
+                    <a
+                      href={`/api/hasil-guru/${u.id}/unduh`}
+                      download
+                      title={`Unduh nilai ${u.judul} (.xlsx)`}
+                      className="relative z-20 mt-auto inline-flex h-9 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-b from-[#5b52e0] to-[#4338ca] text-[12px] font-semibold text-white shadow-[0_3px_0_#312e81,0_8px_14px_-6px_rgba(49,46,129,0.55)] transition-all hover:brightness-110 active:translate-y-[2px] active:shadow-[0_1px_0_#312e81]"
+                    >
+                      <IconDownload className="h-4 w-4" />
+                      Unduh Nilai (Excel)
+                    </a>
+                  ) : (
+                    <span
+                      aria-disabled="true"
+                      title="Belum ada peserta"
+                      className="relative z-20 mt-auto inline-flex h-9 w-full cursor-not-allowed items-center justify-center gap-2 rounded-xl bg-[#edf0ef] text-[12px] font-semibold text-[#a0a8ba] dark:bg-white/10 dark:text-white/30"
+                    >
+                      <IconDownload className="h-4 w-4" />
+                      Unduh Nilai (Excel)
+                    </span>
+                  )}
                 </Card>
-              </Link>
+
+                {/* Overlay link: seluruh kartu tetap bisa diklik menuju detail */}
+                <Link
+                  href={`/hasil-guru/${u.id}`}
+                  aria-label={`Lihat detail hasil ${u.judul}`}
+                  className="absolute inset-0 z-10 rounded-[18px]"
+                />
+              </div>
             )
           })}
         </div>

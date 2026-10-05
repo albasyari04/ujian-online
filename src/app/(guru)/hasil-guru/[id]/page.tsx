@@ -42,6 +42,25 @@ function inisial(nama: string) {
     .join("")
 }
 
+function IconDownload({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M12 3v12" />
+      <path d="m7 10 5 5 5-5" />
+      <path d="M5 21h14" />
+    </svg>
+  )
+}
+
 export default async function HasilDetailGuruPage({ params }: { params: Promise<{ id: string }> }) {
   const guru = await requireGuruSession()
   const { id } = await params
@@ -58,11 +77,19 @@ export default async function HasilDetailGuruPage({ params }: { params: Promise<
 
   if (!ujian) notFound()
 
+  // Peserta yang sudah selesai (untuk hitungan "Selesai")
   const selesai = ujian.hasilUjian.filter((h) => h.status === "SELESAI")
-  const rataRata = selesai.length
-    ? Math.round((selesai.reduce((s, h) => s + (h.skor ?? 0), 0) / selesai.length) * 10) / 10
+  // Peserta selesai yang punya skor (untuk rata-rata & tertinggi) — sama dengan
+  // halaman daftar dan file Excel agar angkanya konsisten.
+  const selesaiBernilai = selesai.filter((h) => h.skor !== null)
+  const rataRata = selesaiBernilai.length
+    ? Math.round(
+        (selesaiBernilai.reduce((s, h) => s + (h.skor ?? 0), 0) / selesaiBernilai.length) * 10
+      ) / 10
     : null
-  const skorTertinggi = selesai.length ? Math.max(...selesai.map((h) => h.skor ?? 0)) : null
+  const skorTertinggi = selesaiBernilai.length
+    ? Math.max(...selesaiBernilai.map((h) => h.skor ?? 0))
+    : null
   const persentaseSelesai =
     ujian.hasilUjian.length > 0 ? Math.round((selesai.length / ujian.hasilUjian.length) * 100) : 0
 
@@ -89,25 +116,40 @@ export default async function HasilDetailGuruPage({ params }: { params: Promise<
         />
 
         {/* Header */}
-        <div className="relative flex items-start gap-4">
-          <div className="relative shrink-0">
-            <div className="absolute inset-0 rounded-full bg-indigo-500/15 blur-xl" />
-            <Image
-              src={getSubjectIconSrc(ujian.judul)}
-              alt=""
-              width={56}
-              height={56}
-              className="relative h-14 w-14 object-contain drop-shadow-[0_10px_18px_rgba(49,46,129,0.28)]"
-            />
+        <div className="relative flex flex-wrap items-start justify-between gap-4">
+          <div className="flex items-start gap-4">
+            <div className="relative shrink-0">
+              <div className="absolute inset-0 rounded-full bg-indigo-500/15 blur-xl" />
+              <Image
+                src={getSubjectIconSrc(ujian.judul)}
+                alt=""
+                width={56}
+                height={56}
+                className="relative h-14 w-14 object-contain drop-shadow-[0_10px_18px_rgba(49,46,129,0.28)]"
+              />
+            </div>
+            <div className="min-w-0 pt-0.5">
+              <h1 className="text-[19px] font-bold leading-tight text-[#16233f] dark:text-white sm:text-[22px]">
+                {ujian.judul}
+              </h1>
+              <Badge tone={toneSkor(rataRata)} className="mt-2">
+                {rataRata !== null ? `Rata-rata kelas ${rataRata}` : "Belum ada peserta selesai"}
+              </Badge>
+            </div>
           </div>
-          <div className="min-w-0 pt-0.5">
-            <h1 className="text-[19px] font-bold leading-tight text-[#16233f] dark:text-white sm:text-[22px]">
-              {ujian.judul}
-            </h1>
-            <Badge tone={toneSkor(rataRata)} className="mt-2">
-              {rataRata !== null ? `Rata-rata kelas ${rataRata}` : "Belum ada peserta selesai"}
-            </Badge>
-          </div>
+
+          {/* Tombol unduh nilai */}
+          {ujian.hasilUjian.length > 0 && (
+            <a
+              href={`/api/hasil-guru/${ujian.id}/unduh`}
+              download
+              title={`Unduh nilai ${ujian.judul} (.xlsx)`}
+              className="inline-flex h-9 items-center justify-center gap-2 rounded-xl bg-gradient-to-b from-[#5b52e0] to-[#4338ca] px-4 text-[12px] font-semibold text-white shadow-[0_3px_0_#312e81,0_8px_14px_-6px_rgba(49,46,129,0.55)] transition-all hover:brightness-110 active:translate-y-[2px] active:shadow-[0_1px_0_#312e81]"
+            >
+              <IconDownload className="h-4 w-4" />
+              Unduh Nilai (Excel)
+            </a>
+          )}
         </div>
 
         {/* Statistik — pakai StatCard (gaya 3D) */}

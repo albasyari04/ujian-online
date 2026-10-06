@@ -10,6 +10,9 @@ import { getSubjectIconSrc } from "@/lib/subject-icons"
 
 type SkorTone = "emerald" | "amber" | "red" | "slate"
 
+const KUNCI_LAINNYA = "__lainnya"
+const LABEL_LAINNYA = "Lainnya"
+
 function toneSkor(skor: number | null): SkorTone {
   if (skor === null) return "slate"
   if (skor >= 80) return "emerald"
@@ -36,6 +39,16 @@ function IconDownload({ className }: { className?: string }) {
   )
 }
 
+function rataList(list: number[]) {
+  return list.length ? Math.round((list.reduce((s, v) => s + v, 0) / list.length) * 10) / 10 : null
+}
+
+function urlUnduhMapel(kunci?: string) {
+  return kunci
+    ? `/api/hasil-guru-mapel/unduh?mapel=${encodeURIComponent(kunci)}`
+    : "/api/hasil-guru-mapel/unduh"
+}
+
 export default async function HasilGuruPage() {
   const guru = await requireGuruSession()
 
@@ -47,9 +60,7 @@ export default async function HasilGuruPage() {
 
   const ringkasan = ujian.map((u) => {
     const selesai = u.hasilUjian.filter((h) => h.status === "SELESAI" && h.skor !== null)
-    const rataRata = selesai.length
-      ? Math.round((selesai.reduce((s, h) => s + (h.skor ?? 0), 0) / selesai.length) * 10) / 10
-      : null
+    const rataRata = rataList(selesai.map((h) => h.skor as number))
     return { ujian: u, peserta: u.hasilUjian.length, selesai: selesai.length, rataRata }
   })
 
@@ -60,11 +71,35 @@ export default async function HasilGuruPage() {
       .filter((h) => h.status === "SELESAI" && h.skor !== null)
       .map((h) => h.skor as number)
   )
-  const rataRataKeseluruhan = semuaSkorSelesai.length
-    ? Math.round((semuaSkorSelesai.reduce((s, v) => s + v, 0) / semuaSkorSelesai.length) * 10) / 10
-    : null
+  const rataRataKeseluruhan = rataList(semuaSkorSelesai)
   const persentaseSelesaiKeseluruhan =
     totalPeserta > 0 ? Math.round((totalSelesai / totalPeserta) * 100) : 0
+
+  // Kelompokkan per mata pelajaran (abjad, "Lainnya" di akhir)
+  const peta = new Map<string, typeof ringkasan>()
+  for (const r of ringkasan) {
+    const kunci = (r.ujian.mataPelajaran ?? "").trim() || KUNCI_LAINNYA
+    peta.set(kunci, [...(peta.get(kunci) ?? []), r])
+  }
+  const kelompokMapel = [...peta.entries()]
+    .sort(([a], [b]) => {
+      if (a === KUNCI_LAINNYA) return 1
+      if (b === KUNCI_LAINNYA) return -1
+      return a.localeCompare(b, "id")
+    })
+    .map(([kunci, items]) => ({
+      kunci,
+      label: kunci === KUNCI_LAINNYA ? LABEL_LAINNYA : kunci,
+      items,
+      peserta: items.reduce((s, r) => s + r.peserta, 0),
+      rataRata: rataList(
+        items.flatMap((r) =>
+          r.ujian.hasilUjian
+            .filter((h) => h.status === "SELESAI" && h.skor !== null)
+            .map((h) => h.skor as number)
+        )
+      ),
+    }))
 
   return (
     <div className="space-y-6">
@@ -107,10 +142,24 @@ export default async function HasilGuruPage() {
         />
       </div>
 
-      {/* Label seksi daftar ujian */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-[14.5px] font-semibold text-[#16233f] dark:text-white">Daftar Ujian</h2>
-        {ujian.length > 0 && <Badge tone="slate">{ujian.length} ujian</Badge>}
+      {/* Label seksi daftar ujian + unduh semua mapel */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <h2 className="text-[14.5px] font-semibold text-[#16233f] dark:text-white">Daftar Ujian</h2>
+          {ujian.length > 0 && <Badge tone="slate">{ujian.length} ujian</Badge>}
+        </div>
+
+        {totalPeserta > 0 && (
+          <a
+            href={urlUnduhMapel()}
+            download
+            title="Unduh nilai semua mata pelajaran (.xlsx)"
+            className="inline-flex h-9 items-center justify-center gap-2 rounded-xl bg-gradient-to-b from-[#5b52e0] to-[#4338ca] px-4 text-[12px] font-semibold text-white shadow-[0_3px_0_#312e81,0_8px_14px_-6px_rgba(49,46,129,0.55)] transition-all hover:brightness-110 active:translate-y-[2px] active:shadow-[0_1px_0_#312e81]"
+          >
+            <IconDownload className="h-4 w-4" />
+            Unduh Semua Mapel (Excel)
+          </a>
+        )}
       </div>
 
       {ujian.length === 0 ? (
@@ -123,143 +172,183 @@ export default async function HasilGuruPage() {
           </p>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {ringkasan.map(({ ujian: u, peserta, selesai, rataRata }) => {
-            const persentaseSelesai = peserta > 0 ? Math.round((selesai / peserta) * 100) : 0
-            const bisaUnduh = peserta > 0
+        <div className="space-y-8">
+          {kelompokMapel.map((grup) => (
+            <section key={grup.kunci} className="space-y-3.5">
+              {/* Header mapel + tombol unduh semua nilai mapel */}
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="text-[14px] font-semibold text-[#16233f] dark:text-white">
+                    {grup.label}
+                  </h3>
+                  <Badge tone="slate">{grup.items.length} ujian</Badge>
+                  <Badge tone={toneSkor(grup.rataRata)}>
+                    {grup.rataRata !== null ? `Rata-rata ${grup.rataRata}` : "Belum ada nilai"}
+                  </Badge>
+                </div>
 
-            return (
-              // Wrapper: memegang efek hover (translate) agar overlay Link & tombol
-              // berada dalam satu stacking context yang sama.
-              <div
-                key={u.id}
-                className="group relative transition-transform duration-300 hover:-translate-y-1"
-              >
-                <Card className="relative flex h-full flex-col gap-4 overflow-hidden bg-gradient-to-br from-white via-[#fcfbf8] to-[#f6f5f1] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_5px_0_#eef0f4,0_16px_28px_-16px_rgba(22,35,63,0.32)] transition-all duration-300 group-hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_7px_0_#e3e7ee,0_22px_34px_-16px_rgba(22,35,63,0.4)] dark:from-[#182137] dark:via-[#141c30] dark:to-[#111a2c] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_5px_0_#0d1424,0_18px_30px_-16px_rgba(0,0,0,0.6)] dark:group-hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_7px_0_#0d1424,0_24px_36px_-16px_rgba(0,0,0,0.68)]">
+                {grup.peserta > 0 ? (
+                  <a
+                    href={urlUnduhMapel(grup.kunci)}
+                    download
+                    title={`Unduh semua nilai ${grup.label} (.xlsx)`}
+                    className="inline-flex h-8 items-center justify-center gap-2 rounded-xl bg-gradient-to-b from-[#5b52e0] to-[#4338ca] px-3.5 text-[11.5px] font-semibold text-white shadow-[0_3px_0_#312e81,0_8px_14px_-6px_rgba(49,46,129,0.55)] transition-all hover:brightness-110 active:translate-y-[2px] active:shadow-[0_1px_0_#312e81]"
+                  >
+                    <IconDownload className="h-3.5 w-3.5" />
+                    Unduh Semua Nilai Mapel
+                  </a>
+                ) : (
                   <span
-                    className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/75 to-transparent dark:from-white/[0.05]"
-                    aria-hidden="true"
-                  />
-                  <span
-                    className="pointer-events-none absolute -right-10 -top-12 h-28 w-28 rounded-full bg-[#16233f]/[0.04] blur-2xl dark:bg-white/[0.04]"
-                    aria-hidden="true"
-                  />
-
-                  {/* Header kartu: ikon subjek + judul + badge */}
-                  <div className="relative flex items-start justify-between gap-3">
-                    <div className="flex items-start gap-3">
-                      <Image
-                        src={getSubjectIconSrc(u.judul)}
-                        alt=""
-                        width={40}
-                        height={40}
-                        className="h-10 w-10 shrink-0 object-contain drop-shadow-[0_3px_5px_rgba(22,35,63,0.22)] transition-transform duration-300 group-hover:-translate-y-0.5"
-                      />
-                      <div className="min-w-0">
-                        <h3 className="line-clamp-2 text-[14px] font-semibold text-[#16233f] dark:text-white">
-                          {u.judul}
-                        </h3>
-                        <Badge tone={toneSkor(rataRata)} className="mt-1.5">
-                          {rataRata !== null ? `Rata-rata ${rataRata}` : "Belum ada nilai"}
-                        </Badge>
-                      </div>
-                    </div>
-                    <IconChevronRight className="mt-1 h-4 w-4 shrink-0 text-[#c3c9d6] transition-transform group-hover:translate-x-0.5 group-hover:text-[#4338ca] dark:text-white/20" />
-                  </div>
-
-                  {/* Statistik: ikon 3D, TANPA background card */}
-                  <div className="relative grid grid-cols-3 gap-2">
-                    <div className="flex flex-col items-center gap-1.5 text-center">
-                      <Image
-                        src="/image/icon/peserta-icon.png"
-                        alt=""
-                        width={44}
-                        height={44}
-                        className="h-11 w-11 object-contain drop-shadow-[0_6px_10px_rgba(49,46,129,0.2)]"
-                      />
-                      <p className="text-[14px] font-semibold leading-none text-[#16233f] dark:text-white">
-                        {peserta}
-                      </p>
-                      <p className="text-[10px] leading-none text-[#8b93a6] dark:text-white/40">Peserta</p>
-                    </div>
-
-                    <div className="flex flex-col items-center gap-1.5 text-center">
-                      <Image
-                        src="/image/icon/selesai.png"
-                        alt=""
-                        width={44}
-                        height={44}
-                        className="h-11 w-11 object-contain drop-shadow-[0_6px_10px_rgba(49,46,129,0.2)]"
-                      />
-                      <p className="text-[14px] font-semibold leading-none text-[#16233f] dark:text-white">
-                        {selesai}
-                      </p>
-                      <p className="text-[10px] leading-none text-[#8b93a6] dark:text-white/40">Selesai</p>
-                    </div>
-
-                    <div className="flex flex-col items-center gap-1.5 text-center">
-                      <Image
-                        src="/image/icon/persen.png"
-                        alt=""
-                        width={44}
-                        height={44}
-                        className="h-11 w-11 object-contain drop-shadow-[0_6px_10px_rgba(49,46,129,0.2)]"
-                      />
-                      <p className="text-[14px] font-semibold leading-none text-[#16233f] dark:text-white">
-                        {rataRata ?? "—"}
-                      </p>
-                      <p className="text-[10px] leading-none text-[#8b93a6] dark:text-white/40">Rata-rata</p>
-                    </div>
-                  </div>
-
-                  {/* Progress bar */}
-                  <div className="relative">
-                    <div className="flex items-center justify-between text-[10.5px] text-[#8b93a6] dark:text-white/40">
-                      <span>Progres pengerjaan</span>
-                      <span className="font-medium text-[#5b657d] dark:text-white/60">
-                        {persentaseSelesai}%
-                      </span>
-                    </div>
-                    <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-[#edf0ef] dark:bg-white/10">
-                      <div
-                        className="h-full rounded-full bg-gradient-to-r from-[#818cf8] to-[#4338ca]"
-                        style={{ width: `${persentaseSelesai}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Tombol unduh nilai (z-20 → di atas overlay Link) */}
-                  {bisaUnduh ? (
-                    <a
-                      href={`/api/hasil-guru/${u.id}/unduh`}
-                      download
-                      title={`Unduh nilai ${u.judul} (.xlsx)`}
-                      className="relative z-20 mt-auto inline-flex h-9 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-b from-[#5b52e0] to-[#4338ca] text-[12px] font-semibold text-white shadow-[0_3px_0_#312e81,0_8px_14px_-6px_rgba(49,46,129,0.55)] transition-all hover:brightness-110 active:translate-y-[2px] active:shadow-[0_1px_0_#312e81]"
-                    >
-                      <IconDownload className="h-4 w-4" />
-                      Unduh Nilai (Excel)
-                    </a>
-                  ) : (
-                    <span
-                      aria-disabled="true"
-                      title="Belum ada peserta"
-                      className="relative z-20 mt-auto inline-flex h-9 w-full cursor-not-allowed items-center justify-center gap-2 rounded-xl bg-[#edf0ef] text-[12px] font-semibold text-[#a0a8ba] dark:bg-white/10 dark:text-white/30"
-                    >
-                      <IconDownload className="h-4 w-4" />
-                      Unduh Nilai (Excel)
-                    </span>
-                  )}
-                </Card>
-
-                {/* Overlay link: seluruh kartu tetap bisa diklik menuju detail */}
-                <Link
-                  href={`/hasil-guru/${u.id}`}
-                  aria-label={`Lihat detail hasil ${u.judul}`}
-                  className="absolute inset-0 z-10 rounded-[18px]"
-                />
+                    aria-disabled="true"
+                    title="Belum ada peserta"
+                    className="inline-flex h-8 cursor-not-allowed items-center justify-center gap-2 rounded-xl bg-[#edf0ef] px-3.5 text-[11.5px] font-semibold text-[#a0a8ba] dark:bg-white/10 dark:text-white/30"
+                  >
+                    <IconDownload className="h-3.5 w-3.5" />
+                    Unduh Semua Nilai Mapel
+                  </span>
+                )}
               </div>
-            )
-          })}
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                {grup.items.map(({ ujian: u, peserta, selesai, rataRata }) => {
+                  const persentaseSelesai = peserta > 0 ? Math.round((selesai / peserta) * 100) : 0
+                  const bisaUnduh = peserta > 0
+
+                  return (
+                    // Wrapper: memegang efek hover (translate) agar overlay Link & tombol
+                    // berada dalam satu stacking context yang sama.
+                    <div
+                      key={u.id}
+                      className="group relative transition-transform duration-300 hover:-translate-y-1"
+                    >
+                      <Card className="relative flex h-full flex-col gap-4 overflow-hidden bg-gradient-to-br from-white via-[#fcfbf8] to-[#f6f5f1] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_5px_0_#eef0f4,0_16px_28px_-16px_rgba(22,35,63,0.32)] transition-all duration-300 group-hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_7px_0_#e3e7ee,0_22px_34px_-16px_rgba(22,35,63,0.4)] dark:from-[#182137] dark:via-[#141c30] dark:to-[#111a2c] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_5px_0_#0d1424,0_18px_30px_-16px_rgba(0,0,0,0.6)] dark:group-hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_7px_0_#0d1424,0_24px_36px_-16px_rgba(0,0,0,0.68)]">
+                        <span
+                          className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/75 to-transparent dark:from-white/[0.05]"
+                          aria-hidden="true"
+                        />
+                        <span
+                          className="pointer-events-none absolute -right-10 -top-12 h-28 w-28 rounded-full bg-[#16233f]/[0.04] blur-2xl dark:bg-white/[0.04]"
+                          aria-hidden="true"
+                        />
+
+                        {/* Header kartu: ikon subjek + judul + badge */}
+                        <div className="relative flex items-start justify-between gap-3">
+                          <div className="flex items-start gap-3">
+                            <Image
+                              src={getSubjectIconSrc(u.judul)}
+                              alt=""
+                              width={40}
+                              height={40}
+                              className="h-10 w-10 shrink-0 object-contain drop-shadow-[0_3px_5px_rgba(22,35,63,0.22)] transition-transform duration-300 group-hover:-translate-y-0.5"
+                            />
+                            <div className="min-w-0">
+                              <h3 className="line-clamp-2 text-[14px] font-semibold text-[#16233f] dark:text-white">
+                                {u.judul}
+                              </h3>
+                              <Badge tone={toneSkor(rataRata)} className="mt-1.5">
+                                {rataRata !== null ? `Rata-rata ${rataRata}` : "Belum ada nilai"}
+                              </Badge>
+                            </div>
+                          </div>
+                          <IconChevronRight className="mt-1 h-4 w-4 shrink-0 text-[#c3c9d6] transition-transform group-hover:translate-x-0.5 group-hover:text-[#4338ca] dark:text-white/20" />
+                        </div>
+
+                        {/* Statistik: ikon 3D, TANPA background card */}
+                        <div className="relative grid grid-cols-3 gap-2">
+                          <div className="flex flex-col items-center gap-1.5 text-center">
+                            <Image
+                              src="/image/icon/peserta-icon.png"
+                              alt=""
+                              width={44}
+                              height={44}
+                              className="h-11 w-11 object-contain drop-shadow-[0_6px_10px_rgba(49,46,129,0.2)]"
+                            />
+                            <p className="text-[14px] font-semibold leading-none text-[#16233f] dark:text-white">
+                              {peserta}
+                            </p>
+                            <p className="text-[10px] leading-none text-[#8b93a6] dark:text-white/40">Peserta</p>
+                          </div>
+
+                          <div className="flex flex-col items-center gap-1.5 text-center">
+                            <Image
+                              src="/image/icon/selesai.png"
+                              alt=""
+                              width={44}
+                              height={44}
+                              className="h-11 w-11 object-contain drop-shadow-[0_6px_10px_rgba(49,46,129,0.2)]"
+                            />
+                            <p className="text-[14px] font-semibold leading-none text-[#16233f] dark:text-white">
+                              {selesai}
+                            </p>
+                            <p className="text-[10px] leading-none text-[#8b93a6] dark:text-white/40">Selesai</p>
+                          </div>
+
+                          <div className="flex flex-col items-center gap-1.5 text-center">
+                            <Image
+                              src="/image/icon/persen.png"
+                              alt=""
+                              width={44}
+                              height={44}
+                              className="h-11 w-11 object-contain drop-shadow-[0_6px_10px_rgba(49,46,129,0.2)]"
+                            />
+                            <p className="text-[14px] font-semibold leading-none text-[#16233f] dark:text-white">
+                              {rataRata ?? "—"}
+                            </p>
+                            <p className="text-[10px] leading-none text-[#8b93a6] dark:text-white/40">Rata-rata</p>
+                          </div>
+                        </div>
+
+                        {/* Progress bar */}
+                        <div className="relative">
+                          <div className="flex items-center justify-between text-[10.5px] text-[#8b93a6] dark:text-white/40">
+                            <span>Progres pengerjaan</span>
+                            <span className="font-medium text-[#5b657d] dark:text-white/60">
+                              {persentaseSelesai}%
+                            </span>
+                          </div>
+                          <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-[#edf0ef] dark:bg-white/10">
+                            <div
+                              className="h-full rounded-full bg-gradient-to-r from-[#818cf8] to-[#4338ca]"
+                              style={{ width: `${persentaseSelesai}%` }}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Tombol unduh nilai (z-20 → di atas overlay Link) */}
+                        {bisaUnduh ? (
+                          <a
+                            href={`/api/hasil-guru/${u.id}/unduh`}
+                            download
+                            title={`Unduh nilai ${u.judul} (.xlsx)`}
+                            className="relative z-20 mt-auto inline-flex h-9 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-b from-[#5b52e0] to-[#4338ca] text-[12px] font-semibold text-white shadow-[0_3px_0_#312e81,0_8px_14px_-6px_rgba(49,46,129,0.55)] transition-all hover:brightness-110 active:translate-y-[2px] active:shadow-[0_1px_0_#312e81]"
+                          >
+                            <IconDownload className="h-4 w-4" />
+                            Unduh Nilai (Excel)
+                          </a>
+                        ) : (
+                          <span
+                            aria-disabled="true"
+                            title="Belum ada peserta"
+                            className="relative z-20 mt-auto inline-flex h-9 w-full cursor-not-allowed items-center justify-center gap-2 rounded-xl bg-[#edf0ef] text-[12px] font-semibold text-[#a0a8ba] dark:bg-white/10 dark:text-white/30"
+                          >
+                            <IconDownload className="h-4 w-4" />
+                            Unduh Nilai (Excel)
+                          </span>
+                        )}
+                      </Card>
+
+                      {/* Overlay link: seluruh kartu tetap bisa diklik menuju detail */}
+                      <Link
+                        href={`/hasil-guru/${u.id}`}
+                        aria-label={`Lihat detail hasil ${u.judul}`}
+                        className="absolute inset-0 z-10 rounded-[18px]"
+                      />
+                    </div>
+                  )
+                })}
+              </div>
+            </section>
+          ))}
         </div>
       )}
     </div>
